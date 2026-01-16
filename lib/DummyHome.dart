@@ -1,9 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:remindus/blocs/authentication/authentication_bloc.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/services/local_notification_service.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/custom_button.dart';
 
@@ -13,6 +13,7 @@ class DummyHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void loginWithGoogle(BuildContext context) async {
+
       context.read<AuthenticationBloc>().add(SignOutEvent());
       Navigator.pushReplacementNamed(context, '/get-started');
     }
@@ -39,6 +40,14 @@ class DummyHome extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center,
               ),
+              AppButton(
+            text: 'cancel all notification',
+            backgroundColor: appColors.primary,
+            textColor: Colors.white,
+            onPressed: () {
+              NotificationService().cancelAllNotifications();
+            },
+          ),
             ],
           ),
         ),

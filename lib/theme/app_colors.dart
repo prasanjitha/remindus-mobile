@@ -10,20 +10,54 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color surfceSecondary;
   final Color? placeholder;
   final Color? primaryDark;
+  final Color? darkRed;
+  final Color? lightRed;
+  final Color? primaryRed;
+  final Color?  errorRed;
 
-  const AppColors({required this.textPrimary, required this.textSecondary, required this.primaryLight, required this.primary, required this.bgColor, required this.surfceSecondary, this.placeholder, this.primaryDark});
+  const AppColors({
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.primaryLight,
+    required this.primary,
+    required this.bgColor,
+    required this.surfceSecondary,
+    this.placeholder,
+    this.primaryDark,
+    this.darkRed,
+    this.lightRed,
+    this.primaryRed,
+    this.errorRed,
+  });
 
   @override
-  AppColors copyWith({Color? textPrimary, Color? textSecondary, Color? primaryLight, Color? primary, Color? bgColor, Color? surfceSecondary, Color? placeholder, Color? primaryDark}) {
+  AppColors copyWith({
+    Color? textPrimary,
+    Color? textSecondary,
+    Color? primaryLight,
+    Color? primary,
+    Color? bgColor,
+    Color? surfceSecondary,
+    Color? placeholder,
+    Color? primaryDark,
+    Color? darkRed,
+    Color? lightRed,
+    Color? primaryRed,
+    Color? errorRed,
+  }) {
     return AppColors(
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       primaryLight: primaryLight ?? this.primaryLight,
-      primary: primary ?? this.primary, 
+      primary: primary ?? this.primary,
       bgColor: bgColor ?? this.bgColor,
       surfceSecondary: surfceSecondary ?? this.surfceSecondary,
       placeholder: placeholder ?? this.placeholder,
       primaryDark: primaryDark ?? this.primaryDark,
+      darkRed: darkRed ?? this.darkRed,
+      lightRed: lightRed ?? this.lightRed,
+      primaryRed: primaryRed ?? this.primaryRed,
+      errorRed: errorRed ?? this.errorRed,
     );
   }
 
@@ -39,12 +73,14 @@ class AppColors extends ThemeExtension<AppColors> {
       surfceSecondary: Color.lerp(surfceSecondary, other.surfceSecondary, t)!,
       placeholder: Color.lerp(placeholder, other.placeholder, t)!,
       primaryDark: Color.lerp(primaryDark, other.primaryDark, t),
+      darkRed: Color.lerp(darkRed, other.darkRed, t),
+      lightRed: Color.lerp(lightRed, other.lightRed, t),
+      primaryRed: Color.lerp(primaryRed, other.primaryRed, t),
+      errorRed: Color.lerp(errorRed, other.errorRed, t),
     );
   }
 }
 
-// --- මෙන්න මේ කෑල්ල තමයි වැඩේ ලේසි කරන්නේ ---
 extension AppThemeExtension on BuildContext {
-  // දැන් context.appColors කිව්වම current theme එකේ පාටවල් ටික ලැබෙනවා
   AppColors get appColors => Theme.of(this).extension<AppColors>()!;
 }

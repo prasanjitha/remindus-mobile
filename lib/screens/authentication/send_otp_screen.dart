@@ -5,10 +5,7 @@ import 'package:remindus/generated/assets.dart';
 import 'package:remindus/screens/authentication/verify_phone_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/app_text_field.dart';
-import 'package:remindus/widgets/custom_button.dart'; // ඔබේ theme එකට අනුව path එක බලන්න
-// ඔබ හදා ඇති Widgets මෙහි import කරන්න
-// import 'package:your_project/widgets/app_text_field.dart';
-// import 'package:your_project/widgets/app_button.dart';
+import 'package:remindus/widgets/custom_button.dart';
 
 class VerifyPhoneScreen extends StatefulWidget {
   const VerifyPhoneScreen({super.key});
@@ -51,9 +48,19 @@ class _VerifyPhoneScreenState extends State<VerifyPhoneScreen> {
           }
 
           if (state is ErrorState) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.exception.message)));
+
+             ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text("Please update your Pricing Plan to use this feature.",
+          style: TextStyle(color: Colors.white, fontSize: 14.0)), 
+      backgroundColor: Colors.redAccent,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+            setState(() {
+              _isLoading = false;
+            });
+             
           }
           if (state is NoInternetConnectionState) {
             ScaffoldMessenger.of(context).showSnackBar(

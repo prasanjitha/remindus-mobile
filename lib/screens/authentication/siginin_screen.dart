@@ -1,16 +1,13 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:remindus/DummyHome.dart';
 import 'package:remindus/blocs/authentication/authentication_bloc.dart';
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/home_page.dart';
-import 'package:remindus/screens/authentication/send_otp_screen.dart';
 import 'package:remindus/screens/authentication/signup_screen.dart';
+import 'package:remindus/screens/forgot-password/forgot_password.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -24,8 +21,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _submitted = false;
-  bool _isGoogleLoading = false;
-
   final _formKey = GlobalKey<FormState>();
 
   final _emailController = TextEditingController();
@@ -66,25 +61,22 @@ class _LoginScreenState extends State<LoginScreen> {
             if (state.isAuthenticated) {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const DummyHome()),
+                MaterialPageRoute(builder: (context) => const MainTabScreen()),
                 (route) => false,
               );
             }
           } else if (state is GoogleSignInSuccessState) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const DummyHome()),
-              (route) => false,
-            );
+             Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const MainTabScreen()),
+                (route) => false,
+              );
           } else if (state is ErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.exception.message),
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.redAccent,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
             );
           }
@@ -197,7 +189,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(width: 6.0),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                    Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                 ForgotPasswordScreen(),
+                                          ),
+                                        );
+                                },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: const Size(0, 0),

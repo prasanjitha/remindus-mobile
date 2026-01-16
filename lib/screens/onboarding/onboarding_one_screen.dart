@@ -51,7 +51,7 @@ class OnboardingOneScreen extends StatelessWidget {
                 Navigator.pushNamed(context, '/onboarding-two');
               },
               onSkip: () {
-                Navigator.pushNamed(context, '/get-started');
+                Navigator.pushNamed(context, '/signup');
               },
             ),
           ),

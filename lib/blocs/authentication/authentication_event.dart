@@ -19,6 +19,7 @@ class SignInWithEmailAndPasswordEvent extends AuthenticationEvent {
 
 class SignInWithGoogleEvent extends AuthenticationEvent {}
 
+
 class SignUpWithEmailAndPasswordEvent extends AuthenticationEvent {
   final String name;
   final String email;
@@ -39,6 +40,11 @@ class SendOtpEvent extends AuthenticationEvent {
 class SignOutEvent extends AuthenticationEvent {}
 
 class CheckAuthStatusEvent extends AuthenticationEvent {}
+
+class ResetPasswordEvent extends AuthenticationEvent {
+  final String email;
+  const ResetPasswordEvent({required this.email});
+}
 
 class VerifyOtpEvent extends AuthenticationEvent {
   final String verificationId;

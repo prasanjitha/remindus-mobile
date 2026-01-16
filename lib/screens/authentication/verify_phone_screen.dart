@@ -1,14 +1,13 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/blocs/authentication/authentication_bloc.dart';
-import 'package:remindus/generated/assets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/app_text_field.dart';
+import 'package:remindus/generated/assets.dart';
 import 'package:remindus/widgets/custom_button.dart';
-// import 'package:your_project/widgets/app_text_field.dart';
-// import 'package:your_project/widgets/app_button.dart';
+import 'package:remindus/widgets/app_text_field.dart';
+import 'package:remindus/screens/authentication/send_otp_screen.dart';
+import 'package:remindus/blocs/authentication/authentication_bloc.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String verificationId;
@@ -56,9 +55,31 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           }
 
           if (state is ErrorState) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.exception.message)));
+             ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.exception.message,
+                style: TextStyle(color: Colors.white, fontSize: 14.0),
+              ),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            )
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          }
+          if (state is SusseccMessageState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.message,
+                  style: TextStyle(color: Colors.white, fontSize: 14.0),
+                ),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
           }
           if (state is NoInternetConnectionState) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -110,7 +131,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   decoration: BoxDecoration(color: appColors.surfceSecondary),
                 ),
 
-                // 1. Entered Phone Number (Read only with edit icon)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Column(
@@ -118,6 +138,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     children: [
                       const SizedBox(height: 20),
                       AppTextField(
+                        readOnly: true,
                         label: 'Entered phone number',
                         hintText: '',
                         controller: _phoneController,
@@ -131,6 +152,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             fit: BoxFit.cover,
                           ),
                         ),
+                        onSuffixTap: () {
+                           FirebaseAuth.instance.signOut();
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const VerifyPhoneScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        },
                       ),
                       const SizedBox(height: 28.0),
                       Container(
@@ -161,15 +192,27 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                               textAlign: TextAlign.center,
                               keyboardType: TextInputType.number,
                               maxLength: 1,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
+                              decoration:  InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: appColors.primary,
+                                  )
+                                ),
                                 counterText: '',
                               ),
                               onChanged: (value) {
-                                if (value.isNotEmpty && index < 5) {
+                                if (value.isNotEmpty) {
+                                  if (index < 5) {
+                                    FocusScope.of(
+                                      context,
+                                    ).requestFocus(_focusNodes[index + 1]);
+                                  } else {
+                                    _focusNodes[index].unfocus();
+                                  }
+                                } else if (value.isEmpty && index > 0) {
                                   FocusScope.of(
                                     context,
-                                  ).requestFocus(_focusNodes[index + 1]);
+                                  ).requestFocus(_focusNodes[index - 1]);
                                 }
                               },
                             ),
@@ -190,14 +233,28 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                           GestureDetector(
                             onTap: () {
-                              log(_phoneController.text.trim());
-                              if (_phoneController.text.trim().isNotEmpty) {
-                                context.read<AuthenticationBloc>().add(
-                                  SendOtpEvent(
-                                    phoneNumber: _phoneController.text.trim(),
+                              // log(_phoneController.text.trim());
+                              // if (_phoneController.text.trim().isNotEmpty) {
+                              //   context.read<AuthenticationBloc>().add(
+                              //     SendOtpEvent(
+                              //       phoneNumber: _phoneController.text.trim(),
+                              //     ),
+                              //   );
+                              // }
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "We’ve sent a new OTP to your phone number",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14.0,
+                                    ),
                                   ),
-                                );
-                              }
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
                             },
                             child: Text(
                               "Resend",
@@ -218,8 +275,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         onPressed: () {
                           if (_otpCode.length != 6) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Please enter full OTP"),
+                              SnackBar(
+                                content: Text(
+                                  "Please enter full OTP",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.0,
+                                  ),
+                                ),
+                                backgroundColor: Colors.redAccent,
+                                behavior: SnackBarBehavior.floating,
                               ),
                             );
                             return;

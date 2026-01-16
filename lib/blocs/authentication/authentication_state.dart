@@ -46,6 +46,15 @@ class ErrorState extends AuthenticationState {
   List<Object> get props => [exception];
 }
 
+class SusseccMessageState extends AuthenticationState {
+  final String message;
+
+  const SusseccMessageState(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
 class OtpSentState extends AuthenticationState {
   final String verificationId;
   const OtpSentState({required this.verificationId});

@@ -14,6 +14,10 @@ extensions: const [
         surfceSecondary: Color(0xFFF0F0F0),
       placeholder: Color(0xFF525252),
       primaryDark: Color(0xFF005DE5),
+      darkRed: Color(0xFFF06B6D),
+      lightRed: Color(0xFFFFE0E1),
+      primaryRed: Color(0xFFE8171B),
+      errorRed: Color(0xFFE8171B),
     ),
   ],
   textTheme: const TextTheme(

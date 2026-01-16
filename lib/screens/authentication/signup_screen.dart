@@ -1,12 +1,14 @@
+
+
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/DummyHome.dart';
 import 'package:remindus/blocs/authentication/authentication_bloc.dart';
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/home_page.dart';
 import 'package:remindus/screens/authentication/siginin_screen.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/widgets/custom_button.dart';
@@ -25,11 +27,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
   bool _showPassword = false;
   bool _showConfirmPassword = false;
 
   void _signUp() {
+
     setState(() {
       _submitted = true;
     });
@@ -43,9 +45,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
-
+ final FirebaseAuth _auth = FirebaseAuth.instance;
   void _loginWithGoogle(BuildContext context) {
-    // context.read<AuthenticationBloc>().add(SignInWithGoogleEvent());
+    if (_auth.currentUser == null) {
+      context.read<AuthenticationBloc>().add(SignInWithGoogleEvent());
+    }
   }
 
   @override
@@ -60,9 +64,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
         listener: (context, state) {
           if (state is AuthenticationSuccessState) {
             if (state.isAuthenticated) {
+              
+              // Navigator.pushAndRemoveUntil(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => VerifyEmailPage(
+              //         email: _emailController.text.trim(),
+              //   )),
+              //   (route) => false,
+              // );
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => DummyHome()),
+                MaterialPageRoute(builder: (context) => const MainTabScreen()),
                 (route) => false,
               );
             } else {
@@ -73,7 +85,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               );
             }
-          } else if (state is ErrorState) {
+          } else if (state is GoogleSignInSuccessState) {
+             Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const MainTabScreen()),
+                (route) => false,
+              );
+          }
+          
+           else if (state is ErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.exception.message),
@@ -84,6 +104,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         },
         builder: (context, state) {
           final isLoading = state is LoadingState;
+          final isGoogleLoading = state is GoogleLoadingState;
           return SingleChildScrollView(
             child: Form(
               autovalidateMode: _submitted
@@ -218,6 +239,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           label: "Confirm password",
                           hintText: "Confirm your password",
                           prefixIconPath: Assets.passwordIcon,
+                          isPassword: !_showConfirmPassword,
                           suffixIcon: IconButton(
                             icon: Icon(
                               _showConfirmPassword
@@ -231,7 +253,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               });
                             },
                           ),
-                          isPassword: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please confirm your password';
@@ -294,26 +315,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        SizedBox(
+                          SizedBox(
                           width: double.infinity,
                           height: 52,
-                          child: OutlinedButton.icon(
+                          child: OutlinedButton(
                             onPressed: isLoading
                                 ? null
                                 : () => _loginWithGoogle(context),
-                            icon: Image.asset(
-                              Assets.googleIcon,
-                              height: 24,
-                              width: 24,
-                            ),
-                            label: Text(
-                              "Countinue with Google",
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: appColors.textPrimary,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16.0,
-                              ),
-                            ),
                             style: OutlinedButton.styleFrom(
                               backgroundColor: appColors.primaryLight,
                               side: BorderSide.none,
@@ -321,6 +329,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
+                            child: isGoogleLoading
+                                ? SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: appColors.primary,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        Assets.googleIcon,
+                                        height: 24,
+                                        width: 24,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        "Login with Google",
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              color: appColors.textPrimary,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 16.0,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 24),

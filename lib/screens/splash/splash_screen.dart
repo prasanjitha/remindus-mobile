@@ -10,11 +10,21 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
   @override
   void initState() {
     super.initState();
+
     context.read<AuthenticationBloc>().add(CheckAuthStatusEvent());
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: true);
+
     _navigateToNext();
   }
 
@@ -26,33 +36,32 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-@override
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF97D5E2), 
-              Color(0xFF88B1DB),
-              Color(0xFF9E5EDC), 
-              Color(0xFFFD9B6C), 
-            ],
-            stops: [0.0, 0.3, 0.6, 1.0], 
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              Assets.bgColorMap,
+              fit: BoxFit.cover,
+              opacity: const AlwaysStoppedAnimation(0.6),
+            ),
           ),
-        ),
-        child: Center(
-          child: Image.asset(
-            Assets.logoIcon, 
-            width: 38,
-            height: 38,
-
+          Center(
+            child: Image.asset(
+              Assets.logoIcon,
+              width: 38,
+              height: 38,
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
