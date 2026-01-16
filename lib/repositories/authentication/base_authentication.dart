@@ -15,5 +15,10 @@ abstract class BaseAuthRepositories {
     required Function(FirebaseAuthException) onFailed,
   });
 
- Future<UserCredential> signInWithOtp(String verificationId, String smsCode);
+  Future<UserCredential> signInWithOtp(
+    String verificationId,
+    String smsCode,
+  );
+
+  Future<void> resetPassword(String email) ;
 }

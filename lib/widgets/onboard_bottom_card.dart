@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:remindus/theme/app_colors.dart'; // Ensure this points to your extension file
+import 'package:remindus/theme/app_colors.dart'; 
 
 class OnboardBottomCard extends StatelessWidget {
   final String title;

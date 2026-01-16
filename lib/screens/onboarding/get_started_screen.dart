@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:remindus/screens/onboarding/onboarding_one_screen.dart';
 
 import '../../widgets/custom_button.dart';
 import 'package:remindus/generated/assets.dart';

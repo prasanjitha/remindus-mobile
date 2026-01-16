@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:remindus/generated/assets.dart';
+
 import 'package:remindus/theme/app_colors.dart';
 
 class AppTextField extends StatelessWidget {
@@ -10,6 +10,8 @@ class AppTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   final String prefixIconPath;
+  final bool? readOnly;
+  final VoidCallback? onSuffixTap;
 
   const AppTextField({
     super.key,
@@ -20,6 +22,9 @@ class AppTextField extends StatelessWidget {
     this.validator,
     required this.prefixIconPath,
     this.suffixIcon,
+    this.readOnly = false,
+    this.onSuffixTap,
+    
   });
 
   @override
@@ -37,6 +42,7 @@ class AppTextField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          readOnly: readOnly!,
           controller: controller,
           obscureText: isPassword,
           validator: validator,
@@ -54,7 +60,12 @@ class AppTextField extends StatelessWidget {
               fontWeight: FontWeight.w400,
               fontSize: 16,
             ),
-            suffixIcon: suffixIcon,
+            suffixIcon: suffixIcon != null 
+          ? GestureDetector(
+              onTap: onSuffixTap, 
+              child: suffixIcon,
+            ) 
+          : null,
             prefixIcon: Padding(
               padding: const EdgeInsets.all(12),
               child: Image.asset(

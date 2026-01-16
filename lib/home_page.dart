@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:remindus/screens/authentication/siginin_screen.dart';
+import 'package:remindus/theme/app_colors.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -77,11 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (query.docs.isNotEmpty) {
       String depUid = query.docs.first.id;
       
-      // Update the member's specific permission for THIS owner only
       await FirebaseFirestore.instance.collection('users').doc(depUid).update({
         'joinedFamilies': FieldValue.arrayUnion([activeFamilyId]),
         'activeFamilyId': activeFamilyId,
-        // Dot notation use karala permissions map eke key ekak update karanawa
         'permissions.$activeFamilyId': _selectedAccess, 
       });
       
@@ -96,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await FirebaseFirestore.instance.collection('users').doc(memberUid).update({
       'joinedFamilies': FieldValue.arrayRemove([activeFamilyId]),
       'activeFamilyId': memberUid,
-      'permissions.$activeFamilyId': FieldValue.delete(), // Permission eka ain karanawa
+      'permissions.$activeFamilyId': FieldValue.delete(),
     });
   }
 
@@ -119,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showInviteDialog(String email) {
     showDialog(context: context, builder: (context) => AlertDialog(
+      backgroundColor: context.appColors.bgColor,
       title: const Text("User Not Found"),
       content: Text("$email is not on RemindUs. Send invitation?"),
       actions: [
