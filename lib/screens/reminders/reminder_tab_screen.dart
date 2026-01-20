@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/screens/reminders/add_reminder_screen.dart';
@@ -11,7 +13,9 @@ import 'package:intl/intl.dart';
 enum ReminderFilter { upcoming, completed, all }
 
 class ReminderTabScreen extends StatefulWidget {
-  const ReminderTabScreen({super.key});
+  final VoidCallback onProfileTap;
+
+  const ReminderTabScreen({super.key, required this.onProfileTap});
 
   @override
   State<ReminderTabScreen> createState() => _ReminderTabScreenState();
@@ -24,7 +28,13 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
+    final isAdmin = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      if (state is UserLoadedState) {
+        return state.isAdmin;
+      }
+      return false;
+    });
     return Scaffold(
       backgroundColor: appColors.bgColor,
       body: Container(
@@ -41,7 +51,7 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CommonHeader(),
+              CommonHeader(onProfileTap: widget.onProfileTap,),
               const SizedBox(height: 10.0),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -88,7 +98,7 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
                       ),
                     ),
                     const SizedBox(width: 12.0),
-                    _buildAddButton(appColors),
+                    if (isAdmin) _buildAddButton(appColors),
                   ],
                 ),
               ),
@@ -160,8 +170,15 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
   }
 
   Widget _buildReminderList(dynamic appColors) {
+    final activeFamilyId = context.select<UserBloc, String?>((bloc) {
+      final state = bloc.state;
+      return (state is UserLoadedState) ? state.activeFamilyId : null;
+    });
     return StreamBuilder<List<ReminderModel>>(
-      stream: _service.getReminders(selectedFilter),
+      stream: _service.getReminders(
+        selectedFilter,
+        activeFamilyId: activeFamilyId!,
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -181,9 +198,18 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
           padding: const EdgeInsets.all(16),
           itemCount: reminders.length,
           itemBuilder: (context, index) {
-            return ReminderCard(
-              reminder: reminders[index],
-              appColors: appColors,
+            return Builder(
+              builder: (innerContext) {
+                final isAdmin = innerContext.select<UserBloc, bool>((bloc) {
+                  final state = bloc.state;
+                  return state is UserLoadedState ? state.isAdmin : false;
+                });
+                return ReminderCard(
+                  isAdmin: isAdmin,
+                  reminder: reminders[index],
+                  appColors: appColors,
+                );
+              },
             );
           },
         );
@@ -195,15 +221,21 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
 class ReminderCard extends StatelessWidget {
   final ReminderModel reminder;
   final dynamic appColors;
+  final bool isAdmin;
 
   const ReminderCard({
     super.key,
     required this.reminder,
     required this.appColors,
+    required this.isAdmin,
   });
 
   @override
   Widget build(BuildContext context) {
+    final activeFamilyId = context.select<UserBloc, String?>((bloc) {
+      final state = bloc.state;
+      return (state is UserLoadedState) ? state.activeFamilyId : null;
+    });
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -240,36 +272,43 @@ class ReminderCard extends StatelessWidget {
                   Image.asset(Assets.pillIcon, width: 18.0, height: 18.0),
 
                   if (reminder.isRead == false) ...[
+                    if (isAdmin) ...[
+                      const SizedBox(width: 12.0),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddReminderScreen(
+                                existingReminder: reminder,
+                                isEditReminder: true,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Image.asset(
+                          Assets.pencilEditIcon,
+                          width: 18.0,
+                          height: 18.0,
+                        ),
+                      ),
+                    ],
+                  ],
+                  if (isAdmin) ...[
                     const SizedBox(width: 12.0),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AddReminderScreen(
-                              existingReminder: reminder,
-                              isEditReminder: true,
-                            ),
-                          ),
-                        );
-                      },
+                      onTap: () => _showDeleteConfirmation(
+                        context,
+                        reminder.reminderId!,
+                        activeFamilyId: activeFamilyId!,
+                      ),
                       child: Image.asset(
-                        Assets.pencilEditIcon,
+                        Assets.deleteIcon,
                         width: 18.0,
                         height: 18.0,
                       ),
                     ),
                   ],
-                  const SizedBox(width: 12.0),
-                  GestureDetector(
-                    onTap: () =>
-                        _showDeleteConfirmation(context, reminder.reminderId!),
-                    child: Image.asset(
-                      Assets.deleteIcon,
-                      width: 18.0,
-                      height: 18.0,
-                    ),
-                  ),
                 ],
               ),
             ],
@@ -366,7 +405,11 @@ class ReminderCard extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, String reminderId) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    String reminderId, {
+    required String activeFamilyId,
+  }) {
     final screenContext = context;
     final appColors = context.appColors;
     showDialog(
@@ -410,7 +453,10 @@ class ReminderCard extends StatelessWidget {
                         height: 54,
                         text: "Delete",
                         onPressed: () async {
-                          await ReminderService().deleteReminder(reminderId);
+                          await ReminderService().deleteReminder(
+                            reminderId,
+                            activeFamilyId: activeFamilyId,
+                          );
                           if (Navigator.canPop(dialogContext)) {
                             Navigator.pop(dialogContext);
                           }

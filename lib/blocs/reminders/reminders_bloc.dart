@@ -74,6 +74,7 @@ class ReminderBloc extends Bloc<RemindersEvent, ReminderState> {
       await reminderRepository.updateReminder(
         reminder: event.reminderMeetingsModel,
         reminderId: event.reminderId,
+        activeFamilyId: event.activeFamilyId,
       );
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: false));
       _safeEmit(emit, ReminderUpdatedSuccessState(isReminderUpdatedSuccess: true));

@@ -44,7 +44,10 @@ class MedicalStoreBloc extends Bloc<MedicalStoreEvent, MedicalStoreState> {
   ) async {
     try {
       _safeEmit(emit, IsMedicalStoreLoadingState(isMedicalStoreLoading: true));
-      await medicalStoreRepository.addMedicalStore(event.medicineStoreModel);
+      await medicalStoreRepository.addMedicalStore(
+        event.medicineStoreModel,
+        event.activeFamiltId,
+      );
       _safeEmit(emit, IsMedicalStoreLoadingState(isMedicalStoreLoading: false));
 
       _safeEmit(
@@ -67,6 +70,7 @@ class MedicalStoreBloc extends Bloc<MedicalStoreEvent, MedicalStoreState> {
       _safeEmit(emit, IsMedicalStoreLoadingState(isMedicalStoreLoading: true));
       await medicalStoreRepository.updateMedicalStore(
         event.medicine,
+        event.activeFamiltId,
       );
       _safeEmit(emit, IsMedicalStoreLoadingState(isMedicalStoreLoading: false));
       _safeEmit(

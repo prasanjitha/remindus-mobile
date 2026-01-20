@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/authentication/authentication_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/screens/authentication/signup_screen.dart';
 import 'package:remindus/screens/forgot-password/forgot_password.dart';
@@ -38,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context.read<AuthenticationBloc>().add(
         SignInWithEmailAndPasswordEvent(email: email, password: password),
       );
+      // context.read<UserBloc>().add(LoadUserEvent());
     }
   }
 
@@ -59,6 +61,8 @@ class _LoginScreenState extends State<LoginScreen> {
         listener: (context, state) {
           if (state is AuthenticationSuccessState) {
             if (state.isAuthenticated) {
+              context.read<UserBloc>().add(LoadUserEvent());
+
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const MainTabScreen()),
@@ -66,11 +70,13 @@ class _LoginScreenState extends State<LoginScreen> {
               );
             }
           } else if (state is GoogleSignInSuccessState) {
-             Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const MainTabScreen()),
-                (route) => false,
-              );
+            context.read<UserBloc>().add(LoadUserEvent());
+
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const MainTabScreen()),
+              (route) => false,
+            );
           } else if (state is ErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -190,12 +196,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(width: 6.0),
                               TextButton(
                                 onPressed: () {
-                                    Navigator.of(context).pushReplacement(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                 ForgotPasswordScreen(),
-                                          ),
-                                        );
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ForgotPasswordScreen(),
+                                    ),
+                                  );
                                 },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,

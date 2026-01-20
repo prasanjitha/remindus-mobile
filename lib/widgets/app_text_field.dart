@@ -12,7 +12,7 @@ class AppTextField extends StatelessWidget {
   final String prefixIconPath;
   final bool? readOnly;
   final VoidCallback? onSuffixTap;
-
+  final void Function(String)? onChanged;
   const AppTextField({
     super.key,
     required this.label,
@@ -24,7 +24,7 @@ class AppTextField extends StatelessWidget {
     this.suffixIcon,
     this.readOnly = false,
     this.onSuffixTap,
-    
+    this.onChanged,
   });
 
   @override
@@ -46,26 +46,22 @@ class AppTextField extends StatelessWidget {
           controller: controller,
           obscureText: isPassword,
           validator: validator,
+          onChanged: onChanged,
 
           decoration: InputDecoration(
             hintText: hintText,
-            suffixIconConstraints:  BoxConstraints(
+            suffixIconConstraints: BoxConstraints(
               minWidth: 24.0,
               minHeight: 24.0,
-              
-              
             ),
             hintStyle: TextStyle(
               color: context.appColors.placeholder,
               fontWeight: FontWeight.w400,
               fontSize: 16,
             ),
-            suffixIcon: suffixIcon != null 
-          ? GestureDetector(
-              onTap: onSuffixTap, 
-              child: suffixIcon,
-            ) 
-          : null,
+            suffixIcon: suffixIcon != null
+                ? GestureDetector(onTap: onSuffixTap, child: suffixIcon)
+                : null,
             prefixIcon: Padding(
               padding: const EdgeInsets.all(12),
               child: Image.asset(

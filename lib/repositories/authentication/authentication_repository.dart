@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:remindus/globals.dart';
+import 'package:remindus/screens/profile/add_guardian_screen.dart';
 
 import 'base_authentication.dart';
 
@@ -25,7 +26,6 @@ class AuthRepository extends BaseAuthRepositories {
 
       await userCredential.user?.sendEmailVerification();
 
-      log("Verification link sent to your email!");
 
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'uid': uid,
@@ -33,8 +33,11 @@ class AuthRepository extends BaseAuthRepositories {
         'email': email,
         'familyName': "$name's Family",
         'activeFamilyId': uid,
-        'joinedFamilies': [uid],
-        'accessType': 'owner',
+        'joinedFamilies': FieldValue.arrayUnion([
+          {'id': uid, 'name': "My Account"},
+        ]),
+        'permissions':AccessLevel.fullControl.name,
+        'accessLevel': 'owner',
       });
     } on FirebaseAuthException catch (error) {
       log('SignUp Error: ${error.message}');
@@ -192,8 +195,11 @@ class AuthRepository extends BaseAuthRepositories {
           'email': email,
           'familyName': "$name's Family",
           'activeFamilyId': uid,
-          'joinedFamilies': [uid],
-          'accessType': 'owner',
+          'joinedFamilies': FieldValue.arrayUnion([
+          {'id': uid, 'name': "My Account"},
+        ]),
+          'accessLevel': 'owner',
+          'permissions': AccessLevel.fullControl.name,
           'createdAt': FieldValue.serverTimestamp(),
         });
       }

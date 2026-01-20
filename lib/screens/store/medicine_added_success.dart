@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/medicine_store_model.dart';
@@ -13,6 +15,11 @@ class MedicineAddedSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+         final canEdit = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAdmin : false;
+    });
+            
     final appColors = context.appColors;
     return Scaffold(
       backgroundColor: appColors.bgColor,
@@ -73,6 +80,7 @@ class MedicineAddedSuccessScreen extends StatelessWidget {
 
                 const SizedBox(height: 46.0),
                 MedicineCard(
+                  canEdit: canEdit,
                   isSuccess: true,
                   name: medicine.name ?? "Medicine Name",
                   detail: "Remaining: ${medicine.quantity ?? 0} Tablets",

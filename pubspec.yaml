@@ -79,6 +79,7 @@ flutter:
     - assets/images/getStarted/
     - assets/icons/
     - assets/icons/store/
+    - assets/icons/health/
     - assets/icons/addreminders/
     - assets/icons/menu/
     - assets/images/onboard/

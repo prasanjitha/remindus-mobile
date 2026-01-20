@@ -13,12 +13,14 @@ class ReminderNotificationSync {
   StreamSubscription? _subscription;
   StreamSubscription? _refillSubscription;
 
-  void start() {
-    _subscription = _reminderService.getLatestTwoUpcoming().listen(
+  void start(String activeFamilyId) {
+    _subscription = _reminderService.getLatestTwoUpcoming(activeFamilyId: activeFamilyId).listen(
       _syncNotifications,
     );
 
-    _refillSubscription = _reminderService.getRefillAlerts().listen(
+    _refillSubscription = _reminderService.getRefillAlerts(
+      activeFamilyId: activeFamilyId,
+    ).listen(
       _syncRefillNotifications,
     );
   }
@@ -98,5 +100,7 @@ Future<void> _syncRefillNotifications(
   void dispose() {
     _subscription?.cancel();
     _refillSubscription?.cancel();
+    _subscription = null;
+    _refillSubscription = null;
   }
 }

@@ -8,7 +8,7 @@ import 'package:remindus/services/local_notification_service.dart';
 
 import 'base_reminder.dart';
 
-class ReminderRepository extends BaseReminderRepositories {
+class  ReminderRepository extends BaseReminderRepositories {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -17,6 +17,8 @@ class ReminderRepository extends BaseReminderRepositories {
   Future<bool> addReminder({required ReminderModel reminder}) async {
     try {
       final String? userId = _auth.currentUser?.uid;
+    log("user not logged in 4");
+
       if (userId == null) throw Exception("User not logged in");
 
       final docRef = _firestore
@@ -42,15 +44,18 @@ class ReminderRepository extends BaseReminderRepositories {
   Future<bool> updateReminder({
     required ReminderModel reminder,
     required String reminderId,
+     required String activeFamilyId
   }) async {
     try {
       log("Starting update for reminder ID: $reminderId");
-      final String? userId = _auth.currentUser?.uid;
-      if (userId == null) throw Exception("User not logged in");
-log("Updating reminder with ID: $reminderId for user: $userId");
+      // final String? userId = _auth.currentUser?.uid;
+    log("user not logged in 5");
+
+      if (activeFamilyId == null) throw Exception("User not logged in");
+log("Updating reminder with ID: $reminderId for user: $activeFamilyId");
       final docRef = _firestore
           .collection('users')
-          .doc(userId)
+          .doc(activeFamilyId)
           .collection('reminders')
           .doc(reminderId);
 

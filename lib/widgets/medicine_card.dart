@@ -9,6 +9,7 @@ class MedicineCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final bool isSuccess;
+  final bool canEdit;
 
   const MedicineCard({
     super.key,
@@ -18,6 +19,7 @@ class MedicineCard extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.isSuccess = false,
+    required this.canEdit,
   });
 
   @override
@@ -81,7 +83,7 @@ class MedicineCard extends StatelessWidget {
           ),
 
           // Right Side: Action Buttons
-         if(!isSuccess) Row(
+         if(!isSuccess && canEdit == true) Row(
             children: [
               GestureDetector(
                 onTap: onEdit,

@@ -59,12 +59,27 @@ class Assets {
   static const String storePillsTabletIcon = 'assets/icons/store/pills-tablet.png';
 
 
+// Profile Icons
 
+  static const String settings02Icon = 'assets/icons/settings-02.png';
+  static const String arrowUpIcon = 'assets/icons/arrow-up-right-03.png';
+  static const String quickActionIcon = 'assets/icons/quick-action.png';
+  static const String passwordChangeIcon = 'assets/icons/password-change.png';
+  static const String logOutIcon = 'assets/icons/log-out.png';
+  static const String quickActionEyeIcon = 'assets/icons/quick-action-key.png';
+  static const String quickActionKeyIcon = 'assets/icons/quick-action-eye.png';
+  static const String warningIcon = 'assets/icons/alert-01.png';
 
+  // Health Icons
 
+  static const String healthAmbulanceIcon = 'assets/icons/health/ambulance.png';
+  static const String healthMainIcon = 'assets/icons/health/health-main.png';
+  static const String healthIcon = 'assets/icons/health/health.png';
+  static const String healthMapLocationsIcon = 'assets/icons/health/maps-location-01.png';
+  static const String healthVaccineIcon = 'assets/icons/health/vaccine.png';
+  static const String healthVegetarianFoodIcon = 'assets/icons/health/vegetarian-food.png';
 
-
-
+  static const String appleWatchIcon = 'assets/icons/apple_watch.png';
 
 
 

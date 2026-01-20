@@ -18,10 +18,12 @@ class AddMeetingsReminderEvent extends RemindersEvent {
 class UpdateMeetingsReminderEvent extends RemindersEvent {
   final ReminderModel reminderMeetingsModel;
   final String reminderId;
+  final String activeFamilyId;
 
   const UpdateMeetingsReminderEvent({
     required this.reminderMeetingsModel,
     required this.reminderId,
+    required this.activeFamilyId,
   });
   @override
   List<Object> get props => [reminderMeetingsModel, reminderId];

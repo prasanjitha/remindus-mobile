@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/screens/store/add_to_store.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -11,9 +13,16 @@ import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/medicine_card.dart';
 import 'package:remindus/models/medicine_store_model.dart';
 
-class MainStoreScreen extends StatelessWidget {
-  const MainStoreScreen({Key? key}) : super(key: key);
+class MainStoreScreen extends StatefulWidget {
+  final VoidCallback onProfileTap;
 
+  const MainStoreScreen({Key? key, required this.onProfileTap}) : super(key: key);
+
+  @override
+  State<MainStoreScreen> createState() => _MainStoreScreenState();
+}
+
+class _MainStoreScreenState extends State<MainStoreScreen> {
   MedicineStatus _getStatusEnum(String? status) {
     switch (status) {
       case 'wellStocked':
@@ -37,10 +46,22 @@ class MainStoreScreen extends StatelessWidget {
         .delete();
   }
 
+  bool canEdit(BuildContext context) {
+    return context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      if (state is UserLoadedState) {
+        return state.isAdmin;
+      }
+      return false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+    final activeFamilyId = context.read<UserBloc>().state is UserLoadedState
+        ? (context.read<UserBloc>().state as UserLoadedState).activeFamilyId
+        : FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       backgroundColor: appColors.bgColor,
@@ -59,12 +80,12 @@ class MainStoreScreen extends StatelessWidget {
             ),
 
             // 2. Main Content
-            userId == null
+            activeFamilyId == null
                 ? const Center(child: Text("Please Login First"))
                 : StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('users')
-                        .doc(userId)
+                        .doc(activeFamilyId)
                         .collection('medicinesStore')
                         .orderBy('createdAt', descending: true)
                         .snapshots(),
@@ -108,7 +129,7 @@ class MainStoreScreen extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
-                              const CommonHeader(),
+                               CommonHeader(onProfileTap: widget.onProfileTap,),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20.0,
@@ -146,29 +167,48 @@ class MainStoreScreen extends StatelessWidget {
                                         itemCount: needsAttention.length,
                                         itemBuilder: (context, index) {
                                           final med = needsAttention[index];
-                                          return MedicineCard(
-                                            name: med.name,
-                                            detail: med.status == 'refill'
-                                                ? "Stock Empty"
-                                                : "Remaining: ${med.quantity} Tablets",
-                                            status: _getStatusEnum(med.status),
-                                            onEdit: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      AddMedicineToStoreScreen(
-                                                        medicineStrore: med,
-                                                        isEditMode: true,
-                                                      ),
+                                          return Builder(
+                                            builder: (innerContext) {
+                                              final isAdmin = innerContext
+                                                  .select<UserBloc, bool>((
+                                                    bloc,
+                                                  ) {
+                                                    final state = bloc.state;
+                                                    return state
+                                                            is UserLoadedState
+                                                        ? state.isAdmin
+                                                        : false;
+                                                  });
+
+                                              return MedicineCard(
+                                                canEdit: isAdmin,
+                                                name: med.name,
+                                                detail: med.status == 'refill'
+                                                    ? "Stock Empty"
+                                                    : "Remaining: ${med.quantity} Tablets",
+                                                status: _getStatusEnum(
+                                                  med.status,
                                                 ),
+                                                onEdit: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AddMedicineToStoreScreen(
+                                                            medicineStrore: med,
+                                                            isEditMode: true,
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
+                                                onDelete: () =>
+                                                    _showDeleteConfirmation(
+                                                      context,
+                                                      med.medicineStoreId!,
+                                                      activeFamilyId,
+                                                    ),
                                               );
                                             },
-                                            onDelete: () =>
-                                                _showDeleteConfirmation(
-                                                  context,
-                                                  med.medicineStoreId!,
-                                                ),
                                           );
                                         },
                                       ),
@@ -189,28 +229,45 @@ class MainStoreScreen extends StatelessWidget {
                                         itemCount: wellStocked.length,
                                         itemBuilder: (context, index) {
                                           final med = wellStocked[index];
-                                          return MedicineCard(
-                                            name: med.name,
-                                            detail:
-                                                "Remaining: ${med.quantity} Tablets",
-                                            status: MedicineStatus.wellStocked,
-                                            onEdit: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      AddMedicineToStoreScreen(
-                                                        medicineStrore: med,
-                                                        isEditMode: true,
-                                                      ),
-                                                ),
+                                          return Builder(
+                                            builder: (innerContext) {
+                                              final isAdmin = innerContext
+                                                  .select<UserBloc, bool>((
+                                                    bloc,
+                                                  ) {
+                                                    final state = bloc.state;
+                                                    return state
+                                                            is UserLoadedState
+                                                        ? state.isAdmin
+                                                        : false;
+                                                  });
+                                              return MedicineCard(
+                                                canEdit: isAdmin,
+                                                name: med.name,
+                                                detail:
+                                                    "Remaining: ${med.quantity} Tablets",
+                                                status:
+                                                    MedicineStatus.wellStocked,
+                                                onEdit: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AddMedicineToStoreScreen(
+                                                            medicineStrore: med,
+                                                            isEditMode: true,
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
+                                                onDelete: () =>
+                                                    _showDeleteConfirmation(
+                                                      context,
+                                                      med.medicineStoreId!,
+                                                      activeFamilyId,
+                                                    ),
                                               );
                                             },
-                                            onDelete: () =>
-                                                _showDeleteConfirmation(
-                                                  context,
-                                                  med.medicineStoreId!,
-                                                ),
                                           );
                                         },
                                       ),
@@ -227,21 +284,26 @@ class MainStoreScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      bottomNavigationBar: canEdit(context) 
+    ? Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20.0,
+          vertical: 10.0,
+        ),
         child: AppButton(
           text: 'Add New Medicine',
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => AddMedicineToStoreScreen(),
+                builder: (context) => const AddMedicineToStoreScreen(),
               ),
             );
           },
           backgroundColor: appColors.primary,
         ),
-      ),
+      )
+    : const SizedBox.shrink(),
     );
   }
 
@@ -302,7 +364,11 @@ class MainStoreScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, String reminderId) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    String reminderId,
+    String activeFamilyId,
+  ) {
     final screenContext = context;
     final appColors = context.appColors;
     showDialog(
@@ -346,10 +412,8 @@ class MainStoreScreen extends StatelessWidget {
                         height: 54,
                         text: "Delete",
                         onPressed: () async {
-                          final String userId =
-                              FirebaseAuth.instance.currentUser!.uid;
                           final String docId = reminderId;
-                          _deleteMedicine(userId, docId);
+                          _deleteMedicine(activeFamilyId, docId);
                           if (Navigator.canPop(dialogContext)) {
                             Navigator.pop(dialogContext);
                           }

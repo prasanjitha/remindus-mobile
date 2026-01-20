@@ -761,6 +761,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         UpdateMeetingsReminderEvent(
           reminderMeetingsModel: reminderMedicineModel,
           reminderId: widget.existingReminder!.reminderId!,
+          activeFamilyId: '',
         ),
       );
     } else if (widget.isEditReminder == true &&
@@ -791,6 +792,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         UpdateMeetingsReminderEvent(
           reminderMeetingsModel: reminderMeetingsModel,
           reminderId: widget.existingReminder!.reminderId!,
+          activeFamilyId: '',
         ),
       );
       final DateTime meetingDateTimes = widget.existingReminder!.dateTime!.toDate();

@@ -9,5 +9,5 @@ Future<bool> addReminder({required ReminderModel reminder});
     required VoiceNotificationModel voiceNotificationModel,
   });
 
-  Future<bool> updateReminder({required ReminderModel reminder, required String reminderId});
+  Future<bool> updateReminder({required ReminderModel reminder, required String reminderId,required String activeFamilyId});
 }

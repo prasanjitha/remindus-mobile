@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -81,6 +83,9 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final activeFamiltId = context.read<UserBloc>().state is UserLoadedState 
+      ? (context.read<UserBloc>().state as UserLoadedState).activeFamilyId 
+      : FirebaseAuth.instance.currentUser?.uid;
     return BlocConsumer<MedicalStoreBloc, MedicalStoreState>(
       listener: (context, state) {
         if (state is MedicalStoreErrorState) {
@@ -441,7 +446,7 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
 
                             if (widget.isEditMode) {
                               context.read<MedicalStoreBloc>().add(
-                                UpdateMedicalStoreEvent(medicine: medicine),
+                                UpdateMedicalStoreEvent(medicine: medicine,activeFamiltId: activeFamiltId!),
                               );
                             }
 
@@ -490,7 +495,6 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                               );
                               return;
                             }
-
                             final medicine = MedicineStoreModel(
                               name: _nameController.text
                                   .trim()
@@ -504,6 +508,7 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                             context.read<MedicalStoreBloc>().add(
                               AddMedicalStoreEvent(
                                 medicineStoreModel: medicine,
+                                activeFamiltId: activeFamiltId!,
                               ),
                             );
 

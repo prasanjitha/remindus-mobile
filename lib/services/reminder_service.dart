@@ -1,5 +1,6 @@
+
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/models/medicine_store_model.dart';
 import 'package:remindus/models/user_model.dart';
@@ -7,28 +8,24 @@ import 'package:remindus/screens/reminders/reminder_tab_screen.dart';
 
 class ReminderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
   CollectionReference<Map<String, dynamic>> _reminderRef(String userId) {
     return _firestore.collection('users').doc(userId).collection('reminders');
   }
 
-  String get _userId {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) throw Exception("User not logged in");
-    return uid;
-  }
-
   //All Reminders
-  Stream<List<ReminderModel>> getAllReminders() {
+  Stream<List<ReminderModel>> getAllReminders({
+    required String activeFamilyId,
+  }) {
     return _reminderRef(
-      _userId,
+      activeFamilyId,
     ).orderBy('scheduledAt', descending: false).snapshots().map(_mapSnapshot);
   }
 
   //Completed Reminders (isRead = true)
-  Stream<List<ReminderModel>> getCompletedReminders() {
-    return _reminderRef(_userId)
+  Stream<List<ReminderModel>> getCompletedReminders({
+    required String activeFamilyId,
+  }) {
+    return _reminderRef(activeFamilyId)
         .where('isRead', isEqualTo: true)
         .orderBy('scheduledAt', descending: false)
         .snapshots()
@@ -36,9 +33,11 @@ class ReminderService {
   }
 
   // Upcoming Reminders (isRead = false)
-  Stream<List<ReminderModel>> getUpcomingReminders() {
+  Stream<List<ReminderModel>> getUpcomingReminders({
+    required String activeFamilyId,
+  }) {
     final now = Timestamp.now();
-    return _reminderRef(_userId)
+    return _reminderRef(activeFamilyId)
         .where('isRead', isEqualTo: false)
         .where('scheduledAt', isGreaterThanOrEqualTo: now)
         .orderBy('scheduledAt', descending: false)
@@ -47,23 +46,28 @@ class ReminderService {
   }
 
   /// Unified API
-  Stream<List<ReminderModel>> getReminders(ReminderFilter filter) {
+  Stream<List<ReminderModel>> getReminders(
+    ReminderFilter filter, {
+    required String activeFamilyId,
+  }) {
     switch (filter) {
       case ReminderFilter.completed:
-        return getCompletedReminders();
+        return getCompletedReminders(activeFamilyId: activeFamilyId);
       case ReminderFilter.upcoming:
-        return getUpcomingReminders();
+        return getUpcomingReminders(activeFamilyId: activeFamilyId);
       case ReminderFilter.all:
       default:
-        return getAllReminders();
+        return getAllReminders(activeFamilyId: activeFamilyId);
     }
   }
 
   /// Get latest two upcoming reminders
-  Stream<List<ReminderModel>> getLatestTwoUpcoming() {
+  Stream<List<ReminderModel>> getLatestTwoUpcoming({
+    required String activeFamilyId,
+  }) {
     final now = Timestamp.now();
 
-    return _reminderRef(_userId)
+    return _reminderRef(activeFamilyId)
         .where('isRead', isEqualTo: false)
         .where('scheduledAt', isGreaterThanOrEqualTo: now)
         .orderBy('scheduledAt', descending: false)
@@ -73,16 +77,18 @@ class ReminderService {
   }
 
   // Refill Alerts from Medicine Store
-  Stream<List<MedicineStoreModel>> getRefillAlerts() {
-    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+  Stream<List<MedicineStoreModel>> getRefillAlerts({
+    required String activeFamilyId,
+  }) {
+    // final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
-    if (userId == null) {
+    if (activeFamilyId == null) {
       return Stream.value([]);
     }
 
     return FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(activeFamilyId)
         .collection('medicinesStore')
         .where('status', isEqualTo: 'refill')
         .orderBy('updatedAt', descending: false)
@@ -110,22 +116,33 @@ class ReminderService {
   }
 
   /// Delete a specific reminder
-  Future<void> deleteReminder(String reminderId) async {
+  Future<void> deleteReminder(
+    String reminderId, {
+    required String activeFamilyId,
+  }) async {
     try {
-      await _reminderRef(_userId).doc(reminderId).delete();
+      await _reminderRef(activeFamilyId).doc(reminderId).delete();
     } catch (e) {
       rethrow;
     }
   }
 
-  Stream<UserModel> getUserData() {
-    final String? userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return Stream.value(UserModel());
-
+  Stream<UserModel> getUserData({required String activeFamilyId}) {
     return FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(activeFamilyId)
         .snapshots()
-        .map((snapshot) => UserModel.fromMap(snapshot.data()));
+        .map((snapshot) {
+          if (!snapshot.exists || snapshot.data() == null) {
+            return UserModel();
+          }
+          final rawData = snapshot.data();
+          try {
+            final userModel = UserModel.fromMap(rawData!);
+            return userModel;
+          } catch (e) {
+            return UserModel();
+          }
+        });
   }
 }
