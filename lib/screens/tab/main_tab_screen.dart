@@ -37,7 +37,6 @@ class _MainTabScreenState extends State<MainTabScreen> {
   Widget build(BuildContext context) {
   final List<Widget> _pages = [
     HealthCheckupScreen(),
-    // HealthcareHomeScreen(onProfileTap: _goToProfile),
     ReminderTabScreen(onProfileTap: _goToProfile),
     MainStoreScreen(onProfileTap: _goToProfile),
     OtherFeatureMainScreen(onProfileTap: _goToProfile),
