@@ -14,6 +14,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color? lightRed;
   final Color? primaryRed;
   final Color?  errorRed;
+  final Color? primaryLightBlue;
 
   const AppColors({
     required this.textPrimary,
@@ -28,6 +29,7 @@ class AppColors extends ThemeExtension<AppColors> {
     this.lightRed,
     this.primaryRed,
     this.errorRed,
+    this.primaryLightBlue,
   });
 
   @override
@@ -44,6 +46,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? lightRed,
     Color? primaryRed,
     Color? errorRed,
+    Color? primaryLightBlue,
   }) {
     return AppColors(
       textPrimary: textPrimary ?? this.textPrimary,
@@ -58,6 +61,7 @@ class AppColors extends ThemeExtension<AppColors> {
       lightRed: lightRed ?? this.lightRed,
       primaryRed: primaryRed ?? this.primaryRed,
       errorRed: errorRed ?? this.errorRed,
+      primaryLightBlue: primaryLightBlue ?? this.primaryLightBlue,
     );
   }
 
@@ -77,6 +81,7 @@ class AppColors extends ThemeExtension<AppColors> {
       lightRed: Color.lerp(lightRed, other.lightRed, t),
       primaryRed: Color.lerp(primaryRed, other.primaryRed, t),
       errorRed: Color.lerp(errorRed, other.errorRed, t),
+      primaryLightBlue: Color.lerp(primaryLightBlue, other.primaryLightBlue, t),
     );
   }
 }

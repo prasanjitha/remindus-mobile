@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/reminders/reminders_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/screens/reminders/reminder_added_screen.dart';
@@ -206,7 +207,13 @@ class _ConfirmReminderMeetingScreenState
         scheduledAt: scheduledAt,
       );
       context.read<ReminderBloc>().add(
-        AddMeetingsReminderEvent(reminderMeetingsModel: updatedReminder),
+        AddMeetingsReminderEvent(
+          reminderMeetingsModel: updatedReminder,
+          activeFamilyId: context.read<UserBloc>().state is UserLoadedState
+              ? (context.read<UserBloc>().state as UserLoadedState)
+                    .activeFamilyId
+              : '',
+        ),
       );
       Navigator.pushReplacement(
         context,

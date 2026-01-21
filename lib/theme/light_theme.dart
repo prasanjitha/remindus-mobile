@@ -18,6 +18,7 @@ extensions: const [
       lightRed: Color(0xFFFFE0E1),
       primaryRed: Color(0xFFE8171B),
       errorRed: Color(0xFFE8171B),
+      primaryLightBlue: Color(0xFFADCEFF),
     ),
   ],
   textTheme: const TextTheme(

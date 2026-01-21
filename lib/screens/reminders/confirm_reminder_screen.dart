@@ -1,8 +1,8 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/reminders/reminders_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/screens/reminders/reminder_added_screen.dart';
@@ -145,20 +145,24 @@ class ConfirmReminderScreen extends StatelessWidget {
                   Column(
                     children: [
                       Row(
-                       
                         children: [
-                         if(reminderModelData.morning==true&& reminderModelData.afternoon==false)...[ Expanded(
-                            child: reminderModelData.morning!
-                                ? _buildBadge('Morning', context)
-                                : const SizedBox(),
-                          ),
-                          const SizedBox(width: 12),],
+                          if (reminderModelData.morning == true &&
+                              reminderModelData.afternoon == false) ...[
+                            Expanded(
+                              child: reminderModelData.morning!
+                                  ? _buildBadge('Morning', context)
+                                  : const SizedBox(),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
                           Expanded(
                             child: reminderModelData.afternoon!
                                 ? _buildBadge('Afternoon', context)
                                 : const SizedBox(),
                           ),
-                        if(reminderModelData.morning==false&& reminderModelData.afternoon==true)     Expanded(child: SizedBox()),
+                          if (reminderModelData.morning == false &&
+                              reminderModelData.afternoon == true)
+                            Expanded(child: SizedBox()),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -423,7 +427,14 @@ class ConfirmReminderScreen extends StatelessWidget {
 
             allNewReminders.add(newReminder);
             context.read<ReminderBloc>().add(
-              AddMeetingsReminderEvent(reminderMeetingsModel: newReminder),
+              AddMeetingsReminderEvent(
+                reminderMeetingsModel: newReminder,
+                activeFamilyId:
+                    context.read<UserBloc>().state is UserLoadedState
+                    ? (context.read<UserBloc>().state as UserLoadedState)
+                          .activeFamilyId
+                    : '',
+              ),
             );
             await Future.delayed(const Duration(milliseconds: 100));
           }

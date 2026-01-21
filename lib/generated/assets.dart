@@ -80,6 +80,10 @@ class Assets {
   static const String healthVegetarianFoodIcon = 'assets/icons/health/vegetarian-food.png';
 
   static const String appleWatchIcon = 'assets/icons/apple_watch.png';
+  static const String alertSquareIcon = 'assets/icons/health/alert-square.png';
+  static const String bloodPressureIcon = 'assets/icons/health/blood-pressure.png';
+  static const String bloodTypeIcon = 'assets/icons/health/blood-type.png';
+  static const String phoneButtonIcon = 'assets/icons/health/phone-button.png';
 
 
 

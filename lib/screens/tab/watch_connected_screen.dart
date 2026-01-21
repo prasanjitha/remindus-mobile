@@ -1,87 +1,100 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/repositories/reminder/reminder_repository.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
+import 'package:remindus/screens/tab/watch_connect_now_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
 
-class HealthCheckupScreen extends StatelessWidget {
+class HealthCheckupScreen extends StatefulWidget {
   const HealthCheckupScreen({super.key});
+
+  @override
+  State<HealthCheckupScreen> createState() => _HealthCheckupScreenState();
+}
+
+class _HealthCheckupScreenState extends State<HealthCheckupScreen> {
+  final ReminderRepository _reminderRepository = ReminderRepository();
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final activeFamilyId = context.select<UserBloc, String?>((bloc) {
+      final state = bloc.state;
+      return (state is UserLoadedState) ? state.activeFamilyId : null;
+    });
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MainHeaderAppBar(
-                onClose: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              const SizedBox(height: 20),
-
-              Text(
-                "Health Checkup",
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  color: appColors.textPrimary,
-                  fontSize: 28.0,
-                ),
-              ),
-              const SizedBox(height: 8.0),
-              Text(
-                "Track your vital health information",
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  color: appColors.textSecondary,
-                  fontSize: 16.0,
-                ),
-              ),
-              const SizedBox(height: 40.0),
-
-              _buildDeviceCard(context),
-              const SizedBox(height: 24),
-              const Text(
-                'Vital Signs',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              _buildVitalGrid(),
-            ],
+      backgroundColor: appColors.bgColor,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              Assets.bgColorMap,
+              fit: BoxFit.cover,
+              opacity: const AlwaysStoppedAnimation(0.6),
+            ),
           ),
-        ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MainHeaderAppBar(
+                    onClose: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MainTabScreen(initialIndex: 3),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    "Health Checkup",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: appColors.textPrimary,
+                      fontSize: 28.0,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    "Track your vital health information",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: appColors.textSecondary,
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  const SizedBox(height: 40.0),
+
+                  _buildDeviceCard(context),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Vital Signs',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      color: appColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildVitalGrid(activeFamilyId!),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Icon(Icons.favorite, color: Colors.pink),
-        const SizedBox(width: 8),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Health Checkup',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Track your vital health information',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-        const Icon(Icons.close, color: Colors.grey),
-      ],
     );
   }
 
@@ -138,7 +151,32 @@ class HealthCheckupScreen extends StatelessWidget {
                         ),
                         Expanded(
                           child: Text(
-                            'Heart rate, blood pressure...',
+                            ' Heart rate, blood pressure...',
+                            style: TextStyle(
+                              color: context.appColors.textSecondary,
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 2),
+
+                    Row(
+                      children: [
+                        Text(
+                          'Last sync:',
+                          style: TextStyle(
+                            color: context.appColors.placeholder,
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            ' 2 min ago',
                             style: TextStyle(
                               color: context.appColors.textSecondary,
                               fontSize: 14.0,
@@ -147,11 +185,6 @@ class HealthCheckupScreen extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Last sync: 2 min ago',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),
@@ -167,62 +200,93 @@ class HealthCheckupScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          AppButton(
+            text: 'Manage Connection',
+            onPressed: () {
+              // Handle manage connection action
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const WatchConnceNowScreen(),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              onPressed: () {},
-              child: const Text('Manage Connection'),
-            ),
+              );
+            },
+            backgroundColor: context.appColors.primary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildVitalGrid() {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: const [
-        VitalCard(
-          icon: Icons.favorite_border,
-          title: 'Heart Rate',
-          value: '72 bpm • Normal',
-        ),
-        VitalCard(
-          icon: Icons.show_chart,
-          title: 'Blood Pressure',
-          value: '120/80 mmHg',
-        ),
-        VitalCard(icon: Icons.bloodtype, title: 'Blood Type', value: 'A+'),
-        VitalCard(
-          icon: Icons.warning_amber_rounded,
-          title: 'Allergies',
-          value: 'Penicillin, Peanuts',
-        ),
-      ],
+  Widget _buildVitalGrid(String familyId) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _reminderRepository.getHealthStatusStream(familyId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const CircularProgressIndicator();
+        }
+
+        // Data natham default values pennanna
+        var data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+
+        String heartRate = data['heartRate'] ?? 'N/A';
+        String bp = data['bloodPressure'] ?? 'N/A';
+        String bloodGroup = data['bloodGroup'] ?? 'N/A';
+
+        // Allergies List ekak widiyata thiyana nisa string ekakata convert karanna
+        Map<String, dynamic>? allergiesMap = data['allergies'];
+        String allergiesText = 'None';
+        if (allergiesMap != null && allergiesMap.isNotEmpty) {
+          allergiesText = allergiesMap.values
+              .expand((e) => e as List)
+              .join(', ');
+        }
+
+        return GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.4,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            VitalCard(
+              iconpath: Assets.healthIcon,
+              title: 'Heart Rate',
+              value: heartRate,
+            ),
+            VitalCard(
+              iconpath: Assets.bloodPressureIcon,
+              title: 'Blood Pressure',
+              value: bp,
+            ),
+            VitalCard(
+              iconpath: Assets.bloodTypeIcon,
+              title: 'Blood Type',
+              value: bloodGroup,
+            ),
+            VitalCard(
+              iconpath: Assets.alertSquareIcon,
+              title: 'Allergies',
+              value: allergiesText,
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
 class VitalCard extends StatelessWidget {
-  final IconData icon;
+  final String iconpath;
   final String title;
   final String value;
 
   const VitalCard({
     super.key,
-    required this.icon,
+    required this.iconpath,
     required this.title,
     required this.value,
   });
@@ -230,9 +294,9 @@ class VitalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.bgColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -245,13 +309,97 @@ class VitalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.blue),
-          const SizedBox(height: 12),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Container(
+            width: 32,
+            height: 32,
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Image.asset(iconpath, width: 24.0, height: 24.0),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: context.appColors.textPrimary,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          _buildHealthValueTile(
+            title,
+            value,
+            title == "Blood Pressure"
+                ? getBPStatus(value)
+                : title == "Heart Rate"
+                    ? getHeartRateStatus(value)
+                    : "",
+            context.appColors,
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildHealthValueTile(String label, String value, String status, AppColors appColors) {
+  Color statusColor = status == "Normal" ? Colors.green : Colors.redAccent;
+  
+  return Flexible(
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          Text(
+            value,
+            style: TextStyle(fontSize: 18, color: appColors.textPrimary),
+          ),
+          const SizedBox(width: 10),
+          if (status.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: statusColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: statusColor),
+              ),
+              child: Text(
+                status,
+                style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+String getBPStatus(String value) {
+  if (value.isEmpty) return "";
+  try {
+    final String numericOnly = value.replaceAll(RegExp(r'[^0-9/]'), ''); 
+    final parts = numericOnly.split('/');
+    int systolic = int.parse(parts[0].trim());
+    
+    if (systolic >= 140) return "High";
+    if (systolic >= 120) return "Elevated";
+    return "Normal";
+  } catch (e) {
+    log("Error parsing BP: $e");
+    return "";
+  }
+}
+
+String getHeartRateStatus(String value) {
+  if (value.isEmpty) return "";
+  int? rate = int.tryParse(value);
+  if (rate == null) return "";
+  
+  if (rate > 100) return "High";
+  if (rate < 60) return "Low";
+  return "Normal";
+}
 }

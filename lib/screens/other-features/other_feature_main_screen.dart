@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/screens/sos/emwrgency_sos_main_screen.dart';
+import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/common-header.dart';
 import 'package:remindus/widgets/feature_quick_action_card.dart';
@@ -11,14 +13,14 @@ class OtherFeatureMainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Theme එකෙන් colors ලබා ගැනීම
+   
     final appColors = Theme.of(context).extension<AppColors>()!;
 
     return Scaffold(
       backgroundColor: appColors.bgColor,
       body: Stack(
         children: [
-          // 1. Background Image (Fix වෙලා තියෙන්නේ)
+        
           Positioned.fill(
             child: Image.asset(
               Assets.bgColorMap,
@@ -27,7 +29,7 @@ class OtherFeatureMainScreen extends StatelessWidget {
             ),
           ),
 
-          // 2. Scrollable Content
+          
           SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -97,6 +99,12 @@ class OtherFeatureMainScreen extends StatelessWidget {
                                 iconPath: Assets.healthIcon,
                                 onTap: () {
                                   // Navigate to Health Screen
+                                   Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HealthCheckupScreen(),
+                        ),
+                      );
                                 },
                               ),
                             ),
@@ -139,7 +147,15 @@ class OtherFeatureMainScreen extends StatelessWidget {
                               child: QuickActionCard(
                                 title: "SOS Help",
                                 iconPath: Assets.healthIcon,
-                                onTap: () {},
+                                onTap: () {
+                                  // Navigate to SOS Help Screen
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>  EmergencySOSScreen(),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),

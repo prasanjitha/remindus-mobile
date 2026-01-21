@@ -3,7 +3,8 @@ import 'package:remindus/models/voice_notification_model.dart';
 
 
 abstract class BaseReminderRepositories {
-Future<bool> addReminder({required ReminderModel reminder});
+Future<bool> addReminder({required ReminderModel reminder,
+     required String activeFamilyId});
 
    Future<bool> addVoiceNotification({
     required VoiceNotificationModel voiceNotificationModel,

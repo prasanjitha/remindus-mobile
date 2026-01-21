@@ -1,29 +1,28 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/models/voice_notification_model.dart';
 import 'package:remindus/services/local_notification_service.dart';
 
 import 'base_reminder.dart';
 
-class  ReminderRepository extends BaseReminderRepositories {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class ReminderRepository extends BaseReminderRepositories {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Add Meetings Reminder
   @override
-  Future<bool> addReminder({required ReminderModel reminder}) async {
+  Future<bool> addReminder({
+    required ReminderModel reminder,
+    required String activeFamilyId,
+  }) async {
     try {
-      final String? userId = _auth.currentUser?.uid;
-    log("user not logged in 4");
-
-      if (userId == null) throw Exception("User not logged in");
+      if (activeFamilyId == null) throw Exception("User not logged in");
 
       final docRef = _firestore
           .collection('users')
-          .doc(userId)
+          .doc(activeFamilyId)
           .collection('reminders')
           .doc();
 
@@ -39,20 +38,64 @@ class  ReminderRepository extends BaseReminderRepositories {
     }
   }
 
+  Stream<DocumentSnapshot> getHealthStatusStream(String familyId) {
+  return _firestore
+      .collection('users')
+      .doc(familyId)
+      .collection('health-condition')
+      .doc('status')
+      .snapshots();
+}
+
+Future<bool> updateFamilyHealthData({
+  required String familyId,
+  Map<String, Set<String>>? allergies,
+  String? heartRate,
+  String? bloodPressure,
+  String? bloodGroup,
+}) async {
+  try {
+    final Map<String, dynamic> dataToUpdate = {};
+    if (allergies != null) {
+      dataToUpdate['allergies'] = allergies.map(
+        (key, value) => MapEntry(key, value.toList()),
+      );
+    }
+
+    if (heartRate != null) dataToUpdate['heartRate'] = "$heartRate bpm" ;
+    if (bloodPressure != null) dataToUpdate['bloodPressure'] = "$bloodPressure mmHg";
+    if (bloodGroup != null) dataToUpdate['bloodGroup'] = bloodGroup;
+
+    dataToUpdate['updatedAt'] = FieldValue.serverTimestamp();
+
+    final docRef = _firestore
+        .collection('users')
+        .doc(familyId)
+        .collection('health-condition')
+        .doc('status'); 
+    await docRef.set(dataToUpdate, SetOptions(merge: true));
+
+    return true;
+  } catch (e) {
+    log("Error updating health records: $e");
+    return false;
+  }
+}
+
   // Update  Reminder
   @override
   Future<bool> updateReminder({
     required ReminderModel reminder,
     required String reminderId,
-     required String activeFamilyId
+    required String activeFamilyId,
   }) async {
     try {
       log("Starting update for reminder ID: $reminderId");
       // final String? userId = _auth.currentUser?.uid;
-    log("user not logged in 5");
+      log("user not logged in 5");
 
       if (activeFamilyId == null) throw Exception("User not logged in");
-log("Updating reminder with ID: $reminderId for user: $activeFamilyId");
+      log("Updating reminder with ID: $reminderId for user: $activeFamilyId");
       final docRef = _firestore
           .collection('users')
           .doc(activeFamilyId)
