@@ -56,6 +56,8 @@ class Assets {
   static const String deleteIcon = 'assets/icons/delete.png';
   static const String roundedBorderIcon = 'assets/icons/rounded_border.png';
   static const String completeBorderIcon = 'assets/icons/complete_border.png';
+  static const String vaccineIconBlack =
+      'assets/icons/addreminders/vaccine-black.png';
 
   // Store Icons
 
