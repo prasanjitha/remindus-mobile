@@ -9,8 +9,12 @@ abstract class RemindersEvent extends Equatable {
 
 class AddMeetingsReminderEvent extends RemindersEvent {
   final ReminderModel reminderMeetingsModel;
+  final String activeFamilyId;
 
-  const AddMeetingsReminderEvent({required this.reminderMeetingsModel});
+  const AddMeetingsReminderEvent({
+    required this.reminderMeetingsModel,
+    required this.activeFamilyId,
+  });
   @override
   List<Object> get props => [reminderMeetingsModel];
 }

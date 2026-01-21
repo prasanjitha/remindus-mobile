@@ -13,6 +13,9 @@ class ReminderModel {
   final List<Map<String, dynamic>>? schedule;
   final int? notificationId;
   final Timestamp? scheduledAt;
+  final String? bloodPressure;
+  final String? heartRate;
+  
 
   // Meeting Specific
   final Timestamp? date;
@@ -48,7 +51,10 @@ class ReminderModel {
     this.schedule,
     this.notificationId,
     this.scheduledAt,
+    this.bloodPressure,
+    this.heartRate,
   });
+
 
   /// ---------------- copyWith ----------------
   ReminderModel copyWith({
@@ -72,6 +78,8 @@ class ReminderModel {
     List<Map<String, dynamic>>? schedule,
     int? notificationId,
     Timestamp? scheduledAt,
+    String? bloodPressure,
+    String? heartRate,
   }) {
     return ReminderModel(
       reminderId: reminderId ?? this.reminderId,
@@ -94,6 +102,8 @@ class ReminderModel {
       schedule: schedule ?? this.schedule,
       notificationId: notificationId ?? this.notificationId,
       scheduledAt: scheduledAt ?? this.scheduledAt,
+      bloodPressure: bloodPressure ?? this.bloodPressure,
+      heartRate: heartRate ?? this.heartRate,
     );
   }
 
@@ -119,6 +129,8 @@ class ReminderModel {
       if (night != null) 'night': night,
       if (notificationId != null) 'notificationId': notificationId,
       if (scheduledAt != null) 'scheduledAt': scheduledAt,
+      if (bloodPressure != null) 'bloodPressure': bloodPressure,
+      if (heartRate != null) 'heartRate': heartRate,
     };
   }
 
@@ -145,6 +157,8 @@ class ReminderModel {
       schedule: map['shedule'],
       notificationId: map['notificationId'],
       scheduledAt: map['scheduledAt'],
+      bloodPressure: map['bloodPressure'],
+      heartRate: map['heartRate']
     );
   }
 }

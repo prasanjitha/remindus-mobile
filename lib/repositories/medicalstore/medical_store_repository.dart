@@ -23,23 +23,6 @@ class MedicalStoreRepository extends BaseMedicalStoreRepositories {
           .doc(activeFamilyId)
           .collection('medicinesStore')
           .doc();
-
-      // String? uploadedImageUrl;
-
-      // if (imageFile != null) {
-      //   final storageRef = FirebaseStorage.instance.ref().child(
-      //     'users/$userId/medicines/${docRef.id}.jpg',
-      //   );
-
-      //   await storageRef.putFile(imageFile);
-      //   uploadedImageUrl = await storageRef.getDownloadURL();
-      // }
-
-      // medicine.medicineStoreId = docRef.id;
-      // medicine.imageUrl = uploadedImageUrl;
-      // medicine.createdAt = DateTime.now();
-
-      // await docRef.set(medicine.toMap());
       medicineStoreModel.medicineStoreId = docRef.id;
       medicineStoreModel.createdAt = DateTime.now();
       await docRef.set(medicineStoreModel.toMap());

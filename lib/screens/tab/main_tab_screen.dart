@@ -17,7 +17,8 @@ import 'package:remindus/services/reminder_notification_sync.dart';
 import 'package:remindus/theme/app_colors.dart';
 
 class MainTabScreen extends StatefulWidget {
-  const MainTabScreen({super.key});
+  final int? initialIndex;
+  const MainTabScreen({super.key, this.initialIndex});
 
   @override
   State<MainTabScreen> createState() => _MainTabScreenState();
@@ -34,9 +35,19 @@ class _MainTabScreenState extends State<MainTabScreen> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.initialIndex != null) {
+      _selectedIndex = widget.initialIndex!;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
   final List<Widget> _pages = [
-    HealthCheckupScreen(),
+    // HealthCheckupScreen(),
+    HealthcareHomeScreen(onProfileTap: _goToProfile),
     ReminderTabScreen(onProfileTap: _goToProfile),
     MainStoreScreen(onProfileTap: _goToProfile),
     OtherFeatureMainScreen(onProfileTap: _goToProfile),

@@ -13,6 +13,8 @@ class AppTextField extends StatelessWidget {
   final bool? readOnly;
   final VoidCallback? onSuffixTap;
   final void Function(String)? onChanged;
+  final FocusNode? focusNode;
+  final TextInputType? keyboardType;
   const AppTextField({
     super.key,
     required this.label,
@@ -25,6 +27,8 @@ class AppTextField extends StatelessWidget {
     this.readOnly = false,
     this.onSuffixTap,
     this.onChanged,
+    this.focusNode,
+    this.keyboardType,
   });
 
   @override
@@ -47,7 +51,8 @@ class AppTextField extends StatelessWidget {
           obscureText: isPassword,
           validator: validator,
           onChanged: onChanged,
-
+          focusNode: focusNode,
+          keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hintText,
             suffixIconConstraints: BoxConstraints(
