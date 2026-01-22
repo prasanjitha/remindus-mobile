@@ -16,13 +16,13 @@ class _AddVaccinationRecordScreenState
     extends State<AddVaccinationRecordScreen> {
   String? selectedVaccine;
   String? selectedDose;
-  String? frequency = "Once";
+  String? frequency;
   DateTime? fromDate;
   DateTime? toDate;
 
-  List<String> vaccines = ["Covid Shield", "MMR", "Hepatitis B", "Tetanus"];
+  bool showValidationErrors = false;
 
-  List<String> doses = ["Dose 1", "Dose 2", "Booster"];
+  List<String> vaccines = ["Covid Shield", "MMR", "Hepatitis B", "Tetanus"];
 
   Future<void> pickFromDate() async {
     final date = await showDatePicker(
@@ -52,59 +52,47 @@ class _AddVaccinationRecordScreenState
     }
   }
 
+  bool _validateForm() {
+    return selectedVaccine != null &&
+        fromDate != null &&
+        toDate != null &&
+        frequency != null;
+  }
+
+  void _handleSubmit() {
+    if (_validateForm()) {
+      print("Vaccination button pressed");
+      print("Vaccine: $selectedVaccine");
+      print("From Date: $fromDate");
+      print("To Date: $toDate");
+      print("Frequency: $frequency");
+    } else {
+      setState(() {
+        showValidationErrors = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Color _getBorderColor(bool hasError) {
+    if (showValidationErrors && hasError) {
+      return Colors.red;
+    }
+    return Colors.black26;
+  }
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
     return Scaffold(
       backgroundColor: appColors.bgColor,
-
-      // appBar: PreferredSize(
-      //   preferredSize: const Size.fromHeight(175),
-      //   child: Container(
-      //     margin: const EdgeInsets.only(
-      //       top: 50,
-      //       left: 22,
-      //       right: 22,
-      //       // bottom: 22,
-      //     ),
-      //     child: Column(
-      //       crossAxisAlignment: CrossAxisAlignment.start,
-      //       mainAxisSize: MainAxisSize.min,
-      //       children: [
-      //         Row(
-      //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //           children: [
-      //             Image.asset(Assets.logoIcon, height: 32),
-      //             IconButton(
-      //               icon: const Icon(Icons.close, color: Colors.black),
-      //               onPressed: () => Navigator.pop(context),
-      //             ),
-      //           ],
-      //         ),
-      //         const SizedBox(height: 8),
-      //         const Text(
-      //           "Add Vaccination",
-      //           style: TextStyle(
-      //             fontSize: 28,
-      //             fontWeight: FontWeight.w400,
-      //             color: Color(0xFF242424),
-      //           ),
-      //         ),
-      //         const SizedBox(height: 4),
-      //         const Text(
-      //           "Record your immunization details",
-      //           style: TextStyle(
-      //             fontSize: 16,
-      //             fontWeight: FontWeight.w400,
-      //             color: Color(0xFF242424),
-      //           ),
-      //         ),
-      //         const SizedBox(height: 22),
-      //         Divider(thickness: 1, height: 1, color: Color(0xFFF0F0F0)),
-      //       ],
-      //     ),
-      //   ),
-      // ),
       body: Stack(
         children: [
           Positioned.fill(
@@ -119,16 +107,7 @@ class _AddVaccinationRecordScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MainHeaderAppBar(
-                  // onClose: () {
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => const HealthCheckupScreen(),
-                  //     ),
-                  //   );
-                  // },
-                ),
+                MainHeaderAppBar(),
                 const SizedBox(height: 20),
 
                 Text(
@@ -158,7 +137,12 @@ class _AddVaccinationRecordScreenState
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.black26),
+                    border: Border.all(
+                      color: _getBorderColor(selectedVaccine == null),
+                      width: showValidationErrors && selectedVaccine == null
+                          ? 1.5
+                          : 1,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -166,19 +150,23 @@ class _AddVaccinationRecordScreenState
                       const SizedBox(width: 10),
                       Expanded(
                         child: DropdownButtonHideUnderline(
-                          child: DropdownButtonFormField<String>(
+                          child: DropdownButton<String>(
                             isExpanded: true,
                             menuMaxHeight: 300,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                            ),
                             hint: const Text("Vaccine type"),
                             value: selectedVaccine,
                             icon: const Icon(
                               Icons.arrow_forward_ios_rounded,
                               size: 16,
                             ),
+                            selectedItemBuilder: (BuildContext context) {
+                              return vaccines.map((String value) {
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(value),
+                                );
+                              }).toList();
+                            },
                             items: vaccines
                                 .map(
                                   (vaccine) => DropdownMenuItem(
@@ -211,21 +199,27 @@ class _AddVaccinationRecordScreenState
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.black26),
+                      border: Border.all(
+                        color: _getBorderColor(fromDate == null),
+                        width: showValidationErrors && fromDate == null
+                            ? 1.5
+                            : 1,
+                      ),
                     ),
                     child: Row(
                       children: [
                         Image.asset(Assets.calendar2Icon, height: 22),
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: Text(
                             fromDate == null
                                 ? "Add received date"
                                 : fromDate.toString().split(" ")[0],
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: Colors.black,
+                              color: fromDate == null
+                                  ? Colors.black54
+                                  : Colors.black,
                             ),
                           ),
                         ),
@@ -241,7 +235,6 @@ class _AddVaccinationRecordScreenState
                       children: [
                         Expanded(
                           child: Container(
-                            // padding: const EdgeInsets.symmetric(horizontal: 12),
                             margin: const EdgeInsets.only(
                               right: 4,
                               bottom: 8,
@@ -250,10 +243,14 @@ class _AddVaccinationRecordScreenState
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.black26),
+                              border: Border.all(
+                                color: _getBorderColor(frequency == null),
+                                width: showValidationErrors && frequency == null
+                                    ? 1.5
+                                    : 1,
+                              ),
                             ),
                             child: Row(
-                              // mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Radio(
                                   value: "annualBooster",
@@ -270,7 +267,6 @@ class _AddVaccinationRecordScreenState
                         ),
                         Expanded(
                           child: Container(
-                            // padding: const EdgeInsets.symmetric(vertical: 10),
                             margin: const EdgeInsets.only(
                               left: 4,
                               bottom: 8,
@@ -279,10 +275,14 @@ class _AddVaccinationRecordScreenState
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.black26),
+                              border: Border.all(
+                                color: _getBorderColor(frequency == null),
+                                width: showValidationErrors && frequency == null
+                                    ? 1.5
+                                    : 1,
+                              ),
                             ),
                             child: Row(
-                              // mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Radio(
                                   value: "decadeBooster",
@@ -299,17 +299,19 @@ class _AddVaccinationRecordScreenState
                         ),
                       ],
                     ),
-
                     Container(
                       width: double.infinity,
-                      // padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.black26),
+                        border: Border.all(
+                          color: _getBorderColor(frequency == null),
+                          width: showValidationErrors && frequency == null
+                              ? 1.5
+                              : 1,
+                        ),
                       ),
                       child: Row(
-                        // mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Radio(
                             value: "singleCourse",
@@ -341,7 +343,10 @@ class _AddVaccinationRecordScreenState
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.black26),
+                      border: Border.all(
+                        color: _getBorderColor(toDate == null),
+                        width: showValidationErrors && toDate == null ? 1.5 : 1,
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -352,7 +357,12 @@ class _AddVaccinationRecordScreenState
                             toDate == null
                                 ? "Schedule next dose"
                                 : toDate.toString().split(" ")[0],
-                            style: const TextStyle(fontSize: 16),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: toDate == null
+                                  ? Colors.black54
+                                  : Colors.black,
+                            ),
                           ),
                         ),
                       ],
@@ -373,9 +383,7 @@ class _AddVaccinationRecordScreenState
           height: 50,
           backgroundColor: const Color(0xFF0168FF),
           textColor: Colors.white,
-          onPressed: () {
-            print("Vaccination button pressed");
-          },
+          onPressed: _handleSubmit,
         ),
       ),
     );
