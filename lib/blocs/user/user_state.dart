@@ -16,8 +16,6 @@ class UserLoadingState extends UserState {
   List<Object?> get props => [isLoading];
 }
 
-
-
 class UserUpdateLoadingState extends UserState {
   final bool isLoading;
   const UserUpdateLoadingState({this.isLoading = true});
@@ -80,8 +78,10 @@ class UserLoadedState extends UserState {
     required this.phone,
   });
 
+  bool get isAppowner => userId == activeFamilyId;
   bool get isAdmin => currentUserRole == AccessLevel.fullControl.name;
   String get isActiveFamilyId => activeFamilyId;
+  String get getAppOwnerId => userId;
 
   @override
   List<Object?> get props => [

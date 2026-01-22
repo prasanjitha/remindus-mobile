@@ -118,6 +118,7 @@ Future<bool> updateFamilyHealthData({
   @override
   Future<bool> addVoiceNotification({
     required VoiceNotificationModel voiceNotificationModel,
+    required bool isAppOwner
   }) async {
     try {
       NotificationService notificationService = NotificationService();
@@ -130,6 +131,7 @@ Future<bool> updateFamilyHealthData({
         body: voiceNotificationModel.body!,
         day: voiceNotificationModel.day!,
         month: voiceNotificationModel.month!,
+        isAppOwner: isAppOwner,
       );
       return true;
     } catch (e) {

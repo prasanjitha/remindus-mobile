@@ -35,10 +35,14 @@ class UpdateMeetingsReminderEvent extends RemindersEvent {
 
 class SetVoiceNotificationEvent extends RemindersEvent {
   final VoiceNotificationModel  voiceNotificationModel;
+  final bool isAppOwner;
 
-    const SetVoiceNotificationEvent({required this.voiceNotificationModel});
+  const SetVoiceNotificationEvent({
+    required this.voiceNotificationModel,
+    required this.isAppOwner,
+  });
   @override
-  List<Object> get props => [voiceNotificationModel];
+  List<Object> get props => [voiceNotificationModel, isAppOwner];
 
 }
 

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/screens/food-tacker/food_tracker_home_screen.dart';
+import 'package:remindus/screens/location-tracking/map_tracking_screen.dart';
 import 'package:remindus/screens/sos/emwrgency_sos_main_screen.dart';
 import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -15,7 +19,10 @@ class OtherFeatureMainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
    
     final appColors = Theme.of(context).extension<AppColors>()!;
-
+    final activeFamilyId = context.select<UserBloc, String?>((bloc) {
+      final state = bloc.state;
+      return (state is UserLoadedState) ? state.activeFamilyId : null;
+    });
     return Scaffold(
       backgroundColor: appColors.bgColor,
       body: Stack(
@@ -115,6 +122,12 @@ class OtherFeatureMainScreen extends StatelessWidget {
                                 iconPath: Assets.healthVegetarianFoodIcon,
                                 onTap: () {
                                   // Navigate to Food Track Screen
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const FoodTrackerScreen(),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -163,7 +176,17 @@ class OtherFeatureMainScreen extends StatelessWidget {
                               child: QuickActionCard(
                                 title: "Location",
                                 iconPath: Assets.healthMapLocationsIcon,
-                                onTap: () {},
+                                onTap: () {
+                                  // Navigate to Location Tracking Screen
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MapTrackingScreen(
+                                        activeFamilyId: activeFamilyId!,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ],

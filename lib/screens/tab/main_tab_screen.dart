@@ -56,7 +56,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
     return BlocConsumer<UserBloc, UserState>(
       listener: (context, state) {
         if (state is UserLoadedState) {
-          reminderNotificationSync.start(state.activeFamilyId);
+          reminderNotificationSync.start(state.activeFamilyId, state.isAppowner);
         }
       },
       builder: (context, state) {

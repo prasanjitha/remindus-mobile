@@ -85,6 +85,105 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   //   );
   // }
 
+  Widget _buildFamilySwitcher(BuildContext context) {
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        if (state is UserLoadingState) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is UserLoadedState) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 6),
+              Text(
+                "Click and switch between your guarded members",
+                style: TextStyle(fontSize: 14, color: context.appColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+
+              SizedBox(
+                height: 100,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: state.joinedFamilies.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 20),
+                  itemBuilder: (context, index) {
+                    final familyMap = state.joinedFamilies[index];
+                    final String id = familyMap['id'];
+                    final String name = familyMap['name'];
+                    final bool isSelected = id == state.activeFamilyId;
+                    final bool isMyHome = id == state.userId;
+
+                    return GestureDetector(
+                      onTap: () {
+                        if (!isSelected) {
+                          context.read<UserBloc>().add(
+                            SwitchActiveFamilyEvent(familyId: id),
+                          );
+                        }
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: EdgeInsets.all(isSelected ? 3 : 0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.blue
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 28,
+                              backgroundColor: isSelected
+                                  ? Colors.blue
+                                  : Colors.blue.shade100,
+                              child: Text(
+                                isMyHome ? "H" : name[0].toUpperCase(),
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.blue.shade700,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isMyHome ? "My Home" : name,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected ? Colors.blue : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+        return const SizedBox();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final canEdit = context.select<UserBloc, bool>((bloc) {
@@ -94,8 +193,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
       }
       return false;
     });
-
-    log("canEdit in MyProfileScreen9999999999999999999999999999999990: $canEdit");
 
     String activeFamilyId = '';
 
@@ -173,7 +270,17 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                               ),
 
                               const SizedBox(height: 40.0),
+                              Text(
+                                'Guardian For',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.w400,
+                                  color: context.appColors.textPrimary,
+                                ),
+                              ),
 
+                              _buildFamilySwitcher(context),
+                              const SizedBox(height: 10.0),
                               Text(
                                 'Connected Guardians',
                                 style: TextStyle(

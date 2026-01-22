@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -51,22 +53,31 @@ class NotificationService {
     final medicineName = payload['medicineName'] ?? '';
     final dose = payload['dose'] ?? '';
     final userId = FirebaseAuth.instance.currentUser?.uid;
-    Future.delayed(const Duration(seconds: 30), () async {
-      if (medicineName.isNotEmpty) {
-        await deductMedicineStock(
-          userId: userId!,
-          medicineName: medicineName,
-          dose: dose,
-        );
-        await updateMedicineNotificationStatus(
-          userId: userId,
-          medicineName: medicineName,
-        );
+    final String isAppOwnerStr = payload['isAppOwner'] ?? 'false';
+    final String isAppOwner = isAppOwnerStr;
+
+    log("Notification Displayed - isAppOwner: $isAppOwner");
+
+    if (isAppOwner == 'true') {
+      Future.delayed(const Duration(seconds: 30), () async {
+        log("Notification Displayed - Initial Check - isAppOwner: $isAppOwner");
+
+        if (medicineName.isNotEmpty) {
+          await deductMedicineStock(
+            userId: userId!,
+            medicineName: medicineName,
+            dose: dose,
+          );
+          await updateMedicineNotificationStatus(
+            userId: userId,
+            medicineName: medicineName,
+          );
+        }
+      });
+      await yourCustomFunction(receivedNotification);
+      if (userId != null) {
+        await markReminderAsRead(userId: userId, reminderId: reminderId);
       }
-    });
-    await yourCustomFunction(receivedNotification);
-    if (userId != null) {
-      await markReminderAsRead(userId: userId, reminderId: reminderId);
     }
   }
 
@@ -92,6 +103,7 @@ class NotificationService {
   static Future<void> yourCustomFunction(
     ReceivedNotification notification,
   ) async {
+    log("Speech functionality triggered for notification ID: ${notification.id}");
     FlutterTts flutterTts = FlutterTts();
 
     await flutterTts.speak(
@@ -217,6 +229,7 @@ class NotificationService {
     String? reminderId,
     String? message,
     String? dose,
+    bool? isAppOwner,
   }) async {
     try {
       NotificationCalendar schedule = NotificationCalendar(
@@ -241,6 +254,7 @@ class NotificationService {
             'message': message,
             'dose': dose,
             'medicineName': body,
+            'isAppOwner': isAppOwner.toString(),
           },
         ),
         schedule: schedule,

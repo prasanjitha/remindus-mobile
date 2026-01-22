@@ -37,6 +37,16 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs access to location when open to share your safety status with family.</string>
+
+<key>NSCameraUsageDescription</key>
+<string>We need camera access to scan food barcodes for calorie tracking.</string>
+
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>We need photo library access to save food images.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app needs access to location even in background to keep your family updated during emergencies.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

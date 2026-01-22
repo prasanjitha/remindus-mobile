@@ -20,3 +20,21 @@ RemindUs is a collaborative inventory management and notification app built with
 3. Add your own `google-services.json` to `android/app/`.
 4. Add your own `GoogleService-Info.plist` to `ios/Runner/`.
 5. Run the app: `flutter run`
+
+
+    final canEdit = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAdmin : false;
+    });
+
+    final isAppOwner = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAppowner : false;
+    });
+
+    final isActiveFamilyId = context.select<UserBloc, String>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isActiveFamilyId : '';
+    });
+
+    

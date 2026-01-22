@@ -18,7 +18,8 @@ import 'package:remindus/widgets/custom_button.dart';
 
 class HealthcareHomeScreen extends StatefulWidget {
   final VoidCallback onProfileTap;
-  const HealthcareHomeScreen({Key? key, required this.onProfileTap}) : super(key: key);
+  const HealthcareHomeScreen({Key? key, required this.onProfileTap})
+    : super(key: key);
 
   @override
   State<HealthcareHomeScreen> createState() => _HealthcareHomeScreenState();
@@ -27,112 +28,6 @@ class HealthcareHomeScreen extends StatefulWidget {
 class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
   bool _hasLoadedOnce = false;
 
-  Widget _buildFamilySwitcher(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        if (state is UserLoadingState) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is UserLoadedState) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4.0),
-                child: Text(
-                  "Select Profile",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 110,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: state.joinedFamilies.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    final familyMap = state.joinedFamilies[index];
-                    final String id = familyMap['id'];
-                    final String name = familyMap['name'];
-                    final bool isSelected = id == state.activeFamilyId;
-                    final bool isMyHome = id == state.userId;
-
-                    return GestureDetector(
-                      onTap: () {
-                        if (!isSelected) {
-                          context.read<UserBloc>().add(
-                            SwitchActiveFamilyEvent(familyId: id),
-                          );
-                        }
-                      },
-                      child: Column(
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.blue
-                                    : Colors.grey.withOpacity(0.2),
-                                width: 2.5,
-                              ),
-                            ),
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundColor: isMyHome
-                                  ? Colors.blue.shade50
-                                  : Colors.orange.shade50,
-                              child: Icon(
-                                isMyHome
-                                    ? Icons.home_rounded
-                                    : Icons.people_alt_rounded,
-                                color: isMyHome ? Colors.blue : Colors.orange,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: 80,
-                            child: Text(
-                              isMyHome ? "My Home" : name,
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.w500,
-                                color: isSelected
-                                    ? Colors.blue
-                                    : Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        }
-        return const SizedBox();
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final reminderService = ReminderService();
@@ -140,6 +35,12 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
       final state = bloc.state;
       return (state is UserLoadedState) ? state.activeFamilyId : null;
     });
+
+    final isAppOwner = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAppowner : false;
+    });
+
     return Scaffold(
       backgroundColor: context.appColors.bgColor,
       body: BlocConsumer<UserBloc, UserState>(
@@ -179,17 +80,7 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CommonHeader(onProfileTap: widget.onProfileTap,),
-                          _buildFamilySwitcher(context),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0,
-                            ),
-                            child: Text(
-                              state.userName,
-                              style: TextStyle(color: Colors.green),
-                            ),
-                          ),
+                          CommonHeader(onProfileTap: widget.onProfileTap),
                           const SizedBox(height: 10.0),
                           Padding(
                             padding: const EdgeInsets.symmetric(
@@ -220,24 +111,46 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                       runSpacing: 2,
 
                                       children: [
-                                        Text(
-                                          "$greeting, ",
-                                          style: TextStyle(
-                                            fontSize: 28.0,
-                                            fontWeight: FontWeight.w400,
-                                            color:
-                                                context.appColors.textPrimary,
+                                        if (isAppOwner) ...[
+                                          Text(
+                                            "$greeting, ",
+                                            style: TextStyle(
+                                              fontSize: 28.0,
+                                              fontWeight: FontWeight.w400,
+                                              color:
+                                                  context.appColors.textPrimary,
+                                            ),
                                           ),
-                                        ),
-                                        Text(
-                                          userName,
-                                          style: TextStyle(
-                                            fontSize: 28.0,
-                                            fontWeight: FontWeight.w400,
-                                            color:
-                                                context.appColors.textPrimary,
+                                          Text(
+                                            userName,
+                                            style: TextStyle(
+                                              fontSize: 28.0,
+                                              fontWeight: FontWeight.w400,
+                                              color:
+                                                  context.appColors.textPrimary,
+                                            ),
                                           ),
-                                        ),
+                                        ],
+                                        if (!isAppOwner) ...[
+                                          Text(
+                                            "You're viewing ",
+                                            style: TextStyle(
+                                              fontSize: 28.0,
+                                              fontWeight: FontWeight.w400,
+                                              color:
+                                                  context.appColors.textPrimary,
+                                            ),
+                                          ),
+                                          Text(
+                                            "$userName's Account",
+                                            style: TextStyle(
+                                              fontSize: 28.0,
+                                              fontWeight: FontWeight.w400,
+                                              color:
+                                                  context.appColors.textPrimary,
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     );
                                   },

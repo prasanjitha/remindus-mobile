@@ -13,10 +13,13 @@ class ReminderNotificationSync {
   StreamSubscription? _subscription;
   StreamSubscription? _refillSubscription;
 
-  void start(String activeFamilyId) {
-    _subscription = _reminderService.getLatestTwoUpcoming(activeFamilyId: activeFamilyId).listen(
-      _syncNotifications,
-    );
+  void start(String activeFamilyId, bool isAppOwner) {
+ _subscription = _reminderService
+      .getLatestTwoUpcoming(activeFamilyId: activeFamilyId)
+      .listen((List<ReminderModel> reminders) {
+
+        _syncNotifications(reminders, isAppOwner);
+      });
 
     _refillSubscription = _reminderService.getRefillAlerts(
       activeFamilyId: activeFamilyId,
@@ -25,7 +28,7 @@ class ReminderNotificationSync {
     );
   }
 
-  Future<void> _syncNotifications(List<ReminderModel> reminders) async {
+  Future<void> _syncNotifications(List<ReminderModel> reminders, bool isAppOwner) async {
     try {
       await AwesomeNotifications().cancelAllSchedules();
 
@@ -50,6 +53,7 @@ class ReminderNotificationSync {
           reminderId: reminder.reminderId,
           message: message,
           dose: reminder.dose,
+          isAppOwner: isAppOwner,
         );
       }
     } catch (e) {
@@ -91,6 +95,7 @@ Future<void> _syncRefillNotifications(
           message: '${medicine.name} is out of stock. Please refill your store.',
           reminderId: medicine.medicineStoreId,
           dose: '', 
+          
         );
       }
     } catch (e) {
