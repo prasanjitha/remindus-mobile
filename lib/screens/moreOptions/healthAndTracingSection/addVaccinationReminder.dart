@@ -3,6 +3,7 @@ import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
+import 'package:remindus/screens/moreOptions/healthAndTracingSection/vaccinationAddedScreen.dart';
 
 class AddVaccinationRecordScreen extends StatefulWidget {
   const AddVaccinationRecordScreen({super.key});
@@ -66,6 +67,17 @@ class _AddVaccinationRecordScreenState
       print("From Date: $fromDate");
       print("To Date: $toDate");
       print("Frequency: $frequency");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VaccinationAddedScreen(
+            vaccine: selectedVaccine!,
+            fromDate: fromDate!,
+            toDate: toDate!,
+            frequency: frequency!,
+          ),
+        ),
+      );
     } else {
       setState(() {
         showValidationErrors = true;

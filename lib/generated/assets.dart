@@ -58,6 +58,8 @@ class Assets {
   static const String completeBorderIcon = 'assets/icons/complete_border.png';
   static const String vaccineIconBlack =
       'assets/icons/addreminders/vaccine-black.png';
+  static const String calenderFavIcon =
+      'assets/icons/addreminders/calendar-favorite.png';
 
   // Store Icons
 
