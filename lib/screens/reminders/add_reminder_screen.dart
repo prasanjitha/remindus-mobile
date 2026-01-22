@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:remindus/blocs/reminders/reminders_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/helpers/medicine_helper.dart';
 import 'package:remindus/models/base_reminder_model.dart';
@@ -198,6 +199,12 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final isAppOwner = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAppowner : false;
+    });
+
+
 
     return GestureDetector(
       onTap: () {
@@ -711,7 +718,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                     ? 'Update Reminder'
                                     : 'Save Reminder',
                                 onPressed: _isEditingMedical || _isEditingMeeting
-                                    ? () => _goToUpdateReminder(context)
+                                    ? () => _goToUpdateReminder(context, isAppOwner)
                                     : () => _goToConfirmScreen(context),
                                 backgroundColor: appColors.primary,
                               ),
@@ -729,7 +736,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     );
   }
 
-  void _goToUpdateReminder(BuildContext context) {
+  void _goToUpdateReminder(BuildContext context, bool isAppOwner) {
     if (widget.isEditReminder == true &&
         widget.existingReminder!.type == 'Medicine') {
       String formattedRange =
@@ -811,6 +818,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
             day: widget.existingReminder!.dateTime!.toDate().day,
             month: widget.existingReminder!.dateTime!.toDate().month,
           ),
+          isAppOwner: isAppOwner,
         ),
       );
     }

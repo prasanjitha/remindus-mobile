@@ -21,11 +21,11 @@ class EmergencySOSScreen extends StatefulWidget {
 
 class _EmergencySOSScreenState extends State<EmergencySOSScreen>
     with SingleTickerProviderStateMixin {
-  
   bool _showLocationSharing = false;
   late AnimationController _progressController;
-  final EmergencyContactService _emergencyContactService = EmergencyContactService();
-  
+  final EmergencyContactService _emergencyContactService =
+      EmergencyContactService();
+
   // Stream එක variable එකකට ගැනීමෙන් අනවශ්‍ය rebuilds වළකී (Best Practice)
   Stream<List<EmergencyContact>>? _contactsStream;
 
@@ -43,12 +43,13 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
       }
     });
 
-    // Bloc එකෙන් activeFamilyId එක මුලින්ම ලබාගෙන stream එක initialize කිරීම
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userState = context.read<UserBloc>().state;
       if (userState is UserLoadedState) {
         setState(() {
-          _contactsStream = _emergencyContactService.getEmergencyContacts(userState.activeFamilyId);
+          _contactsStream = _emergencyContactService.getEmergencyContacts(
+            userState.activeFamilyId,
+          );
         });
       }
     });
@@ -71,7 +72,6 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
     setState(() {
       _showLocationSharing = true;
     });
-    // මෙතනදී ඔබට අමතරව Firebase notification එකක් හෝ message එකක් යැවීමට පුළුවන්
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
@@ -90,7 +90,10 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    
+    final canEdit = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAdmin : false;
+    });
     return Scaffold(
       backgroundColor: appColors.bgColor,
       body: Stack(
@@ -111,24 +114,29 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 20.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const MainHeaderAppBar(),
                         const SizedBox(height: 20),
                         _buildHeader(appColors),
-                        const SizedBox(height: 60),
-                        Center(child: _buildSOSButton(appColors)),
-                        const SizedBox(height: 20),
-                        _buildInstructions(appColors),
+                        if (canEdit) ...[
+                          const SizedBox(height: 60),
+                          Center(child: _buildSOSButton(appColors)),
+                          const SizedBox(height: 20),
+                          _buildInstructions(appColors),
+                        ],
                         const SizedBox(height: 50),
                         _buildContactsSection(appColors),
                       ],
                     ),
                   ),
                 ),
-                _buildBottomAddButton(appColors),
+                if (canEdit) _buildBottomAddButton(appColors),
               ],
             ),
           ),
@@ -145,12 +153,20 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
       children: [
         Text(
           "Emergency SOS",
-          style: TextStyle(fontWeight: FontWeight.w400, color: appColors.textPrimary, fontSize: 28),
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            color: appColors.textPrimary,
+            fontSize: 28,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
           "Get help when you need it most",
-          style: TextStyle(fontWeight: FontWeight.w400, color: appColors.textPrimary, fontSize: 16),
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            color: appColors.textPrimary,
+            fontSize: 16,
+          ),
         ),
       ],
     );
@@ -173,7 +189,11 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
       children: [
         Text(
           'Emergency Contacts',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: appColors.textPrimary),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w400,
+            color: appColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 12),
         if (_contactsStream == null)
@@ -183,25 +203,36 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
             stream: _contactsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: CircularProgressIndicator(),
-                ));
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
               }
               if (snapshot.hasError) {
-                return Center(child: Text("Something went wrong", style: TextStyle(color: appColors.errorRed)));
+                return Center(
+                  child: Text(
+                    "Something went wrong",
+                    style: TextStyle(color: appColors.errorRed),
+                  ),
+                );
               }
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return _buildEmptyState(appColors);
               }
 
               return Column(
-                children: snapshot.data!.map((contact) => ContactTile(
-                  contact: contact,
-                  appColors: appColors,
-                  onEdit: () => _navigateToEdit(contact),
-                  onCall: () => _makePhoneCall(contact.phone ?? ''),
-                )).toList(),
+                children: snapshot.data!
+                    .map(
+                      (contact) => ContactTile(
+                        contact: contact,
+                        appColors: appColors,
+                        onEdit: () => _navigateToEdit(contact),
+                        onCall: () => _makePhoneCall(contact.phone ?? ''),
+                      ),
+                    )
+                    .toList(),
               );
             },
           ),
@@ -230,17 +261,25 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
       child: ElevatedButton(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddEmergencyContactScreen()),
+          MaterialPageRoute(
+            builder: (context) => const AddEmergencyContactScreen(),
+          ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: appColors.primary,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 0,
         ),
         child: Text(
           'Add Emergency Contact',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: appColors.bgColor),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: appColors.bgColor,
+          ),
         ),
       ),
     );
@@ -250,7 +289,8 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddEmergencyContactScreen(isEditFlow: true, contact: contact),
+        builder: (context) =>
+            AddEmergencyContactScreen(isEditFlow: true, contact: contact),
       ),
     );
   }
@@ -267,14 +307,29 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
-                _buildCircularIcon(appColors.errorRed!, Assets.healthAmbulanceIcon, appColors.bgColor!),
+                _buildCircularIcon(
+                  appColors.errorRed!,
+                  Assets.healthAmbulanceIcon,
+                  appColors.bgColor!,
+                ),
                 Positioned(
                   right: 0,
-                  child: _buildSmallActionButton(Icons.close, const Color(0xFFFFE0E1), appColors.textPrimary!, _resetButton),
+                  child: _buildSmallActionButton(
+                    Icons.close,
+                    const Color(0xFFFFE0E1),
+                    appColors.textPrimary!,
+                    _resetButton,
+                  ),
                 ),
                 Positioned(
                   left: -20,
-                  child: _buildSmallActionButton(null, const Color(0xFFFFE0E1), appColors.textPrimary!, () => _makePhoneCall("999"), label: "999"),
+                  child: _buildSmallActionButton(
+                    null,
+                    const Color(0xFFFFE0E1),
+                    appColors.textPrimary!,
+                    () => _makePhoneCall("999"),
+                    label: "999",
+                  ),
                 ),
               ],
             ),
@@ -283,7 +338,11 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
           Text(
             'To stop sharing your location with listed\naccounts, click the \'x\' button on the right.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: appColors.textPrimary, fontWeight: FontWeight.w400),
+            style: TextStyle(
+              fontSize: 16,
+              color: appColors.textPrimary,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ],
       );
@@ -309,7 +368,9 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
                 ),
               ),
               _buildCircularIcon(
-                _progressController.value > 0 ? Colors.red.withOpacity(0.7) : Colors.red,
+                _progressController.value > 0
+                    ? Colors.red.withOpacity(0.7)
+                    : Colors.red,
                 Assets.healthAmbulanceIcon,
                 appColors.bgColor!,
               ),
@@ -325,19 +386,34 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
       width: 140,
       height: 140,
       decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-      child: Center(child: Image.asset(iconPath, width: 60, height: 60, color: iconColor)),
+      child: Center(
+        child: Image.asset(iconPath, width: 60, height: 60, color: iconColor),
+      ),
     );
   }
 
-  Widget _buildSmallActionButton(IconData? icon, Color bgColor, Color contentColor, VoidCallback onTap, {String? label}) {
+  Widget _buildSmallActionButton(
+    IconData? icon,
+    Color bgColor,
+    Color contentColor,
+    VoidCallback onTap, {
+    String? label,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-        child: icon != null 
-          ? Icon(icon, color: contentColor, size: 24)
-          : Text(label!, style: TextStyle(color: contentColor, fontSize: 16, fontWeight: FontWeight.w400)),
+        child: icon != null
+            ? Icon(icon, color: contentColor, size: 24)
+            : Text(
+                label!,
+                style: TextStyle(
+                  color: contentColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
       ),
     );
   }

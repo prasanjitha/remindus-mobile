@@ -97,7 +97,8 @@ class ReminderBloc extends Bloc<RemindersEvent, ReminderState> {
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: true));
 
       await reminderRepository.addVoiceNotification(
-        voiceNotificationModel: event.voiceNotificationModel
+        voiceNotificationModel: event.voiceNotificationModel,
+        isAppOwner: event.isAppOwner,
       );
       _safeEmit(emit, ReminderAddedSuccessState(isReminderAddedSuccess: true));
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: false));

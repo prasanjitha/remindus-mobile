@@ -21,10 +21,11 @@ class ProfileFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColor = context.appColors;
-    final canEdit = context.select<UserBloc, bool>((bloc) {
+    final isAppOwner = context.select<UserBloc, bool>((bloc) {
       final state = bloc.state;
-      return state is UserLoadedState ? state.isAdmin : false;
+      return state is UserLoadedState ? state.isAppowner : false;
     });
+
     return Card(
       color: appColor.bgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -77,37 +78,33 @@ class ProfileFooter extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-        if(canEdit)    Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _FooterAction(
-                  iconPath: Assets.quickActionIcon,
-                  label: 'Edit Profile',
-                  onTap: () {},
-                ),
-                _FooterAction(
-                  iconPath: Assets.passwordChangeIcon,
-                  label: 'Password',
-                  onTap: () {},
-                ),
-                _FooterAction(
-                  iconPath: Assets.logOutIcon,
-                  label: 'Log out',
-                  onTap: () async {
-                     await
-                    FirebaseAuth.instance.signOut();
+            if (isAppOwner)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _FooterAction(
+                    iconPath: Assets.quickActionIcon,
+                    label: 'Edit Profile',
+                    onTap: () {},
+                  ),
+                  _FooterAction(
+                    iconPath: Assets.passwordChangeIcon,
+                    label: 'Password',
+                    onTap: () {},
+                  ),
+                  _FooterAction(
+                    iconPath: Assets.logOutIcon,
+                    label: 'Log out',
+                    onTap: () async {
+                      await FirebaseAuth.instance.signOut();
                       Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LoginScreen()
-                              
-                            ),
-
-                          );
-                  },
-                ),
-              ],
-            ),
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
           ],
         ),
       ),
