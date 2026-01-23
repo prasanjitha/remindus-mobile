@@ -6,7 +6,20 @@ import 'package:remindus/widgets/main_header_appbar.dart';
 import 'package:remindus/screens/moreOptions/healthAndTracingSection/vaccinationAddedScreen.dart';
 
 class AddVaccinationRecordScreen extends StatefulWidget {
-  const AddVaccinationRecordScreen({super.key});
+  final String? vaccine;
+  final DateTime? dateReceived;
+  final DateTime? nextDose;
+  final String? frequency;
+  final bool isEdit;
+
+  const AddVaccinationRecordScreen({
+    super.key,
+    this.vaccine,
+    this.dateReceived,
+    this.nextDose,
+    this.frequency,
+    this.isEdit = false,
+  });
 
   @override
   State<AddVaccinationRecordScreen> createState() =>
@@ -25,12 +38,24 @@ class _AddVaccinationRecordScreenState
 
   List<String> vaccines = ["Covid Shield", "MMR", "Hepatitis B", "Tetanus"];
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with existing values if editing
+    if (widget.isEdit) {
+      selectedVaccine = widget.vaccine;
+      fromDate = widget.dateReceived;
+      toDate = widget.nextDose;
+      frequency = widget.frequency;
+    }
+  }
+
   Future<void> pickFromDate() async {
     final date = await showDatePicker(
       context: context,
       firstDate: DateTime(2010),
       lastDate: DateTime(2040),
-      initialDate: DateTime.now(),
+      initialDate: fromDate ?? DateTime.now(),
     );
     if (date != null) {
       setState(() => fromDate = date);
@@ -44,7 +69,7 @@ class _AddVaccinationRecordScreenState
       context: context,
       firstDate: DateTime(2010),
       lastDate: DateTime(2040),
-      initialDate: DateTime.now(),
+      initialDate: toDate ?? DateTime.now(),
     );
     if (date != null) {
       setState(() => toDate = date);
@@ -67,17 +92,31 @@ class _AddVaccinationRecordScreenState
       print("From Date: $fromDate");
       print("To Date: $toDate");
       print("Frequency: $frequency");
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VaccinationAddedScreen(
-            vaccine: selectedVaccine!,
-            fromDate: fromDate!,
-            toDate: toDate!,
-            frequency: frequency!,
+
+      if (widget.isEdit) {
+        // If editing, pop back to previous screen
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vaccination record updated successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
-        ),
-      );
+        );
+      } else {
+        // If adding new, navigate to confirmation screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => VaccinationAddedScreen(
+              vaccine: selectedVaccine!,
+              fromDate: fromDate!,
+              toDate: toDate!,
+              frequency: frequency!,
+            ),
+          ),
+        );
+      }
     } else {
       setState(() {
         showValidationErrors = true;
@@ -123,7 +162,7 @@ class _AddVaccinationRecordScreenState
                 const SizedBox(height: 20),
 
                 Text(
-                  "Add Vaccination",
+                  widget.isEdit ? "Edit Vaccination" : "Add Vaccination",
                   style: TextStyle(
                     fontWeight: FontWeight.w400,
                     color: appColors.textPrimary,
@@ -132,7 +171,9 @@ class _AddVaccinationRecordScreenState
                 ),
                 const SizedBox(height: 8.0),
                 Text(
-                  "Record your immunization details",
+                  widget.isEdit
+                      ? "Update your immunization details"
+                      : "Record your immunization details",
                   style: TextStyle(
                     fontWeight: FontWeight.w400,
                     color: appColors.textSecondary,
@@ -265,7 +306,7 @@ class _AddVaccinationRecordScreenState
                             child: Row(
                               children: [
                                 Radio(
-                                  value: "annualBooster",
+                                  value: "Annual Booster",
                                   groupValue: frequency,
                                   onChanged: (v) {
                                     setState(() => frequency = v as String);
@@ -297,7 +338,7 @@ class _AddVaccinationRecordScreenState
                             child: Row(
                               children: [
                                 Radio(
-                                  value: "decadeBooster",
+                                  value: "Decade Booster",
                                   groupValue: frequency,
                                   onChanged: (v) {
                                     setState(() => frequency = v as String);
@@ -326,7 +367,7 @@ class _AddVaccinationRecordScreenState
                       child: Row(
                         children: [
                           Radio(
-                            value: "singleCourse",
+                            value: "Single Course",
                             groupValue: frequency,
                             onChanged: (v) {
                               setState(() => frequency = v as String);
@@ -391,7 +432,9 @@ class _AddVaccinationRecordScreenState
         padding: const EdgeInsets.all(20),
         width: double.infinity,
         child: AppButton(
-          text: 'Add Vaccination Record',
+          text: widget.isEdit
+              ? 'Update Vaccination Record'
+              : 'Add Vaccination Record',
           height: 50,
           backgroundColor: const Color(0xFF0168FF),
           textColor: Colors.white,

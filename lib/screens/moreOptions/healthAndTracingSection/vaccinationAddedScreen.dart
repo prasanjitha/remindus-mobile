@@ -22,17 +22,6 @@ class VaccinationAddedScreen extends StatelessWidget {
     return date.toString().split(" ")[0];
   }
 
-  String _formatFrequency(String value) {
-    switch (value) {
-      case "annualBooster":
-        return "Annual Booster";
-      case "decadeBooster":
-        return "Decade Booster";
-      default:
-        return "Single Course";
-    }
-  }
-
   Widget _infoBox({
     required String label,
     required String value,
@@ -128,7 +117,8 @@ class VaccinationAddedScreen extends StatelessWidget {
 
                 _infoBox(
                   label: "Frequency",
-                  value: _formatFrequency(frequency),
+                  value:
+                      frequency, // Now uses the frequency directly as display text
                   icon: Assets.calenderFavIcon,
                 ),
 
@@ -152,7 +142,10 @@ class VaccinationAddedScreen extends StatelessWidget {
           backgroundColor: const Color(0xFF0168FF),
           textColor: Colors.white,
           onPressed: () {
-            // Navigator.pop(context);
+            // Navigate back to the ViewVaccineReminder screen
+            // Pop twice: once for this screen, once for AddVaccinationRecordScreen
+            Navigator.pop(context);
+            Navigator.pop(context);
             print("Confirmed vaccination added");
           },
         ),
