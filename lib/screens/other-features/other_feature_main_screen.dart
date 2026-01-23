@@ -6,6 +6,7 @@ import 'package:remindus/screens/food-tacker/food_tracker_home_screen.dart';
 import 'package:remindus/screens/location-tracking/map_tracking_screen.dart';
 import 'package:remindus/screens/sos/emwrgency_sos_main_screen.dart';
 import 'package:remindus/screens/tab/watch_connected_screen.dart';
+import 'package:remindus/screens/vaccination/vaccination_list_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/common-header.dart';
 import 'package:remindus/widgets/feature_quick_action_card.dart';
@@ -17,7 +18,6 @@ class OtherFeatureMainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   
     final appColors = Theme.of(context).extension<AppColors>()!;
     final activeFamilyId = context.select<UserBloc, String?>((bloc) {
       final state = bloc.state;
@@ -27,7 +27,6 @@ class OtherFeatureMainScreen extends StatelessWidget {
       backgroundColor: appColors.bgColor,
       body: Stack(
         children: [
-        
           Positioned.fill(
             child: Image.asset(
               Assets.bgColorMap,
@@ -36,7 +35,6 @@ class OtherFeatureMainScreen extends StatelessWidget {
             ),
           ),
 
-          
           SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -45,9 +43,9 @@ class OtherFeatureMainScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Custom Header
-                   Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 10.0),
-                    child: CommonHeader(onProfileTap: onProfileTap,),
+                    child: CommonHeader(onProfileTap: onProfileTap),
                   ),
 
                   Padding(
@@ -106,12 +104,13 @@ class OtherFeatureMainScreen extends StatelessWidget {
                                 iconPath: Assets.healthIcon,
                                 onTap: () {
                                   // Navigate to Health Screen
-                                   Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HealthCheckupScreen(),
-                        ),
-                      );
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const HealthCheckupScreen(),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -125,7 +124,8 @@ class OtherFeatureMainScreen extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const FoodTrackerScreen(),
+                                      builder: (context) =>
+                                          const FoodTrackerScreen(),
                                     ),
                                   );
                                 },
@@ -137,7 +137,13 @@ class OtherFeatureMainScreen extends StatelessWidget {
                                 title: "Vaccines",
                                 iconPath: Assets.healthVaccineIcon,
                                 onTap: () {
-                                  // Navigate to Vaccines Screen
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const VaccinationListScreen(),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -165,7 +171,8 @@ class OtherFeatureMainScreen extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>  EmergencySOSScreen(),
+                                      builder: (context) =>
+                                          EmergencySOSScreen(),
                                     ),
                                   );
                                 },

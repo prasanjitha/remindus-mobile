@@ -39,6 +39,10 @@
 	<string>Main</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 <string>This app needs access to location when open to share your safety status with family.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to the microphone to record your voice reminders.</string>
+<key>NSSpeechRecognitionUsageDescription</key>
+<string>We need access to speech recognition to convert your voice to text.</string>
 
 <key>NSCameraUsageDescription</key>
 <string>We need camera access to scan food barcodes for calorie tracking.</string>

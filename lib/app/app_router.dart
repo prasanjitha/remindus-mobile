@@ -9,7 +9,7 @@ import 'package:remindus/screens/onboarding/onboarding_one_screen.dart';
 import 'package:remindus/screens/onboarding/onboarding_three_screen%20.dart';
 import 'package:remindus/screens/onboarding/onboarding_two_screen.dart';
 import 'package:remindus/screens/tab/main_tab_screen.dart';
-
+import 'package:remindus/screens/vaccination/vaccination_list_screen.dart';
 
 class AppRoutes {
   static const home = '/home';
@@ -21,8 +21,9 @@ class AppRoutes {
   static const onboardingThree = '/onboarding-three';
   static const verifyEmail = '/verify-email';
   static const sentOtp = '/sent-otp';
-  static const verifyPhone = '/verify-phone';
 
+  static const verifyPhone = '/verify-phone';
+  static const vaccinationList = '/vaccination-list';
 
   static Map<String, WidgetBuilder> routes = {
     home: (_) => const MainTabScreen(),
@@ -32,8 +33,9 @@ class AppRoutes {
     onboardingOne: (_) => const OnboardingOneScreen(),
     onboardingTwo: (_) => const OnboardingTwoScreen(),
     onboardingThree: (_) => const OnboardingThreeScreen(),
-    verifyEmail: (_) =>  VerifyEmailPage( email: '',),
-    sentOtp: (_) => const VerifyPhoneScreen(),
+    verifyEmail: (_) => VerifyEmailPage(email: ''),
+
     verifyPhone: (_) => const VerifyPhoneScreen(),
+    vaccinationList: (_) => const VaccinationListScreen(),
   };
 }

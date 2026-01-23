@@ -106,8 +106,15 @@ class Assets {
   static const String calendarThisWeekIcon =
       'assets/icons/foodtracking/calendar-this-week.png';
 
-   static const String scanBarCodeIcon =
+  static const String scanBarCodeIcon =
       'assets/icons/foodtracking/scan-bar-code.png';
-  
 
+  //Vaccination
+  static const String calendarFavoriteIcon =
+      'assets/icons/vaccination/calendar-favorite-01.png';
+  static const String dateTimeIcon = 'assets/icons/vaccination/date-time.png';
+  static const String vaccinationO1Icon =
+      'assets/icons/vaccination/vaccine_1.png';
+
+  static const String micIcon = 'assets/icons/mic-01.png';
 }

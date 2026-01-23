@@ -9,7 +9,11 @@ import 'package:remindus/models/alert_model.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/models/medicine_store_model.dart';
 import 'package:remindus/models/user_model.dart';
+import 'package:remindus/screens/ai_reminders/ai_reminder_review_screen.dart';
+import 'package:remindus/screens/ai_reminders/scan_prescription_screen.dart';
 import 'package:remindus/screens/reminders/add_reminder_screen.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
+import 'package:remindus/screens/voice_reminder/voice_reminder_screen.dart';
 import 'package:remindus/services/reminder_service.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/utils/app_utils.dart';
@@ -39,6 +43,11 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
     final isAppOwner = context.select<UserBloc, bool>((bloc) {
       final state = bloc.state;
       return state is UserLoadedState ? state.isAppowner : false;
+    });
+
+    final canEdit = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAdmin : false;
     });
 
     return Scaffold(
@@ -214,7 +223,15 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                           title: 'Upcoming Reminders',
                                           context: context,
                                           onViewAll: () {
-                                            // View all logic
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const MainTabScreen(
+                                                      initialIndex: 1,
+                                                    ),
+                                              ),
+                                            );
                                           },
                                         ),
                                       ),
@@ -270,7 +287,17 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                         child: _SectionHeader(
                                           title: 'Alerts',
                                           context: context,
-                                          onViewAll: () {},
+                                          onViewAll: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const MainTabScreen(
+                                                      initialIndex: 2,
+                                                    ),
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
                                       const SizedBox(height: 12),
@@ -347,7 +374,21 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                             title: 'Scan',
                                             subtitle: 'Scan NHS Prescription',
                                             imagePath: Assets.scanIcon,
-                                            onTap: () {},
+                                            onTap: () {
+                                              if (canEdit) {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ScanPrescriptionScreen(
+                                                          activeFamilyId:
+                                                              activeFamilyId,
+                                                          isScan: true,
+                                                        ),
+                                                  ),
+                                                );
+                                              }
+                                            },
                                             isTalking: false,
                                           ),
                                           const SizedBox(height: 12),
@@ -357,15 +398,19 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                             subtitle: 'Upload NHS Prescription',
                                             imagePath: Assets.addSquareIcon,
                                             onTap: () {
-                                              log("Add Reminder Tapped");
-                                              Navigator.pushAndRemoveUntil(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const AddReminderScreen(),
-                                                ),
-                                                (route) => true,
-                                              );
+                                              if (canEdit) {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ScanPrescriptionScreen(
+                                                          activeFamilyId:
+                                                              activeFamilyId,
+                                                          isScan: false,
+                                                        ),
+                                                  ),
+                                                );
+                                              }
                                             },
                                             isTalking: false,
                                           ),
@@ -380,7 +425,17 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                           subtitle:
                                               'Voice assistant for hands-free reminders',
                                           imagePath: Assets.aiMagicIcon,
-                                          onTap: () {},
+                                          onTap: () {
+                                            if (canEdit) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const VoiceReminderScreen(),
+                                                ),
+                                              );
+                                            }
+                                          },
                                           isTalking: true,
                                         ),
                                       ),
@@ -428,6 +483,10 @@ class QuickGridAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canEdit = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAdmin : false;
+    });
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -534,7 +593,16 @@ class QuickGridAction extends StatelessWidget {
             if (isTalking)
               AppButton(
                 text: 'Start Talking',
-                onPressed: () {},
+                onPressed: () {
+                  if (canEdit) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const VoiceReminderScreen(),
+                      ),
+                    );
+                  }
+                },
                 backgroundColor: context.appColors.primary,
               ),
           ],
