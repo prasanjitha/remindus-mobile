@@ -38,3 +38,10 @@ RemindUs is a collaborative inventory management and notification app built with
     });
 
     
+    Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const VaccinationListScreen(),
+                                    ),
+                                  );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/custom_button.dart';
 
@@ -18,23 +19,32 @@ class CustomDialogs {
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: appColors.bgColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStaticIcon(context), 
+                _buildStaticIcon(context),
                 const SizedBox(height: 20.0),
                 Text(
                   title,
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w400, color: appColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w400,
+                    color: appColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 12.0),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 14.0, color: appColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: appColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 20.0),
                 Row(
@@ -43,7 +53,8 @@ class CustomDialogs {
                       child: AppButton(
                         height: 54,
                         text: actionButtonText,
-                        backgroundColor: actionButtonColor ?? appColors.errorRed,
+                        backgroundColor:
+                            actionButtonColor ?? appColors.errorRed,
                         onPressed: onActionPressed,
                       ),
                     ),
@@ -73,6 +84,7 @@ class CustomDialogs {
     required String subtitle,
     required String buttonText,
     required VoidCallback onBackPressed,
+    required String type,
   }) {
     final appColors = context.appColors;
 
@@ -81,23 +93,32 @@ class CustomDialogs {
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: appColors.bgColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStaticIcon(context), 
+                if (type == "delete") _buildStaticIcon(context),
                 const SizedBox(height: 20.0),
                 Text(
                   title,
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w400, color: appColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w400,
+                    color: appColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 12.0),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 14.0, color: appColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: appColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 20.0),
                 AppButton(
@@ -118,10 +139,15 @@ class CustomDialogs {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        shape: BoxShape.circle,
+        color: context.appColors.errorRed!.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(Icons.delete_outline, color: Colors.red, size: 30),
+      child: Image.asset(
+        Assets.deleteIcon,
+        height: 30,
+        width: 30,
+        color: context.appColors.errorRed,
+      ),
     );
   }
 }

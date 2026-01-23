@@ -22,6 +22,8 @@ import 'package:remindus/repositories/reminder/reminder_repository.dart';
 import 'package:remindus/repositories/connection/connection_repositories.dart';
 import 'package:remindus/repositories/medicalstore/medical_store_repository.dart';
 import 'package:remindus/repositories/authentication/authentication_repository.dart';
+import 'package:remindus/repositories/vaccination/vaccination_repository.dart';
+import 'package:remindus/blocs/vaccination/vaccination_bloc.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -51,14 +53,16 @@ class MyApp extends StatelessWidget {
     var reminderRepository = ReminderRepository();
     var medicalStoreRepository = MedicalStoreRepository();
     var guardianRepository = GuardianRepository();
+    var vaccinationRepository = VaccinationRepository();
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider(create: (context) => authRepository),
         RepositoryProvider(create: (context) => connectionRepository),
         RepositoryProvider(create: (context) => reminderRepository),
         RepositoryProvider(create: (context) => medicalStoreRepository),
+        RepositoryProvider(create: (context) => medicalStoreRepository),
         RepositoryProvider(create: (context) => guardianRepository),
-
+        RepositoryProvider(create: (context) => vaccinationRepository),
 
         BlocProvider(
           create: (_) => UserBloc(
@@ -88,6 +92,10 @@ class MyApp extends StatelessWidget {
               medicalStoreRepository: medicalStoreRepository,
               connectionRepository: connectionRepository,
             ),
+          ),
+          BlocProvider<VaccinationBloc>(
+            create: (context) =>
+                VaccinationBloc(repository: vaccinationRepository),
           ),
         ],
         child: MaterialApp(

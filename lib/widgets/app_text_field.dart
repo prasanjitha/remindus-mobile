@@ -15,6 +15,8 @@ class AppTextField extends StatelessWidget {
   final void Function(String)? onChanged;
   final FocusNode? focusNode;
   final TextInputType? keyboardType;
+  final VoidCallback? onTap;
+
   const AppTextField({
     super.key,
     required this.label,
@@ -29,6 +31,7 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.focusNode,
     this.keyboardType,
+    this.onTap,
   });
 
   @override
@@ -53,6 +56,7 @@ class AppTextField extends StatelessWidget {
           onChanged: onChanged,
           focusNode: focusNode,
           keyboardType: keyboardType,
+          onTap: onTap,
           decoration: InputDecoration(
             hintText: hintText,
             suffixIconConstraints: BoxConstraints(
