@@ -42,15 +42,19 @@ Widget _buildHeader(AppColors appColors) {
 }
 
 class VoiceReminderScreen extends StatelessWidget {
-  const VoiceReminderScreen({Key? key}) : super(key: key);
+  final VoiceReminderBloc? voiceReminderBloc;
+  const VoiceReminderScreen({Key? key, this.voiceReminderBloc})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => VoiceReminderBloc(
-        openAIService: OpenAIService(),
-        reminderRepository: ReminderRepository(),
-      ),
+      create: (context) =>
+          voiceReminderBloc ??
+          VoiceReminderBloc(
+            openAIService: OpenAIService(),
+            reminderRepository: ReminderRepository(),
+          ),
       child: const _VoiceReminderView(),
     );
   }

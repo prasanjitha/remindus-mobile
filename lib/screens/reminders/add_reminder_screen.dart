@@ -97,103 +97,109 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   void initState() {
     super.initState();
 
-    widget.isEditReminder == true && widget.existingReminder != null
-        ? selectedType = widget.existingReminder!.type!
-        : selectedType = 'Medicine';
+    log("existingReminder:  ${widget.existingReminder}");
 
-    _isEditingMedical =
-        widget.isEditReminder == true &&
-        widget.existingReminder != null &&
-        widget.existingReminder!.type == 'Medicine';
+    log(
+      "isEditReminder: ${widget.isEditReminder}, existingReminder: ${widget.existingReminder}",
+    );
 
-    _isEditingMeeting =
-        widget.isEditReminder == true &&
-        widget.existingReminder != null &&
-        widget.existingReminder!.type == 'Meeting';
+    if (widget.isEditReminder == true && widget.existingReminder != null) {
+      selectedType = widget.existingReminder!.type ?? 'Medicine';
 
-    if (_isEditingMeeting && widget.existingReminder != null) {
-      // Title
-      meetingTitleController.text = widget.existingReminder!.title ?? '';
+      _isEditingMedical = selectedType == 'Medicine';
+      _isEditingMeeting = selectedType == 'Meeting';
 
-      // Date
-      final timestamp = widget.existingReminder!.date; // Timestamp type
-      if (timestamp != null) {
-        meetingDate = timestamp
-            .toDate(); // Converts Firestore Timestamp → DateTime
+      if (_isEditingMeeting) {
+        // Title
+        meetingTitleController.text = widget.existingReminder!.title ?? '';
+
+        // Date
+        final timestamp = widget.existingReminder!.date;
+        if (timestamp != null) {
+          meetingDate = timestamp.toDate();
+        }
+
+        // Time
+        final timeString = widget.existingReminder!.time;
+        if (timeString != null) {
+          meetingTime = _getTimeOfDayFromString(timeString);
+          if (meetingTime != null) {
+            meetingAmPm = meetingTime!.hour >= 12 ? 'PM' : 'AM';
+          }
+        }
       }
 
-      // Time
-      final timeString = widget.existingReminder!.time; // e.g., "08:30 AM"
-      if (timeString != null) {
-        meetingTime = _getTimeOfDayFromString(timeString);
+      // Initialize controllers with existing data if editing
+      titleController.text = widget.existingReminder!.title ?? '';
+      medicineNameController.text = widget.existingReminder!.medicineName ?? '';
+      doseController.text = widget.existingReminder!.dose ?? '';
+      selectedDuration = widget.existingReminder!.duration ?? '1 Week';
 
-        // AM/PM
-        meetingAmPm = meetingTime!.hour >= 12 ? 'PM' : 'AM';
+      morningChecked = widget.existingReminder!.morning ?? false;
+      afternoonChecked = widget.existingReminder!.afternoon ?? false;
+      eveningChecked = widget.existingReminder!.evening ?? false;
+      nightChecked = widget.existingReminder!.night ?? false;
+
+      final reminderTime = widget.existingReminder!.time;
+      if (reminderTime != null) {
+        selectedTime = _getTimeOfDayFromString(reminderTime);
       }
-    }
 
-    // Initialize controllers with existing data if editing
-    titleController = TextEditingController(
-      text: _isEditingMedical ? widget.existingReminder!.title : '',
-    );
-    medicineNameController = TextEditingController(
-      text: _isEditingMedical ? widget.existingReminder!.medicineName : '',
-    );
-    doseController = TextEditingController(
-      text: _isEditingMedical ? widget.existingReminder!.dose : '',
-    );
-    selectedDuration = (_isEditingMedical
-        ? widget.existingReminder!.duration
-        : '1 Week')!;
+      final dateRangeString = widget.existingReminder!.dateRange;
+      if (dateRangeString != null) {
+        if (dateRangeString.contains('-')) {
+          try {
+            final parts = dateRangeString.split('-');
+            final startString = parts[0].trim();
+            final endString = parts[1].trim();
 
-    morningChecked = _isEditingMedical
-        ? widget.existingReminder!.morning ?? false
-        : false;
-    afternoonChecked = _isEditingMedical
-        ? widget.existingReminder!.afternoon ?? false
-        : false;
-    eveningChecked = _isEditingMedical
-        ? widget.existingReminder!.evening ?? false
-        : false;
-    nightChecked = _isEditingMedical
-        ? widget.existingReminder!.night ?? false
-        : false;
+            final startDate = DateFormat('MMM dd, yyyy').parse(startString);
+            final endDate = DateFormat('MMM dd, yyyy').parse(endString);
 
-    selectedTime = _isEditingMedical
-        ? _getTimeOfDayFromString(widget.existingReminder!.time ?? '08:00 AM')
-        : null;
-
-    if (_isEditingMedical && widget.existingReminder != null) {
-      final dateRangeString = widget
-          .existingReminder!
-          .dateRange; // e.g., "Jan 14, 2026 - Jan 15, 2026"
-      if (dateRangeString != null && dateRangeString.contains('-')) {
-        final parts = dateRangeString.split(
-          '-',
-        ); // ["Jan 14, 2026 ", " Jan 15, 2026"]
-        final startString = parts[0].trim();
-        final endString = parts[1].trim();
-
-        // Parse strings into DateTime
-        final startDate = DateFormat('MMM dd, yyyy').parse(startString);
-        final endDate = DateFormat('MMM dd, yyyy').parse(endString);
-
-        dateRange = DateTimeRange(start: startDate, end: endDate);
+            dateRange = DateTimeRange(start: startDate, end: endDate);
+          } catch (e) {
+            log("Error parsing date range: $e");
+          }
+        } else {
+          try {
+            final date = DateFormat('yyyy/MM/dd').parse(dateRangeString);
+            dateRange = DateTimeRange(start: date, end: date);
+          } catch (e) {
+            log("Error parsing single date: $e");
+          }
+        }
       }
+    } else {
+      selectedType = 'Medicine';
+      _isEditingMedical = false;
+      _isEditingMeeting = false;
+      selectedDuration = '1 Week';
+      nightChecked = true;
     }
   }
 
-  TimeOfDay _getTimeOfDayFromString(String timeString) {
-    final format = TimeOfDayFormat.H_colon_mm;
-    final parts = timeString.split(RegExp(r'[:\s]'));
-    int hour = int.parse(parts[0]);
-    final int minute = int.parse(parts[1]);
-    final String period = parts[2];
+  TimeOfDay? _getTimeOfDayFromString(String timeString) {
+    try {
+      final parts = timeString.split(RegExp(r'[:\s]'));
+      if (parts.length < 3) {
+        // Fallback for formats without AM/PM or space
+        final timeParts = timeString.split(':');
+        int hour = int.parse(timeParts[0]);
+        int minute = int.parse(timeParts[1].replaceAll(RegExp(r'[^0-9]'), ''));
+        return TimeOfDay(hour: hour, minute: minute);
+      }
+      int hour = int.parse(parts[0]);
+      final int minute = int.parse(parts[1]);
+      final String period = parts[2];
 
-    if (period.toUpperCase() == 'PM' && hour != 12) hour += 12;
-    if (period.toUpperCase() == 'AM' && hour == 12) hour = 0;
+      if (period.toUpperCase() == 'PM' && hour != 12) hour += 12;
+      if (period.toUpperCase() == 'AM' && hour == 12) hour = 0;
 
-    return TimeOfDay(hour: hour, minute: minute);
+      return TimeOfDay(hour: hour, minute: minute);
+    } catch (e) {
+      log("Error parsing time string: $timeString, $e");
+      return null;
+    }
   }
 
   @override
@@ -203,9 +209,10 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       final state = bloc.state;
       return state is UserLoadedState ? state.isAppowner : false;
     });
-
-
-
+    final isActiveFamilyId = context.select<UserBloc, String>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isActiveFamilyId : '';
+    });
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -263,7 +270,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                           children: [
                             MainHeaderAppBar(),
                             const SizedBox(height: 20.0),
-      
+
                             Text(
                               _isEditingMedical
                                   ? "Edit Medication"
@@ -323,7 +330,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                 context,
                               ),
                             const SizedBox(height: 25),
-      
+
                             if (selectedType == 'Meeting') ...[
                               Form(
                                 key: _meetingFormKey,
@@ -348,7 +355,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                               ),
                               const SizedBox(height: 20),
                             ],
-      
+
                             // Title
                             if (selectedType == 'Medicine')
                               Column(
@@ -368,123 +375,177 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                     label: "Title",
                                   ),
                                   const SizedBox(height: 20),
-      
+
                                   // Medicine Name
-                                                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Medicine name",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          color: appColors.textPrimary,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Autocomplete<String>(
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text == '') {
-                            return const Iterable<String>.empty();
-                          }
-                          return MedicineHelper.getSortedSuggestions().where((String option) {
-                            return option.toLowerCase().contains(
-                              textEditingValue.text.toLowerCase(),
-                            );
-                          });
-                        },
-                        onSelected: (String selection) {
-                          medicineNameController.text = selection;
-                        },
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Medicine name",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          color: appColors.textPrimary,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Autocomplete<String>(
+                                        optionsBuilder:
+                                            (
+                                              TextEditingValue textEditingValue,
+                                            ) {
+                                              if (textEditingValue.text == '') {
+                                                return const Iterable<
+                                                  String
+                                                >.empty();
+                                              }
+                                              return MedicineHelper.getSortedSuggestions()
+                                                  .where((String option) {
+                                                    return option
+                                                        .toLowerCase()
+                                                        .contains(
+                                                          textEditingValue.text
+                                                              .toLowerCase(),
+                                                        );
+                                                  });
+                                            },
+                                        onSelected: (String selection) {
+                                          medicineNameController.text =
+                                              selection;
+                                        },
 
-                        fieldViewBuilder:
-                            (
-                              context,
-                              textEditingController,
-                              focusNode,
-                              onFieldSubmitted,
-                            ) {
-                              if (medicineNameController.text.isNotEmpty &&
-                                  textEditingController.text.isEmpty) {
-                                textEditingController.text =
-                                    medicineNameController.text;
-                              }
-                              textEditingController.addListener(() {
-                                medicineNameController.text =
-                                    textEditingController.text;
-                              });
+                                        fieldViewBuilder:
+                                            (
+                                              context,
+                                              textEditingController,
+                                              focusNode,
+                                              onFieldSubmitted,
+                                            ) {
+                                              if (medicineNameController
+                                                      .text
+                                                      .isNotEmpty &&
+                                                  textEditingController
+                                                      .text
+                                                      .isEmpty) {
+                                                textEditingController.text =
+                                                    medicineNameController.text;
+                                              }
+                                              textEditingController.addListener(
+                                                () {
+                                                  medicineNameController.text =
+                                                      textEditingController
+                                                          .text;
+                                                },
+                                              );
 
-                              return TextField(
-                                controller: textEditingController,
-                                focusNode: focusNode,
-                                decoration: InputDecoration(
-                                  hintText: 'Enter Medicine name',
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Image.asset(
-                                      Assets.pillsTabletIcon,
-                                      width: 20,
-                                      height: 20,
-                                    ),
+                                              return TextField(
+                                                controller:
+                                                    textEditingController,
+                                                focusNode: focusNode,
+                                                decoration: InputDecoration(
+                                                  hintText:
+                                                      'Enter Medicine name',
+                                                  prefixIcon: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                          12.0,
+                                                        ),
+                                                    child: Image.asset(
+                                                      Assets.pillsTabletIcon,
+                                                      width: 20,
+                                                      height: 20,
+                                                    ),
+                                                  ),
+                                                  filled: true,
+                                                  fillColor: Colors.white,
+                                                  contentPadding:
+                                                      const EdgeInsets.symmetric(
+                                                        vertical: 15,
+                                                        horizontal: 15,
+                                                      ),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                        borderSide: BorderSide(
+                                                          color: appColors
+                                                              .textSecondary
+                                                              .withOpacity(0.1),
+                                                        ),
+                                                      ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                        borderSide: BorderSide(
+                                                          color:
+                                                              appColors.primary,
+                                                        ),
+                                                      ),
+                                                ),
+                                              );
+                                            },
+                                        optionsViewBuilder:
+                                            (context, onSelected, options) {
+                                              return Align(
+                                                alignment: Alignment.topLeft,
+                                                child: Material(
+                                                  elevation: 4.0,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: Container(
+                                                    width:
+                                                        MediaQuery.of(
+                                                          context,
+                                                        ).size.width -
+                                                        40,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                    child: ListView.builder(
+                                                      padding: EdgeInsets.zero,
+                                                      shrinkWrap: true,
+                                                      itemCount: options.length,
+                                                      itemBuilder:
+                                                          (
+                                                            BuildContext
+                                                            context,
+                                                            int index,
+                                                          ) {
+                                                            final String
+                                                            option = options
+                                                                .elementAt(
+                                                                  index,
+                                                                );
+                                                            return ListTile(
+                                                              title: Text(
+                                                                option,
+                                                              ),
+                                                              onTap: () =>
+                                                                  onSelected(
+                                                                    option,
+                                                                  ),
+                                                            );
+                                                          },
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                      ),
+                                    ],
                                   ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 15,
-                                    horizontal: 15,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: appColors.textSecondary
-                                          .withOpacity(0.1),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: appColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                        optionsViewBuilder: (context, onSelected, options) {
-                          return Align(
-                            alignment: Alignment.topLeft,
-                            child: Material(
-                              elevation: 4.0,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                width: MediaQuery.of(context).size.width - 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  shrinkWrap: true,
-                                  itemCount: options.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                        final String option = options.elementAt(
-                                          index,
-                                        );
-                                        return ListTile(
-                                          title: Text(option),
-                                          onTap: () => onSelected(option),
-                                        );
-                                      },
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
                                   const SizedBox(height: 20.0),
-      
+
                                   // Dose
                                   AppTextField(
                                     controller: doseController,
@@ -500,7 +561,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                     label: "Dose",
                                   ),
                                   const SizedBox(height: 16),
-      
+
                                   // Duration
                                   Text(
                                     'Duration',
@@ -522,7 +583,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                       _buildDurationButton('2 Months', context),
                                     ],
                                   ),
-      
+
                                   const SizedBox(height: 8),
                                   InkWell(
                                     onTap: _selectDateRange,
@@ -570,7 +631,9 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                           'Morning',
                                           morningChecked,
                                           (val) {
-                                            setState(() => morningChecked = val!);
+                                            setState(
+                                              () => morningChecked = val!,
+                                            );
                                           },
                                           context,
                                         ),
@@ -671,7 +734,8 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                   const SizedBox(height: 8),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '*',
@@ -698,7 +762,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                   const SizedBox(height: 24),
                                 ],
                               ),
-      
+
                             // Save Reminder Button
                             if (_isLoading)
                               Container(
@@ -717,8 +781,13 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                 text: _isEditingMedical || _isEditingMeeting
                                     ? 'Update Reminder'
                                     : 'Save Reminder',
-                                onPressed: _isEditingMedical || _isEditingMeeting
-                                    ? () => _goToUpdateReminder(context, isAppOwner)
+                                onPressed:
+                                    _isEditingMedical || _isEditingMeeting
+                                    ? () => _goToUpdateReminder(
+                                        context,
+                                        isAppOwner,
+                                        isActiveFamilyId,
+                                      )
                                     : () => _goToConfirmScreen(context),
                                 backgroundColor: appColors.primary,
                               ),
@@ -736,15 +805,34 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     );
   }
 
-  void _goToUpdateReminder(BuildContext context, bool isAppOwner) {
-    if (widget.isEditReminder == true &&
-        widget.existingReminder!.type == 'Medicine') {
+  void _goToUpdateReminder(
+    BuildContext context,
+    bool isAppOwner,
+    String activeFamilyId,
+  ) {
+    if (widget.isEditReminder != true || widget.existingReminder == null)
+      return;
+
+    if (selectedType == 'Medicine') {
+      if (dateRange == null) return _showError("Please select a date range");
+      if (selectedTime == null)
+        return _showError("Please select first dose time");
+      if (!_formKey.currentState!.validate()) return;
+
       String formattedRange =
           "${DateFormat.yMMMd().format(dateRange!.start)} - ${DateFormat.yMMMd().format(dateRange!.end)}";
       String firstDoseTimeStr = selectedTime!.format(context);
 
       List<Map<String, dynamic>> scheduleList = _generateMedicineSchedule(
         firstDoseTimeStr,
+      );
+
+      DateTime scheduledDateTime = DateTime(
+        dateRange!.start.year,
+        dateRange!.start.month,
+        dateRange!.start.day,
+        selectedTime!.hour,
+        selectedTime!.minute,
       );
 
       final reminderMedicineModel = ReminderModel(
@@ -758,21 +846,29 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         afternoon: afternoonChecked,
         evening: eveningChecked,
         night: nightChecked,
-        createdAt: FieldValue.serverTimestamp(),
+        createdAt:
+            widget.existingReminder!.createdAt ?? FieldValue.serverTimestamp(),
         isRead: false,
         time: firstDoseTimeStr,
         updatedAt: FieldValue.serverTimestamp(),
         schedule: scheduleList,
+        notificationId: widget.existingReminder!.notificationId,
+        scheduledAt: Timestamp.fromDate(scheduledDateTime),
       );
+
       context.read<ReminderBloc>().add(
         UpdateMeetingsReminderEvent(
           reminderMeetingsModel: reminderMedicineModel,
-          reminderId: widget.existingReminder!.reminderId!,
-          activeFamilyId: '',
+          reminderId: widget.existingReminder!.reminderId ?? '',
+          activeFamilyId: activeFamilyId,
         ),
       );
-    } else if (widget.isEditReminder == true &&
-        widget.existingReminder!.type == 'Meeting') {
+    } else if (selectedType == 'Meeting') {
+      log("1");
+      if (meetingDate == null) return _showError("Please select a date");
+      if (meetingTime == null) return _showError("Please select a time");
+      if (!_meetingFormKey.currentState!.validate()) return;
+
       DateTime meetingDateTime = DateTime(
         meetingDate!.year,
         meetingDate!.month,
@@ -780,43 +876,46 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         meetingTime!.hour,
         meetingTime!.minute,
       );
+      log("2");
 
       final reminderMeetingsModel = ReminderModel(
         notificationId: widget.existingReminder!.notificationId,
         title: meetingTitleController.text.trim(),
         type: selectedType,
-        createdAt: FieldValue.serverTimestamp(),
+        createdAt:
+            widget.existingReminder!.createdAt ?? FieldValue.serverTimestamp(),
         date: Timestamp.fromDate(
           DateTime(meetingDate!.year, meetingDate!.month, meetingDate!.day),
         ),
         dateTime: Timestamp.fromDate(meetingDateTime),
+        scheduledAt: Timestamp.fromDate(meetingDateTime),
         isRead: false,
         time: meetingTime!.format(context),
         updatedAt: FieldValue.serverTimestamp(),
       );
-      log("updating meeting reminder");
+      log("reminderMeetingsModel-> ${reminderMeetingsModel.toString()}");
       context.read<ReminderBloc>().add(
         UpdateMeetingsReminderEvent(
           reminderMeetingsModel: reminderMeetingsModel,
-          reminderId: widget.existingReminder!.reminderId!,
-          activeFamilyId: '',
+          reminderId: widget.existingReminder!.reminderId ?? '',
+          activeFamilyId: activeFamilyId,
         ),
       );
-      final DateTime meetingDateTimes = widget.existingReminder!.dateTime!.toDate();
-      String message = 'Reminder: ${widget.existingReminder!.title} starts now';
+      log("3");
 
-      int hour = meetingDateTimes.hour;
-      int minute = meetingDateTimes.minute;
+      // Voice notification update
+      String message =
+          'Hello! Your meeting "${reminderMeetingsModel.title}" is starting now. Please be ready.';
       context.read<ReminderBloc>().add(
         SetVoiceNotificationEvent(
           voiceNotificationModel: VoiceNotificationModel(
-            id: widget.existingReminder!.notificationId!,
+            id: reminderMeetingsModel.notificationId ?? 0,
             body: message,
-            hour: hour,
-            minute: minute,
+            hour: meetingDateTime.hour,
+            minute: meetingDateTime.minute,
             title: 'Meeting Reminder',
-            day: widget.existingReminder!.dateTime!.toDate().day,
-            month: widget.existingReminder!.dateTime!.toDate().month,
+            day: meetingDateTime.day,
+            month: meetingDateTime.month,
           ),
           isAppOwner: isAppOwner,
         ),

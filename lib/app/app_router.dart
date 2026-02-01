@@ -10,6 +10,8 @@ import 'package:remindus/screens/onboarding/onboarding_three_screen%20.dart';
 import 'package:remindus/screens/onboarding/onboarding_two_screen.dart';
 import 'package:remindus/screens/tab/main_tab_screen.dart';
 import 'package:remindus/screens/vaccination/vaccination_list_screen.dart';
+import 'package:remindus/screens/profile/edit_profile_screen.dart';
+import 'package:remindus/screens/profile/change_password_screen.dart';
 
 class AppRoutes {
   static const home = '/home';
@@ -24,6 +26,8 @@ class AppRoutes {
 
   static const verifyPhone = '/verify-phone';
   static const vaccinationList = '/vaccination-list';
+  static const editProfile = '/edit-profile';
+  static const changePassword = '/change-password';
 
   static Map<String, WidgetBuilder> routes = {
     home: (_) => const MainTabScreen(),
@@ -37,5 +41,7 @@ class AppRoutes {
 
     verifyPhone: (_) => const VerifyPhoneScreen(),
     vaccinationList: (_) => const VaccinationListScreen(),
+    editProfile: (_) => const EditProfileScreen(),
+    changePassword: (_) => const ChangePasswordScreen(),
   };
 }

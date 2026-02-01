@@ -14,6 +14,7 @@ import 'package:remindus/screens/reminders/reminder_tab_screen.dart';
 import 'package:remindus/screens/store/main_store.dart';
 import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/services/reminder_notification_sync.dart';
+import 'package:remindus/services/battery_service.dart';
 import 'package:remindus/theme/app_colors.dart';
 
 class MainTabScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class MainTabScreen extends StatefulWidget {
 class _MainTabScreenState extends State<MainTabScreen> {
   int _selectedIndex = 0;
   final reminderNotificationSync = ReminderNotificationSync();
+  final _batteryService = BatteryService();
 
   void _goToProfile() {
     setState(() {
@@ -36,27 +38,36 @@ class _MainTabScreenState extends State<MainTabScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.initialIndex != null) {
       _selectedIndex = widget.initialIndex!;
     }
+    _batteryService.startMonitoring();
+  }
+
+  @override
+  void dispose() {
+    _batteryService.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-  final List<Widget> _pages = [
-    // HealthCheckupScreen(),
-    HealthcareHomeScreen(onProfileTap: _goToProfile),
-    ReminderTabScreen(onProfileTap: _goToProfile),
-    MainStoreScreen(onProfileTap: _goToProfile),
-    OtherFeatureMainScreen(onProfileTap: _goToProfile),
-    const MyProfileScreen(),
-  ];
+    final List<Widget> _pages = [
+      // HealthCheckupScreen(),
+      HealthcareHomeScreen(onProfileTap: _goToProfile),
+      ReminderTabScreen(onProfileTap: _goToProfile),
+      MainStoreScreen(onProfileTap: _goToProfile),
+      OtherFeatureMainScreen(onProfileTap: _goToProfile),
+      const MyProfileScreen(),
+    ];
     return BlocConsumer<UserBloc, UserState>(
       listener: (context, state) {
         if (state is UserLoadedState) {
-          reminderNotificationSync.start(state.activeFamilyId, state.isAppowner);
+          reminderNotificationSync.start(
+            state.activeFamilyId,
+            state.isAppowner,
+          );
         }
       },
       builder: (context, state) {

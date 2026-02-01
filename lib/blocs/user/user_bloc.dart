@@ -9,20 +9,25 @@ import 'package:remindus/models/guardian_model.dart';
 import 'package:remindus/repositories/guardian/guardian_repositories.dart';
 import 'package:remindus/screens/profile/add_guardian_screen.dart';
 
+import 'package:remindus/repositories/authentication/authentication_repository.dart';
+
 part 'user_event.dart';
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final AuthRepository _authRepository;
   GuardianRepository guardianRepository;
 
   UserBloc({
     required FirebaseAuth auth,
     required FirebaseFirestore firestore,
     required this.guardianRepository,
+    required AuthRepository authRepository,
   }) : _auth = auth,
        _firestore = firestore,
+       _authRepository = authRepository,
        super(UserInitialState()) {
     on<LoadUserEvent>(_onLoadUser);
     on<SwitchActiveFamilyEvent>(_onSwitchFamily);
@@ -36,6 +41,47 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UpdateGuardianEvent>(_onUpdateGuardian);
 
     on<DeleteGuardianEvent>(_onDeleteGuardian);
+
+    on<UpdateUserProfileEvent>(_onUpdateUserProfile);
+    on<ChangePasswordEvent>(_onChangePassword);
+  }
+
+  Future<void> _onUpdateUserProfile(
+    UpdateUserProfileEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(const UserUpdateLoadingState());
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _authRepository.updateProfile(
+          uid: user.uid,
+          name: event.name,
+          phone: event.phone,
+        );
+        emit(const ProfileUpdateSuccessState());
+      } else {
+        emit(const UserErrorState("User not logged in"));
+      }
+    } catch (e) {
+      emit(UserErrorState(e.toString()));
+    }
+  }
+
+  Future<void> _onChangePassword(
+    ChangePasswordEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(const UserUpdateLoadingState());
+    try {
+      await _authRepository.changePassword(
+        currentPassword: event.currentPassword,
+        newPassword: event.newPassword,
+      );
+      emit(const PasswordChangeSuccessState());
+    } catch (e) {
+      emit(UserErrorState(e.toString()));
+    }
   }
 
   Future<void> _onDeleteGuardian(
@@ -130,31 +176,30 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     }
   }
 
- Future<void> _onSwitchFamily(
+  Future<void> _onSwitchFamily(
     SwitchActiveFamilyEvent event,
     Emitter<UserState> emit,
   ) async {
-  final user = _auth.currentUser;
-  if (user != null) {
-    // 1. Loading පෙන්වන්න (මෙතන Loader එක පටන් ගන්නවා)
-    emit(const UserLoadingState()); 
+    final user = _auth.currentUser;
+    if (user != null) {
+      // 1. Loading පෙන්වන්න (මෙතන Loader එක පටන් ගන්නවා)
+      emit(const UserLoadingState());
 
-    try {
-      // 2. Firestore update එක විතරක් කරන්න.
-      // Update වුණු ගමන් _onLoadUser එකේ තියෙන snapshots() එක මේක අහු කරගෙන 
-      // automatic අලුත් UserLoadedState එකක් emit කරයි.
-      await _firestore.collection('users').doc(user.uid).update({
-        'activeFamilyId': event.familyId,
-      });
+      try {
+        // 2. Firestore update එක විතරක් කරන්න.
+        // Update වුණු ගමන් _onLoadUser එකේ තියෙන snapshots() එක මේක අහු කරගෙන
+        // automatic අලුත් UserLoadedState එකක් emit කරයි.
+        await _firestore.collection('users').doc(user.uid).update({
+          'activeFamilyId': event.familyId,
+        });
 
-      // මෙතන අමුතුවෙන් UserLoadedState එකක් emit කරන්න අවශ්‍ය නැහැ.
-      // මොකද forEach එක ඒක කරනවා.
-      
-    } catch (e) {
-      emit(UserErrorState("Failed to switch: ${e.toString()}"));
+        // මෙතන අමුතුවෙන් UserLoadedState එකක් emit කරන්න අවශ්‍ය නැහැ.
+        // මොකද forEach එක ඒක කරනවා.
+      } catch (e) {
+        emit(UserErrorState("Failed to switch: ${e.toString()}"));
+      }
     }
   }
-}
 
   // Future<void> _onLoadUser(LoadUserEvent event, Emitter<UserState> emit) async {
   //   final user = _auth.currentUser;
@@ -219,59 +264,65 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   //     onError: (error, stackTrace) => UserErrorState(error.toString()),
   //   );
   // }
-Future<void> _onLoadUser(LoadUserEvent event, Emitter<UserState> emit) async {
-  final user = _auth.currentUser;
-  if (user == null) {
-    log("user not logged in 1");
-    emit(const UserErrorState('User not logged in'));
-    return;
+  Future<void> _onLoadUser(LoadUserEvent event, Emitter<UserState> emit) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      log("user not logged in 1");
+      emit(const UserErrorState('User not logged in'));
+      return;
+    }
+
+    emit(const UserLoadingState());
+
+    final userStream = _firestore.collection('users').doc(user.uid).snapshots();
+
+    await emit.forEach<UserLoadedState>(
+      userStream.asyncMap((userDoc) async {
+        final userData = userDoc.data() as Map<String, dynamic>? ?? {};
+        final activeFamilyId = userData['activeFamilyId'] ?? user.uid;
+        final rawJoinedFamilies =
+            userData['joinedFamilies'] as List<dynamic>? ?? [];
+        final permissions = userData['permissions'] ?? {};
+
+        // Active family details fetch kirima
+        final familyDoc = await _firestore
+            .collection('users')
+            .doc(activeFamilyId)
+            .get();
+        final familyData = familyDoc.data() as Map<String, dynamic>? ?? {};
+
+        final List<Map<String, dynamic>> joinedFamilies = rawJoinedFamilies.map(
+          (item) {
+            if (item is Map) return Map<String, dynamic>.from(item);
+            return {
+              'id': item.toString(),
+              'name': item.toString() == user.uid ? "My Home" : "Shared Family",
+            };
+          },
+        ).toList();
+
+        String role;
+        if (activeFamilyId == user.uid) {
+          role = AccessLevel.fullControl.name;
+        } else {
+          final perms = Map<String, dynamic>.from(permissions);
+          role = perms[activeFamilyId] ?? AccessLevel.viewOnly.name;
+        }
+
+        // Methana State eka return karanawa asyncMap eka athule
+        return UserLoadedState(
+          userId: user.uid,
+          activeFamilyId: activeFamilyId,
+          joinedFamilies: joinedFamilies,
+          currentUserRole: role,
+          userName: familyData['name'] ?? 'No Name',
+          email: familyData['email'] ?? 'No Email',
+          phone: familyData['phone'] ?? 'No Phone',
+        );
+      }),
+      // FIX: onData eka athule kelinma return karanna, emit use karanna epa
+      onData: (loadedState) => loadedState,
+      onError: (error, stackTrace) => UserErrorState(error.toString()),
+    );
   }
-
-  emit(const UserLoadingState());
-
-  final userStream = _firestore.collection('users').doc(user.uid).snapshots();
-
-  await emit.forEach<UserLoadedState>(
-    userStream.asyncMap((userDoc) async {
-      final userData = userDoc.data() as Map<String, dynamic>? ?? {};
-      final activeFamilyId = userData['activeFamilyId'] ?? user.uid;
-      final rawJoinedFamilies = userData['joinedFamilies'] as List<dynamic>? ?? [];
-      final permissions = userData['permissions'] ?? {};
-
-      // Active family details fetch kirima
-      final familyDoc = await _firestore.collection('users').doc(activeFamilyId).get();
-      final familyData = familyDoc.data() as Map<String, dynamic>? ?? {};
-
-      final List<Map<String, dynamic>> joinedFamilies = rawJoinedFamilies.map((item) {
-        if (item is Map) return Map<String, dynamic>.from(item);
-        return {
-          'id': item.toString(),
-          'name': item.toString() == user.uid ? "My Home" : "Shared Family",
-        };
-      }).toList();
-
-      String role;
-      if (activeFamilyId == user.uid) {
-        role = AccessLevel.fullControl.name;
-      } else {
-        final perms = Map<String, dynamic>.from(permissions);
-        role = perms[activeFamilyId] ?? AccessLevel.viewOnly.name;
-      }
-
-      // Methana State eka return karanawa asyncMap eka athule
-      return UserLoadedState(
-        userId: user.uid,
-        activeFamilyId: activeFamilyId,
-        joinedFamilies: joinedFamilies,
-        currentUserRole: role,
-        userName: familyData['name'] ?? 'No Name',
-        email: familyData['email'] ?? 'No Email',
-        phone: familyData['phone'] ?? 'No Phone',
-      );
-    }),
-    // FIX: onData eka athule kelinma return karanna, emit use karanna epa
-    onData: (loadedState) => loadedState, 
-    onError: (error, stackTrace) => UserErrorState(error.toString()),
-  );
-}
 }

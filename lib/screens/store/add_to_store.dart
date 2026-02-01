@@ -83,9 +83,9 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final activeFamiltId = context.read<UserBloc>().state is UserLoadedState 
-      ? (context.read<UserBloc>().state as UserLoadedState).activeFamilyId 
-      : FirebaseAuth.instance.currentUser?.uid;
+    final activeFamiltId = context.read<UserBloc>().state is UserLoadedState
+        ? (context.read<UserBloc>().state as UserLoadedState).activeFamilyId
+        : FirebaseAuth.instance.currentUser?.uid;
     return BlocConsumer<MedicalStoreBloc, MedicalStoreState>(
       listener: (context, state) {
         if (state is MedicalStoreErrorState) {
@@ -261,7 +261,6 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
                   AppTextField(
                     controller: _qtyController,
@@ -273,6 +272,7 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                       }
                       return null;
                     },
+                    keyboardType: TextInputType.number,
                     isPassword: false,
                     label: "Quantity",
                   ),
@@ -446,7 +446,10 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
 
                             if (widget.isEditMode) {
                               context.read<MedicalStoreBloc>().add(
-                                UpdateMedicalStoreEvent(medicine: medicine,activeFamiltId: activeFamiltId!),
+                                UpdateMedicalStoreEvent(
+                                  medicine: medicine,
+                                  activeFamiltId: activeFamiltId!,
+                                ),
                               );
                             }
 

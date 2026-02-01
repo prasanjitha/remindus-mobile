@@ -259,87 +259,8 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                   );
                                 },
                               ),
-                              const SizedBox(height: 12),
-                              StreamBuilder<List<MedicineStoreModel>>(
-                                stream: reminderService.getRefillAlerts(
-                                  activeFamilyId: activeFamilyId,
-                                ),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const SizedBox.shrink();
-                                  }
 
-                                  final refillMedicines = snapshot.data ?? [];
-
-                                  if (refillMedicines.isEmpty) {
-                                    return const SizedBox.shrink();
-                                  }
-
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20.0,
-                                        ),
-                                        child: _SectionHeader(
-                                          title: 'Alerts',
-                                          context: context,
-                                          onViewAll: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const MainTabScreen(
-                                                      initialIndex: 2,
-                                                    ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 20.0,
-                                        ),
-                                        child: SizedBox(
-                                          height: 56,
-                                          child: ListView.separated(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: refillMedicines.length,
-                                            separatorBuilder: (_, __) =>
-                                                const SizedBox(width: 12),
-                                            itemBuilder: (context, index) {
-                                              final medicine =
-                                                  refillMedicines[index];
-
-                                              return AlertCard(
-                                                alert: Alert(
-                                                  title:
-                                                      '${medicine.name} Refill Needed',
-                                                  description:
-                                                      'Refill prescription now',
-                                                  icon: Icons.warning,
-                                                  backgroundColor: context
-                                                      .appColors
-                                                      .lightRed!,
-                                                ),
-                                                context: context,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ],
-                                  );
-                                },
-                              ),
-
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 24.0),
 
                               // Quick Actions Section
                               Padding(
@@ -360,7 +281,6 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                   left: 20.0,
                                   right: 20.0,
                                   top: 12.0,
-                                  bottom: 24.0,
                                 ),
                                 child: IntrinsicHeight(
                                   child: Row(
@@ -442,6 +362,85 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                     ],
                                   ),
                                 ),
+                              ),
+                              const SizedBox(height: 24.0),
+                              StreamBuilder<List<MedicineStoreModel>>(
+                                stream: reminderService.getRefillAlerts(
+                                  activeFamilyId: activeFamilyId,
+                                ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  final refillMedicines = snapshot.data ?? [];
+
+                                  if (refillMedicines.isEmpty) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20.0,
+                                        ),
+                                        child: _SectionHeader(
+                                          title: 'Alerts',
+                                          context: context,
+                                          onViewAll: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const MainTabScreen(
+                                                      initialIndex: 2,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 20.0,
+                                        ),
+                                        child: SizedBox(
+                                          height: 56,
+                                          child: ListView.separated(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: refillMedicines.length,
+                                            separatorBuilder: (_, __) =>
+                                                const SizedBox(width: 12),
+                                            itemBuilder: (context, index) {
+                                              final medicine =
+                                                  refillMedicines[index];
+
+                                              return AlertCard(
+                                                alert: Alert(
+                                                  title:
+                                                      '${medicine.name} Refill Needed',
+                                                  description:
+                                                      'Refill prescription now',
+                                                  icon: Icons.warning,
+                                                  backgroundColor: context
+                                                      .appColors
+                                                      .lightRed!,
+                                                ),
+                                                context: context,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),

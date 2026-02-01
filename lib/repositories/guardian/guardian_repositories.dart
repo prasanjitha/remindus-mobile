@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:remindus/models/guardian_model.dart';
+import 'package:remindus/services/notification_service.dart';
 
 import 'base_guardian_repositories.dart';
 
@@ -82,6 +83,7 @@ class GuardianRepository extends BaseGuardianRepository {
         guardianEmail: guardianEmail,
         relationship: relationship,
         accessLevel: selectedAccessLevel,
+        guardianUserId: activeFamilyValidId,
       );
     } else {
       throw "USER_NOT_FOUND";
@@ -95,6 +97,7 @@ class GuardianRepository extends BaseGuardianRepository {
     required String guardianEmail,
     required String relationship,
     required String accessLevel,
+    String? guardianUserId,
   }) async {
     try {
       final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
@@ -136,6 +139,27 @@ class GuardianRepository extends BaseGuardianRepository {
           'accessLevel': accessLevel,
           'createdAt': FieldValue.serverTimestamp(),
         });
+
+        // Create notification for the guardian user
+        if (guardianUserId != null) {
+          final notificationService = NotificationService();
+
+          // Get family name
+          final familyDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .get();
+          final familyName = familyDoc.data()?['familyName'] ?? 'a family';
+
+          await notificationService.createGuardianNotification(
+            guardianUserId: guardianUserId,
+            familyId: userId,
+            familyName: familyName,
+            relationship: relationship,
+            accessLevel: accessLevel,
+          );
+        }
+
         return "New guardian added successfully";
       }
     } catch (e) {

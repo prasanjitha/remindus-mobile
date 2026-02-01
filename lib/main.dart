@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -33,6 +34,16 @@ void main() async {
   // Initialize notification service
   NotificationService notificationService = NotificationService();
   await notificationService.initialize();
+
+  // Set status bar color to light gray
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Color(0xFFD3D3D3), // Light gray color
+      statusBarIconBrightness:
+          Brightness.dark, // Dark icons for light background
+      statusBarBrightness: Brightness.light, // For iOS
+    ),
+  );
 
   runApp(
     DevicePreview(
@@ -69,6 +80,7 @@ class MyApp extends StatelessWidget {
             auth: FirebaseAuth.instance,
             guardianRepository: guardianRepository,
             firestore: FirebaseFirestore.instance,
+            authRepository: authRepository,
           )..add(LoadUserEvent()),
         ),
       ],

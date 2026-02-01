@@ -146,7 +146,15 @@ class WatchConnceNowScreen extends StatelessWidget {
           const SizedBox(height: 16),
           AppButton(
             text: 'Conncet Now',
-            onPressed: () {},
+            onPressed: () {
+              // Navigate to the connected screen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HealthCheckupScreen(),
+                ),
+              );
+            },
             backgroundColor: context.appColors.primary,
           ),
         ],

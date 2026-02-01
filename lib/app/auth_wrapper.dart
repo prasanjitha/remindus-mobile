@@ -1,9 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/screens/splash/splash_screen.dart';
-import 'package:remindus/screens/tab/main_tab_screen.dart';
+import 'package:remindus/screens/authentication/siginin_screen.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -18,7 +19,8 @@ class AuthWrapper extends StatelessWidget {
         }
         if (snapshot.hasData) {
           context.read<UserBloc>().add(LoadUserEvent());
-          return const MainTabScreen();
+          // return const MainTabScreen();
+          return LoginScreen();
         }
 
         return const SplashScreen();

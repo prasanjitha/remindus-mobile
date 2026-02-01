@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/notification_badge.dart';
+import 'package:remindus/screens/notifications/notification_screen.dart';
 import '../../models/user_model.dart';
 import '../../services/reminder_service.dart';
 
@@ -30,7 +32,23 @@ class CommonHeader extends StatelessWidget {
           ),
           const Spacer(),
 
-          Image.asset(Assets.notificationIcon, width: 24.0, height: 24.0),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationScreen(),
+                ),
+              );
+            },
+            child: NotificationBadge(
+              child: Image.asset(
+                Assets.notificationIcon,
+                width: 24.0,
+                height: 24.0,
+              ),
+            ),
+          ),
           const SizedBox(width: 10.0),
 
           GestureDetector(

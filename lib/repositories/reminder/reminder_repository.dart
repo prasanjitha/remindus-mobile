@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/models/voice_notification_model.dart';
 import 'package:remindus/services/local_notification_service.dart';
+import 'package:remindus/services/notification_service.dart' as notif;
+import 'package:intl/intl.dart';
 
 import 'base_reminder.dart';
 
@@ -31,6 +33,24 @@ class ReminderRepository extends BaseReminderRepositories {
       data['reminderId'] = docRef.id;
 
       await docRef.set(data);
+
+      // Create notification for the new reminder
+      if (reminder.scheduledAt != null && reminder.time != null) {
+        final notificationService = notif.NotificationService();
+        final date = DateFormat(
+          'yyyy/MM/dd',
+        ).format(reminder.scheduledAt!.toDate());
+        await notificationService.createReminderNotification(
+          userId: activeFamilyId,
+          reminderId: docRef.id,
+          reminderTitle:
+              reminder.title ??
+              (reminder.type == "Medicine" ? "Medicine" : "Meeting"),
+          date: date,
+          time: reminder.time!,
+        );
+      }
+
       return true;
     } catch (e) {
       log("Error adding reminder: $e");
@@ -39,48 +59,49 @@ class ReminderRepository extends BaseReminderRepositories {
   }
 
   Stream<DocumentSnapshot> getHealthStatusStream(String familyId) {
-  return _firestore
-      .collection('users')
-      .doc(familyId)
-      .collection('health-condition')
-      .doc('status')
-      .snapshots();
-}
-
-Future<bool> updateFamilyHealthData({
-  required String familyId,
-  Map<String, Set<String>>? allergies,
-  String? heartRate,
-  String? bloodPressure,
-  String? bloodGroup,
-}) async {
-  try {
-    final Map<String, dynamic> dataToUpdate = {};
-    if (allergies != null) {
-      dataToUpdate['allergies'] = allergies.map(
-        (key, value) => MapEntry(key, value.toList()),
-      );
-    }
-
-    if (heartRate != null) dataToUpdate['heartRate'] = "$heartRate bpm" ;
-    if (bloodPressure != null) dataToUpdate['bloodPressure'] = "$bloodPressure mmHg";
-    if (bloodGroup != null) dataToUpdate['bloodGroup'] = bloodGroup;
-
-    dataToUpdate['updatedAt'] = FieldValue.serverTimestamp();
-
-    final docRef = _firestore
+    return _firestore
         .collection('users')
         .doc(familyId)
         .collection('health-condition')
-        .doc('status'); 
-    await docRef.set(dataToUpdate, SetOptions(merge: true));
-
-    return true;
-  } catch (e) {
-    log("Error updating health records: $e");
-    return false;
+        .doc('status')
+        .snapshots();
   }
-}
+
+  Future<bool> updateFamilyHealthData({
+    required String familyId,
+    Map<String, Set<String>>? allergies,
+    String? heartRate,
+    String? bloodPressure,
+    String? bloodGroup,
+  }) async {
+    try {
+      final Map<String, dynamic> dataToUpdate = {};
+      if (allergies != null) {
+        dataToUpdate['allergies'] = allergies.map(
+          (key, value) => MapEntry(key, value.toList()),
+        );
+      }
+
+      if (heartRate != null) dataToUpdate['heartRate'] = "$heartRate bpm";
+      if (bloodPressure != null)
+        dataToUpdate['bloodPressure'] = "$bloodPressure mmHg";
+      if (bloodGroup != null) dataToUpdate['bloodGroup'] = bloodGroup;
+
+      dataToUpdate['updatedAt'] = FieldValue.serverTimestamp();
+
+      final docRef = _firestore
+          .collection('users')
+          .doc(familyId)
+          .collection('health-condition')
+          .doc('status');
+      await docRef.set(dataToUpdate, SetOptions(merge: true));
+
+      return true;
+    } catch (e) {
+      log("Error updating health records: $e");
+      return false;
+    }
+  }
 
   // Update  Reminder
   @override
@@ -90,7 +111,9 @@ Future<bool> updateFamilyHealthData({
     required String activeFamilyId,
   }) async {
     try {
-      log("Starting update for reminder ID: $reminderId");
+      log(
+        "Starting update for reminder ID: $reminderId activeFamilyId $activeFamilyId",
+      );
       // final String? userId = _auth.currentUser?.uid;
       log("user not logged in 5");
 
@@ -118,7 +141,7 @@ Future<bool> updateFamilyHealthData({
   @override
   Future<bool> addVoiceNotification({
     required VoiceNotificationModel voiceNotificationModel,
-    required bool isAppOwner
+    required bool isAppOwner,
   }) async {
     try {
       NotificationService notificationService = NotificationService();

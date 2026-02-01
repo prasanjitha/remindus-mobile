@@ -145,3 +145,23 @@ class UserErrorState extends UserState {
   @override
   List<Object?> get props => [message];
 }
+
+class ProfileUpdateSuccessState extends UserState {
+  final String message;
+  const ProfileUpdateSuccessState({
+    this.message = "Profile updated successfully!",
+  });
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class PasswordChangeSuccessState extends UserState {
+  final String message;
+  const PasswordChangeSuccessState({
+    this.message = "Password changed successfully!",
+  });
+
+  @override
+  List<Object?> get props => [message];
+}

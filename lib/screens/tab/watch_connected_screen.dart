@@ -217,11 +217,6 @@ class _HealthCheckupScreenState extends State<HealthCheckupScreen> {
               text: 'Manage Connection',
               onPressed: () {
                 // Handle manage connection action
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const WatchConnceNowScreen(),
-                  ),
-                );
               },
               backgroundColor: context.appColors.primary,
             ),

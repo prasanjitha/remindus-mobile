@@ -1,11 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class BaseAuthRepositories {
-  Future<UserCredential?> signUpWithEmailAndPassword(
-      {required String name, required String email, required String password});
+  Future<UserCredential?> signUpWithEmailAndPassword({
+    required String name,
+    required String email,
+    required String password,
+  });
 
-  Future<UserCredential?> signInWithEmailAndPassword(
-      {required String email, required String password});
+  Future<UserCredential?> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
 
   Future<void> handleAuthentication();
 
@@ -15,10 +20,18 @@ abstract class BaseAuthRepositories {
     required Function(FirebaseAuthException) onFailed,
   });
 
-  Future<UserCredential> signInWithOtp(
-    String verificationId,
-    String smsCode,
-  );
+  Future<UserCredential> signInWithOtp(String verificationId, String smsCode);
 
-  Future<void> resetPassword(String email) ;
+  Future<void> resetPassword(String email);
+
+  Future<void> updateProfile({
+    required String uid,
+    required String name,
+    required String phone,
+  });
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }
