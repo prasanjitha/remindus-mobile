@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
-final String? uid;
+  final String? uid;
   final String? name;
   final String? email;
+  final String? phone;
   final String? familyName;
   final String? activeFamilyId;
   // මෙතන List<dynamic> කරන්න මොකද Firestore එකෙන් එන්නේ Maps list එකක් නිසා
-  final List<dynamic>? joinedFamilies; 
+  final List<dynamic>? joinedFamilies;
   final String? accessLevel;
   final Timestamp? createdAt;
 
@@ -15,6 +16,7 @@ final String? uid;
     this.uid,
     this.name,
     this.email,
+    this.phone,
     this.familyName,
     this.activeFamilyId,
     this.joinedFamilies,
@@ -24,11 +26,12 @@ final String? uid;
 
   factory UserModel.fromMap(Map<String, dynamic>? map) {
     if (map == null) return UserModel();
-    
+
     return UserModel(
       uid: map['uid'] as String?,
       name: map['name'] as String?,
       email: map['email'] as String?,
+      phone: map['phone'] as String?,
       familyName: map['familyName'] as String?,
       activeFamilyId: map['activeFamilyId'] as String?,
       joinedFamilies: map['joinedFamilies'] as List<dynamic>?,
@@ -41,6 +44,7 @@ final String? uid;
       'uid': uid,
       'name': name,
       'email': email,
+      'phone': phone,
       'familyName': familyName,
       'activeFamilyId': activeFamilyId,
       'joinedFamilies': joinedFamilies,

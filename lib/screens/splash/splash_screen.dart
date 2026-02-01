@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../blocs/authentication/authentication_bloc.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  String _version = "";
 
   @override
   void initState() {
@@ -24,8 +26,17 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat(reverse: true);
-
+    _loadVersion();
     _navigateToNext();
+  }
+
+  Future<void> _loadVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = packageInfo.version;
+      });
+    }
   }
 
   void _navigateToNext() {
@@ -54,13 +65,23 @@ class _SplashScreenState extends State<SplashScreen>
               opacity: const AlwaysStoppedAnimation(0.6),
             ),
           ),
-          Center(
-            child: Image.asset(
-              Assets.logoIcon,
-              width: 38,
-              height: 38,
+          Center(child: Image.asset(Assets.logoIcon, width: 38, height: 38)),
+          if (_version.isNotEmpty)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  "Version $_version",
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );

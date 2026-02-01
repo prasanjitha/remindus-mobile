@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ReminderModel {
   // Common Fields
   final String? reminderId;
-  final String? type; 
+  final String? type;
   final String? title;
   final String? time;
   final bool? isRead;
@@ -15,7 +15,6 @@ class ReminderModel {
   final Timestamp? scheduledAt;
   final String? bloodPressure;
   final String? heartRate;
-  
 
   // Meeting Specific
   final Timestamp? date;
@@ -54,7 +53,6 @@ class ReminderModel {
     this.bloodPressure,
     this.heartRate,
   });
-
 
   /// ---------------- copyWith ----------------
   ReminderModel copyWith({
@@ -134,7 +132,6 @@ class ReminderModel {
     };
   }
 
-  /// fromMap KEPT AS REQUESTED
   factory ReminderModel.fromMap(Map<String, dynamic> map) {
     return ReminderModel(
       reminderId: map['reminderId'],
@@ -154,11 +151,15 @@ class ReminderModel {
       afternoon: map['afternoon'],
       evening: map['evening'],
       night: map['night'],
-      schedule: map['shedule'],
+      schedule: map['schedule'] != null
+          ? (map['schedule'] as List)
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList()
+          : null,
       notificationId: map['notificationId'],
       scheduledAt: map['scheduledAt'],
       bloodPressure: map['bloodPressure'],
-      heartRate: map['heartRate']
+      heartRate: map['heartRate'],
     );
   }
 }

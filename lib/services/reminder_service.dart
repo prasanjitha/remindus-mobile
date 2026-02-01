@@ -1,4 +1,4 @@
-
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/base_reminder_model.dart';
@@ -16,6 +16,7 @@ class ReminderService {
   Stream<List<ReminderModel>> getAllReminders({
     required String activeFamilyId,
   }) {
+    log("Active Family ID: $activeFamilyId");
     return _reminderRef(
       activeFamilyId,
     ).orderBy('scheduledAt', descending: false).snapshots().map(_mapSnapshot);
@@ -25,24 +26,18 @@ class ReminderService {
   Stream<List<ReminderModel>> getCompletedReminders({
     required String activeFamilyId,
   }) {
-    return _reminderRef(activeFamilyId)
-        .where('isRead', isEqualTo: true)
-        .orderBy('scheduledAt', descending: false)
-        .snapshots()
-        .map(_mapSnapshot);
+    return getAllReminders(activeFamilyId: activeFamilyId).map((reminders) {
+      return reminders.where((r) => r.isRead == true).toList();
+    });
   }
 
   // Upcoming Reminders (isRead = false)
   Stream<List<ReminderModel>> getUpcomingReminders({
     required String activeFamilyId,
   }) {
-    final now = Timestamp.now();
-    return _reminderRef(activeFamilyId)
-        .where('isRead', isEqualTo: false)
-        .where('scheduledAt', isGreaterThanOrEqualTo: now)
-        .orderBy('scheduledAt', descending: false)
-        .snapshots()
-        .map(_mapSnapshot);
+    return getAllReminders(activeFamilyId: activeFamilyId).map((reminders) {
+      return reminders.where((r) => r.isRead == false).toList();
+    });
   }
 
   /// Unified API
@@ -67,13 +62,17 @@ class ReminderService {
   }) {
     final now = Timestamp.now();
 
-    return _reminderRef(activeFamilyId)
-        .where('isRead', isEqualTo: false)
-        .where('scheduledAt', isGreaterThanOrEqualTo: now)
-        .orderBy('scheduledAt', descending: false)
-        .limit(2)
-        .snapshots()
-        .map(_mapSnapshot);
+    return getAllReminders(activeFamilyId: activeFamilyId).map((reminders) {
+      return reminders
+          .where(
+            (r) =>
+                r.isRead == false &&
+                r.scheduledAt != null &&
+                r.scheduledAt!.compareTo(now) >= 0,
+          )
+          .take(2)
+          .toList();
+    });
   }
 
   // Refill Alerts from Medicine Store

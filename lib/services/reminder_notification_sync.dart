@@ -14,40 +14,46 @@ class ReminderNotificationSync {
   StreamSubscription? _refillSubscription;
 
   void start(String activeFamilyId, bool isAppOwner) {
- _subscription = _reminderService
-      .getLatestTwoUpcoming(activeFamilyId: activeFamilyId)
-      .listen((List<ReminderModel> reminders) {
+    _subscription = _reminderService
+        .getLatestTwoUpcoming(activeFamilyId: activeFamilyId)
+        .listen((List<ReminderModel> reminders) {
+          _syncNotifications(reminders, isAppOwner);
+        });
 
-        _syncNotifications(reminders, isAppOwner);
-      });
-
-    _refillSubscription = _reminderService.getRefillAlerts(
-      activeFamilyId: activeFamilyId,
-    ).listen(
-      _syncRefillNotifications,
-    );
+    _refillSubscription = _reminderService
+        .getRefillAlerts(activeFamilyId: activeFamilyId)
+        .listen(_syncRefillNotifications);
   }
 
-  Future<void> _syncNotifications(List<ReminderModel> reminders, bool isAppOwner) async {
+  Future<void> _syncNotifications(
+    List<ReminderModel> reminders,
+    bool isAppOwner,
+  ) async {
     try {
       await AwesomeNotifications().cancelAllSchedules();
 
       for (final reminder in reminders) {
         final scheduledDate = reminder.scheduledAt!.toDate();
         String message = '';
+        String title = '';
         if (reminder.type == 'Medicine') {
+          title = 'Medicine Reminder';
           message =
-              'You have to take ${reminder.medicineName} for ${reminder.dose} now';
+              'Hello! It\'s time to take your ${reminder.medicineName}. The dose is ${reminder.dose}. Please take it now.';
         } else if (reminder.type == 'Meeting') {
-          message = 'You have a  ${reminder.title} now';
+          title = 'Meeting Reminder';
+          message =
+              'Hello! Your meeting "${reminder.title}" is starting now. Please be ready.';
         }
 
         await _notificationService.scheduleNotification(
           id: reminder.reminderId.hashCode,
           hour: scheduledDate.hour,
           minute: scheduledDate.minute,
-          title: reminder.title!,
-          body: reminder.medicineName ?? '',
+          title: title,
+          body: reminder.type == 'Medicine'
+              ? reminder.medicineName ?? ''
+              : reminder.title ?? '',
           day: scheduledDate.day,
           month: scheduledDate.month,
           reminderId: reminder.reminderId,
@@ -61,28 +67,28 @@ class ReminderNotificationSync {
     }
   }
 
-Future<void> _syncRefillNotifications(
+  Future<void> _syncRefillNotifications(
     List<MedicineStoreModel> refillMedicines,
   ) async {
     try {
       DateTime now = DateTime.now();
-      
+
       DateTime startOfToday = DateTime(now.year, now.month, now.day);
 
       for (int i = 0; i < refillMedicines.length; i++) {
         final medicine = refillMedicines[i];
 
         bool alreadyNotified = medicine.isNotified ?? false;
-        
+
         DateTime? lastNotified = medicine.lastNotifiedAt;
 
-        if (alreadyNotified && lastNotified != null && lastNotified.isAfter(startOfToday)) {
-          continue; 
+        if (alreadyNotified &&
+            lastNotified != null &&
+            lastNotified.isAfter(startOfToday)) {
+          continue;
         }
 
-     
         DateTime scheduledTime = now.add(Duration(minutes: i + 1));
-        
 
         await _notificationService.scheduleNotification(
           id: medicine.medicineStoreId.hashCode,
@@ -90,16 +96,15 @@ Future<void> _syncRefillNotifications(
           minute: scheduledTime.minute,
           day: scheduledTime.day,
           month: scheduledTime.month,
-          title: 'Stock Empty!',
+          title: 'Stock Alert!',
           body: medicine.name ?? '',
-          message: '${medicine.name} is out of stock. Please refill your store.',
+          message:
+              'Hello! Your stock for ${medicine.name} is empty. Please refill your medicine store.',
           reminderId: medicine.medicineStoreId,
-          dose: '', 
-          
+          dose: '',
         );
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   void dispose() {

@@ -26,7 +26,6 @@ class AuthRepository extends BaseAuthRepositories {
 
       await userCredential.user?.sendEmailVerification();
 
-
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'uid': uid,
         'name': name,
@@ -36,7 +35,7 @@ class AuthRepository extends BaseAuthRepositories {
         'joinedFamilies': FieldValue.arrayUnion([
           {'id': uid, 'name': "My Account"},
         ]),
-        'permissions':AccessLevel.fullControl.name,
+        'permissions': AccessLevel.fullControl.name,
         'accessLevel': 'owner',
       });
     } on FirebaseAuthException catch (error) {
@@ -88,15 +87,17 @@ class AuthRepository extends BaseAuthRepositories {
   }) async {
     log("Code sent to $phoneNumber");
     String cleanPhoneNumber = phoneNumber.replaceAll(' ', '');
-    if(cleanPhoneNumber== "+94765567654"){
+    if (cleanPhoneNumber == "+94765567654") {
       String simulatedVerificationId = "simulated_verification_id";
       onCodeSent(simulatedVerificationId);
     } else {
-      return Future.error("Phone authentication is not set up for this number.");
+      return Future.error(
+        "Phone authentication is not set up for this number.",
+      );
     }
     // await FirebaseAuth.instance.verifyPhoneNumber(
     //   phoneNumber: phoneNumber,
-      
+    //
     //   verificationCompleted: (PhoneAuthCredential credential) async {
     //     await FirebaseAuth.instance.signInWithCredential(credential);
     //   },
@@ -116,10 +117,11 @@ class AuthRepository extends BaseAuthRepositories {
   ) async {
     try {
       final cleanSmsCode = smsCode.replaceAll(' ', '');
-      if(cleanSmsCode != "204036"){
+      if (cleanSmsCode != "204036") {
         return Future.error("Invalid OTP code.");
       }
-      if(verificationId == "simulated_verification_id" && cleanSmsCode == "204036"){
+      if (verificationId == "simulated_verification_id" &&
+          cleanSmsCode == "204036") {
         return null as UserCredential;
       }
       // PhoneAuthCredential credential = PhoneAuthProvider.credential(
@@ -127,7 +129,9 @@ class AuthRepository extends BaseAuthRepositories {
       //   smsCode: smsCode,
       // );
       // return await FirebaseAuth.instance.signInWithCredential(credential);
-      return Future.error("Phone authentication is not set up for this number.");
+      return Future.error(
+        "Phone authentication is not set up for this number.",
+      );
     } catch (e) {
       return Future.error(e);
     }
@@ -139,10 +143,11 @@ class AuthRepository extends BaseAuthRepositories {
   ) async {
     try {
       final cleanSmsCode = smsCode.replaceAll(' ', '');
-      if(cleanSmsCode != "204036"){
+      if (cleanSmsCode != "204036") {
         return Future.error("Invalid OTP code.");
       }
-      if(verificationId == "simulated_verification_id" && cleanSmsCode == "204036"){
+      if (verificationId == "simulated_verification_id" &&
+          cleanSmsCode == "204036") {
         return true;
       }
       // PhoneAuthCredential credential = PhoneAuthProvider.credential(
@@ -196,8 +201,8 @@ class AuthRepository extends BaseAuthRepositories {
           'familyName': "$name's Family",
           'activeFamilyId': uid,
           'joinedFamilies': FieldValue.arrayUnion([
-          {'id': uid, 'name': "My Account"},
-        ]),
+            {'id': uid, 'name': "My Account"},
+          ]),
           'accessLevel': 'owner',
           'permissions': AccessLevel.fullControl.name,
           'createdAt': FieldValue.serverTimestamp(),
@@ -232,4 +237,44 @@ class AuthRepository extends BaseAuthRepositories {
 
   @override
   Future<void> handleAuthentication() async {}
+
+  @override
+  Future<void> updateProfile({
+    required String uid,
+    required String name,
+    required String phone,
+  }) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'name': name,
+        'phone': phone,
+      });
+    } catch (e) {
+      throw CustomException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null && user.email != null) {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPassword,
+        );
+        await user.reauthenticateWithCredential(credential);
+        await user.updatePassword(newPassword);
+      } else {
+        throw CustomException(message: "User not logged in");
+      }
+    } on FirebaseAuthException catch (e) {
+      throw CustomException(message: e.message ?? "Failed to change password");
+    } catch (e) {
+      throw CustomException(message: e.toString());
+    }
+  }
 }

@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/screens/reminders/add_reminder_screen.dart';
+import 'package:remindus/screens/reminders/calendar_screen.dart';
 import 'package:remindus/services/reminder_service.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/common-header.dart';
@@ -51,7 +54,7 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CommonHeader(onProfileTap: widget.onProfileTap,),
+              CommonHeader(onProfileTap: widget.onProfileTap),
               const SizedBox(height: 10.0),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -67,13 +70,33 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
                       ),
                     ),
                     const SizedBox(height: 4.0),
-                    Text(
-                      "What's coming up next",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        color: appColors.textSecondary,
-                        fontSize: 16.0,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "What's coming up next",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            color: appColors.textSecondary,
+                            fontSize: 16.0,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CalendarScreen(),
+                              ),
+                            );
+                          },
+                          child: Icon(
+                            Icons.calendar_month,
+                            color: appColors.primary,
+                            size: 24.0,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -276,6 +299,7 @@ class ReminderCard extends StatelessWidget {
                       const SizedBox(width: 12.0),
                       GestureDetector(
                         onTap: () {
+                          log("${reminder}");
                           Navigator.push(
                             context,
                             MaterialPageRoute(

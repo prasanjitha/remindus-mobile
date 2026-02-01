@@ -56,7 +56,6 @@ class DeleteGuardianEvent extends UserEvent {
   List<Object?> get props => [guardianId, activeFamilyId];
 }
 
-
 class AddNewGuardianEvent extends UserEvent {
   final String guardianName;
   final String guardianEmail;
@@ -73,5 +72,34 @@ class AddNewGuardianEvent extends UserEvent {
   });
 
   @override
-  List<Object?> get props => [guardianName, guardianEmail, relationship, accessLevel, activeFamilyId];
+  List<Object?> get props => [
+    guardianName,
+    guardianEmail,
+    relationship,
+    accessLevel,
+    activeFamilyId,
+  ];
+}
+
+class UpdateUserProfileEvent extends UserEvent {
+  final String name;
+  final String phone;
+
+  const UpdateUserProfileEvent({required this.name, required this.phone});
+
+  @override
+  List<Object?> get props => [name, phone];
+}
+
+class ChangePasswordEvent extends UserEvent {
+  final String currentPassword;
+  final String newPassword;
+
+  const ChangePasswordEvent({
+    required this.currentPassword,
+    required this.newPassword,
+  });
+
+  @override
+  List<Object?> get props => [currentPassword, newPassword];
 }

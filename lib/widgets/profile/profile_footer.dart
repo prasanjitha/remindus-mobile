@@ -4,7 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/screens/authentication/siginin_screen.dart';
+import 'package:remindus/screens/profile/change_password_screen.dart';
+import 'package:remindus/screens/profile/edit_profile_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/app/app_router.dart';
 
 class ProfileFooter extends StatelessWidget {
   final String name;
@@ -85,12 +88,26 @@ class ProfileFooter extends StatelessWidget {
                   _FooterAction(
                     iconPath: Assets.quickActionIcon,
                     label: 'Edit Profile',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditProfileScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _FooterAction(
                     iconPath: Assets.passwordChangeIcon,
                     label: 'Password',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChangePasswordScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _FooterAction(
                     iconPath: Assets.logOutIcon,

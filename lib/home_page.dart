@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("RemindUs (${currentUserRole.toUpperCase()})"),
+        title: Text("Remind Us (${currentUserRole.toUpperCase()})"),
         backgroundColor: Colors.green,
         actions: [
           _buildFamilySwitcher(),

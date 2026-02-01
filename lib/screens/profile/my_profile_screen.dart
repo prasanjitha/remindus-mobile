@@ -12,6 +12,7 @@ import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/common-header.dart';
 import 'package:remindus/widgets/custom_button.dart';
 
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:remindus/widgets/profile/guardian_tile.dart';
 import 'package:remindus/widgets/profile/profile_footer.dart';
 
@@ -23,10 +24,21 @@ class MyProfileScreen extends StatefulWidget {
 }
 
 class _MyProfileScreenState extends State<MyProfileScreen> {
+  String _version = "";
+
   @override
   void initState() {
     super.initState();
-    // context.read<UserBloc>().add(LoadUserEvent());
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = packageInfo.version;
+      });
+    }
   }
 
   // Widget _buildFamilySwitcher(BuildContext context) {
@@ -98,7 +110,10 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
               const SizedBox(height: 6),
               Text(
                 "Click and switch between your guarded members",
-                style: TextStyle(fontSize: 14, color: context.appColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.appColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -365,8 +380,24 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                               ProfileFooter(
                                 name: state.userName,
                                 email: state.email,
-                                phone: '+44 xxxx xxx xx',
+                                phone: state.phone,
                               ),
+                              if (_version.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20.0,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "App Version $_version",
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                        color: context.appColors.textSecondary,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),

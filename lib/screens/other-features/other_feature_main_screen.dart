@@ -5,6 +5,7 @@ import 'package:remindus/generated/assets.dart';
 import 'package:remindus/screens/food-tacker/food_tracker_home_screen.dart';
 import 'package:remindus/screens/location-tracking/map_tracking_screen.dart';
 import 'package:remindus/screens/sos/emwrgency_sos_main_screen.dart';
+import 'package:remindus/screens/tab/watch_connect_now_screen.dart';
 import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/screens/vaccination/vaccination_list_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -104,11 +105,10 @@ class OtherFeatureMainScreen extends StatelessWidget {
                                 iconPath: Assets.healthIcon,
                                 onTap: () {
                                   // Navigate to Health Screen
-                                  Navigator.push(
-                                    context,
+                                  Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          const HealthCheckupScreen(),
+                                          const WatchConnceNowScreen(),
                                     ),
                                   );
                                 },
