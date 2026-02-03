@@ -8,6 +8,7 @@ class VaccinationRecord {
   frequency; // e.g., "Annual Booster", "Decade Booster", "Single Course"
   final DateTime? nextDoseDue;
   final String? activeFamilyId;
+  final String? reminderId; // Linked reminder document ID
 
   VaccinationRecord({
     this.id,
@@ -16,6 +17,7 @@ class VaccinationRecord {
     this.frequency,
     this.nextDoseDue,
     this.activeFamilyId,
+    this.reminderId,
   });
 
   factory VaccinationRecord.fromFirestore(DocumentSnapshot doc) {
@@ -27,6 +29,7 @@ class VaccinationRecord {
       frequency: data['frequency'] as String?,
       nextDoseDue: (data['nextDoseDue'] as Timestamp?)?.toDate(),
       activeFamilyId: data['activeFamilyId'] as String?,
+      reminderId: data['reminderId'] as String?,
     );
   }
 
@@ -38,7 +41,24 @@ class VaccinationRecord {
       if (frequency != null) 'frequency': frequency,
       if (nextDoseDue != null) 'nextDoseDue': Timestamp.fromDate(nextDoseDue!),
       if (activeFamilyId != null) 'activeFamilyId': activeFamilyId,
+      if (reminderId != null) 'reminderId': reminderId,
     };
+  }
+
+  factory VaccinationRecord.fromMap(Map<String, dynamic> map, {String? docId}) {
+    return VaccinationRecord(
+      id: docId ?? map['id'] as String?,
+      vaccineName: map['vaccineName'] as String?,
+      dateReceived: map['dateReceived'] is Timestamp
+          ? (map['dateReceived'] as Timestamp).toDate()
+          : null,
+      frequency: map['frequency'] as String?,
+      nextDoseDue: map['nextDoseDue'] is Timestamp
+          ? (map['nextDoseDue'] as Timestamp).toDate()
+          : null,
+      activeFamilyId: map['activeFamilyId'] as String?,
+      reminderId: map['reminderId'] as String?,
+    );
   }
 
   VaccinationRecord copyWith({
@@ -48,6 +68,7 @@ class VaccinationRecord {
     String? frequency,
     DateTime? nextDoseDue,
     String? activeFamilyId,
+    String? reminderId,
   }) {
     return VaccinationRecord(
       id: id ?? this.id,
@@ -56,6 +77,7 @@ class VaccinationRecord {
       frequency: frequency ?? this.frequency,
       nextDoseDue: nextDoseDue ?? this.nextDoseDue,
       activeFamilyId: activeFamilyId ?? this.activeFamilyId,
+      reminderId: reminderId ?? this.reminderId,
     );
   }
 }

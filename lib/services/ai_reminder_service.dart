@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer' show log;
+
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -14,7 +14,6 @@ class AiReminderService {
     String? imagePath,
   }) async {
     if (imagePath == null) return [];
-    log("imagePath $imagePath");
 
     try {
       final apiKey = dotenv.env['OPENAI_API_KEY'];
@@ -55,7 +54,7 @@ If type is "medicine", extract:
 - Dose: The dosage (e.g., "1 tablet", "5ml")
 - Duration: How long to take it (e.g., "1 week", "until finished")
 - start_date: Starting date in YYYY-MM-DD
-- when_to_take: A list containing one or more of ["morning", "afternoon", "evening", "night"]
+- when_to_take: A list containing one or more of ["Morning", "Afternoon", "Evening", "Night"]
 - Doses: A list of times in "HH:mm AM/PM" format corresponding to when_to_take
 
 If type is "meeting" or other, extract:
@@ -88,21 +87,19 @@ Return ONLY a JSON list of objects. Every object MUST have the "type" field.
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         String content = data['choices'][0]['message']['content'];
-        log("data $data");
+
         // Clean content if GPT adds markdown formatting
         if (content.contains('```')) {
           content = content.replaceAll(RegExp(r'```json|```'), '').trim();
         }
 
         final List<dynamic> jsonList = jsonDecode(content);
-        log("jsonList----------------------------------lllll;;;;; $jsonList");
+
         return jsonList.map((e) => _mapJsonToReminder(e)).toList();
       } else {
-        log("OpenAI API Error: ${response.statusCode} - ${response.body}");
         throw Exception('Failed to process image with AI');
       }
     } catch (e) {
-      log("Error in extractRemindersFromAi: $e");
       rethrow;
     }
   }
@@ -122,14 +119,6 @@ Return ONLY a JSON list of objects. Every object MUST have the "type" field.
 
       List<dynamic> whenToTake = json['when_to_take'] ?? [];
 
-      log("type--------------------- $type");
-      log("whenToTake $whenToTake");
-      log("whenToTake ${json['medicinename']}");
-      log(
-        "whenToTake ${(json['Doses'] as List<dynamic>?)?.map((e) => {'time': e}).toList()}",
-      );
-      log("whenToTake $whenToTake");
-
       return ReminderModel(
         title: json['title'] ?? '',
         type: type,
@@ -140,10 +129,7 @@ Return ONLY a JSON list of objects. Every object MUST have the "type" field.
         dose: json['Dose'],
         duration: json['Duration'],
         date: startDate != null ? Timestamp.fromDate(startDate) : null,
-        morning: whenToTake.contains('morning'),
-        afternoon: whenToTake.contains('afternoon'),
-        evening: whenToTake.contains('evening'),
-        night: whenToTake.contains('night'),
+        whenToTake: List<String>.from(whenToTake),
         schedule: (json['Doses'] as List<dynamic>?)
             ?.map((e) => {'time': e})
             .toList(),

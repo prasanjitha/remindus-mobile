@@ -1,16 +1,11 @@
-import 'dart:convert';
-import 'dart:developer';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 import 'package:remindus/blocs/user/user_bloc.dart';
 
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/helpers/delete_dialog_helper.dart';
+import 'package:remindus/helpers/snackbar_helper.dart';
 import 'package:remindus/models/guardian_model.dart';
 import 'package:remindus/screens/profile/add_guardient_success_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -42,6 +37,7 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
   String? selectedRelationship;
   String? selectedAccessLevel;
   String? activeFamilyId;
+  String? currentUserName;
   User? user = FirebaseAuth.instance.currentUser;
   String currentUserRole = AccessLevel.viewOnly.name;
   List joinedFamilies = [];
@@ -51,7 +47,6 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
     // TODO: implement initState
     super.initState();
     if (widget.isEditFlow == true && widget.guardianModel != null) {
-      log("Editing Guardian: ${widget.guardianModel!.email}");
       nameController.text = widget.guardianModel!.name ?? '';
       emailController.text = widget.guardianModel!.email ?? '';
       selectedRelationship = widget.guardianModel!.relationship;
@@ -86,7 +81,7 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
   //       if (userState is UserLoadedState) {
   //         activeFamilyId = userState.activeFamilyId;
   //       } else {
-  //         log("Active family ID is null and user state is not loaded.");
+
   //         setState(() {
   //           _isLoading = false;
   //         });
@@ -140,7 +135,7 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
   //       }),
   //     );
   //   } catch (e) {
-  //     log("Email Error: $e");
+
   //   }
   // }
 
@@ -281,16 +276,46 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Cancel"),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: context.appColors.textPrimary),
+            ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.read<UserBloc>().add(
-                SendInviteEvent(email: email, activeFamilyId: activeFamilyId!),
+          BlocBuilder<UserBloc, UserState>(
+            builder: (context, state) {
+              final isLoading = state is UserLoadingState;
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.appColors.primary,
+                  foregroundColor: context.appColors.bgColor,
+                ),
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        context.read<UserBloc>().add(
+                          SendInviteEvent(
+                            email: email,
+                            activeFamilyId: activeFamilyId!,
+                            curentUserName: currentUserName ?? '',
+                            guardianName: nameController.text.trim(),
+                          ),
+                        );
+                      },
+                child: isLoading
+                    ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: context.appColors.bgColor,
+                        ),
+                      )
+                    : Text(
+                        "Invite",
+                        style: TextStyle(color: context.appColors.bgColor),
+                      ),
               );
             },
-            child: const Text("Invite"),
           ),
         ],
       ),
@@ -300,29 +325,20 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    log("Current Selected Level in Build111111111: $selectedAccessLevel");
+
     return Scaffold(
       backgroundColor: appColors.bgColor,
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
           if (state is UserErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.redAccent,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            SnackbarHelper.showError(context, state.message);
+            context.read<UserBloc>().add(LoadUserEvent());
+            Navigator.of(context).pop();
           }
 
           if (state is UserSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.green,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            SnackbarHelper.showSuccess(context, state.message);
+
             context.read<UserBloc>().add(LoadUserEvent());
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
@@ -338,50 +354,44 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
           }
 
           if (state is GuardianUpdateSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Guardian details updated successfully!"),
-                backgroundColor: Colors.green,
-                behavior: SnackBarBehavior.floating,
-              ),
+            SnackbarHelper.showSuccess(
+              context,
+              "Guardian details updated successfully!",
             );
+
             context.read<UserBloc>().add(LoadUserEvent());
           }
 
           if (state is UserDeleteLoadingState) {
-            // ScaffoldMessenger.of(context).showSnackBar(
-            //   SnackBar(
-            //     content: Text(
-            //       "Deleting guardian...",
-            //       style: TextStyle(color: appColors.bgColor),
-            //     ),
-            //     backgroundColor: appColors.errorRed,
-            //     behavior: SnackBarBehavior.floating,
-            //   ),
-            // );
-
             context.read<UserBloc>().add(LoadUserEvent());
           }
-
           if (state is UserNotFoundState) {
-            _showInviteDialog(context, state.email);
+            _showInviteDialog(context, emailController.text.trim());
           }
 
           if (state is InviteSentSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Invitation sent successfully!"),
-                backgroundColor: Colors.green,
-                behavior: SnackBarBehavior.floating,
+            SnackbarHelper.showSuccess(
+              context,
+              "Invitation sent successfully!",
+            );
+            context.read<UserBloc>().add(LoadUserEvent());
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => AddGuardientSuccessScreen(
+                  guardianModel: GuardianModel(
+                    name: nameController.text.trim(),
+                    relationship: selectedRelationship,
+                    accessLevel: selectedAccessLevel,
+                  ),
+                ),
               ),
             );
-            Navigator.of(context).popUntil((route) => route.isFirst);
           }
         },
         builder: (context, state) {
           if (state is UserLoadedState) {
             activeFamilyId = state.activeFamilyId;
-            log("Active Family ID in Add Guardian Screen: $activeFamilyId");
+            currentUserName = state.userName;
           }
           return GestureDetector(
             onTap: () {
@@ -537,7 +547,6 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
                                       setState(() {
                                         selectedAccessLevel =
                                             AccessLevel.viewOnly.name;
-                                       
                                       });
                                     },
                                   ),
@@ -551,12 +560,9 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
                                     title: 'Full Control',
                                     subtitle: 'Add, edit, or delete items',
                                     onTap: () {
-                                      log(  "Full Control Selected");
                                       setState(() {
                                         selectedAccessLevel =
                                             AccessLevel.fullControl.name;
-    log("Current Selected Level in 22222222222222: $selectedAccessLevel");
-
                                       });
                                     },
                                   ),
@@ -595,157 +601,99 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
                             ),
                           ),
                           const SizedBox(height: 32),
-                          state is GuardianAddLoadingState ||
-                                  state is UserUpdateLoadingState
-                              ? Container(
-                                  height: 56.0,
-                                  width: double.infinity,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: appColors.primary,
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      appColors.bgColor,
+                          AppButton(
+                            isLoading:
+                                state is GuardianAddLoadingState ||
+                                state is UserUpdateLoadingState,
+                            text: widget.isEditFlow == true
+                                ? "Update Guardian Details"
+                                : "Add Guardian",
+                            onPressed: () {
+                              final isFormValid =
+                                  _formKey.currentState?.validate() ?? false;
+                              if (!isFormValid) return;
+                              if (selectedAccessLevel == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Please select an access level",
                                     ),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
                                   ),
-                                )
-                              : AppButton(
-                                  text: widget.isEditFlow == true
-                                      ? "Update Guardian Details"
-                                      : "Add Guardian",
-                                  onPressed: () {
-                                    // 1. Validation (දෙකටම පොදුයි)
-                                    final isFormValid =
-                                        _formKey.currentState?.validate() ??
-                                        false;
-                                    if (!isFormValid) return;
+                                );
+                                return;
+                              }
 
-                                    if (selectedAccessLevel == null) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "Please select an access level",
-                                          ),
-                                          backgroundColor: Colors.redAccent,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                      return;
-                                    }
-
-                                    // 2. Edit Flow ද නැද්ද කියලා මෙතනදී චෙක් කරන්න
-                                    if (widget.isEditFlow == true) {
-                                      log(
-                                        "Updating Guardian Details... ${widget.guardianModel!.id}",
-                                      );
-                                      log(
-                                        "Updating Guardian Details... ${widget.guardianModel!.name}",
-                                      );
-                                      log(
-                                        "Updating Guardian Details... ${widget.guardianModel!.email}",
-                                      );
-                                      log(
-                                        "Updating Guardian Details... ${widget.guardianModel!.relationship}",
-                                      );
-                                      log(
-                                        "Updating Guardian Details... ${widget.guardianModel!.accessLevel}",
-                                      );
-                                      log(
-                                        "Updating Guardian Details... ${activeFamilyId}",
-                                      );
-                                      log("Selected Access Level: $selectedAccessLevel");
-                                      // Update Logic
-                                      context.read<UserBloc>().add(
-                                        UpdateGuardianEvent(
-                                          updatedGuardianData: GuardianModel(
-                                            id: widget.guardianModel!.id,
-                                            name: nameController.text.trim(),
-                                            email: emailController.text.trim(),
-                                            relationship: selectedRelationship!,
-                                            accessLevel: selectedAccessLevel!,
-                                          ),
-                                          activeFamilyId: activeFamilyId ?? '',
-                                          guardianId: widget.guardianModel!.id!,
-                                        ),
-                                      );
-                                    } else {
-                                      // Add Logic
-                                      context.read<UserBloc>().add(
-                                        AddNewGuardianEvent(
-                                          guardianEmail: emailController.text
-                                              .trim(),
-                                          guardianName: nameController.text
-                                              .trim(),
-                                          relationship: selectedRelationship!,
-                                          accessLevel: selectedAccessLevel!,
-                                          activeFamilyId: activeFamilyId ?? '',
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  backgroundColor: appColors.primary,
-                                ),
+                              if (widget.isEditFlow == true) {
+                                // Update Logic
+                                context.read<UserBloc>().add(
+                                  UpdateGuardianEvent(
+                                    updatedGuardianData: GuardianModel(
+                                      id: widget.guardianModel!.id,
+                                      name: nameController.text.trim(),
+                                      email: emailController.text.trim(),
+                                      relationship: selectedRelationship!,
+                                      accessLevel: selectedAccessLevel!,
+                                    ),
+                                    activeFamilyId: activeFamilyId ?? '',
+                                    guardianId: widget.guardianModel!.id!,
+                                  ),
+                                );
+                              } else {
+                                // Add Logic
+                                context.read<UserBloc>().add(
+                                  AddNewGuardianEvent(
+                                    guardianEmail: emailController.text.trim(),
+                                    guardianName: nameController.text.trim(),
+                                    relationship: selectedRelationship!,
+                                    accessLevel: selectedAccessLevel!,
+                                    activeFamilyId: activeFamilyId ?? '',
+                                  ),
+                                );
+                              }
+                            },
+                            backgroundColor: appColors.primary,
+                          ),
                           const SizedBox(height: 10.0),
                           if (widget.isEditFlow == true)
-                            state is UserDeleteLoadingState
-                                ? Container(
-                                    height: 56.0,
-                                    width: double.infinity,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: appColors.errorRed,
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
+                            AppButton(
+                              isLoading: state is UserDeleteLoadingState,
+                              text: "Delete Guardian",
+                              onPressed: () {
+                                // Delete Logic
 
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        appColors.bgColor,
+                                DialogHelper.showDeleteConfirmation(
+                                  context: context,
+                                  title: "Remove Guardian?",
+                                  subtitle:
+                                      "This guardian will no longer have access to this family account.",
+                                  onDelete: () {
+                                    context.read<UserBloc>().add(
+                                      DeleteGuardianEvent(
+                                        guardianId: widget.guardianModel!.id!,
+                                        activeFamilyId: activeFamilyId ?? '',
                                       ),
-                                    ),
-                                  )
-                                : AppButton(
-                                    text: "Delete Guardian",
-                                    onPressed: () {
-                                      // Delete Logic
+                                    );
+                                  },
+                                  dismissDialogTitle: "Guardian Removed",
+                                  dismissDialogSubTitle:
+                                      "The guardian profile has been successfully removed from your account.",
+                                  dismissButtonText: "Back to Profile",
+                                  onDeleteSuccess: () {
+                                    context.read<UserBloc>().add(
+                                      LoadUserEvent(),
+                                    );
 
-                                      DialogHelper.showDeleteConfirmation(
-                                        context: context,
-                                        title: "Remove Guardian?",
-                                        subtitle:
-                                            "This guardian will no longer have access to this family account.",
-                                        onDelete: () {
-                                          context.read<UserBloc>().add(
-                                            DeleteGuardianEvent(
-                                              guardianId:
-                                                  widget.guardianModel!.id!,
-                                              activeFamilyId:
-                                                  activeFamilyId ?? '',
-                                            ),
-                                          );
-                                        },
-                                        dismissDialogTitle: "Guardian Removed",
-                                        dismissDialogSubTitle:
-                                            "The guardian profile has been successfully removed from your account.",
-                                        dismissButtonText: "Back to Profile",
-                                        onDeleteSuccess: () {
-                                          context.read<UserBloc>().add(
-                                            LoadUserEvent(),
-                                          );
-
-                                          Navigator.of(
-                                            context,
-                                          ).popUntil((route) => route.isFirst);
-                                        },
-                                      );
-                                    },
-                                    backgroundColor: appColors.errorRed,
-                                    textColor: appColors.bgColor,
-                                  ),
+                                    Navigator.of(
+                                      context,
+                                    ).popUntil((route) => route.isFirst);
+                                  },
+                                );
+                              },
+                              backgroundColor: appColors.errorRed,
+                              textColor: appColors.bgColor,
+                            ),
                         ],
                       ),
                     ),

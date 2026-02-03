@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +13,7 @@ import 'package:remindus/widgets/custom_button.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:remindus/widgets/profile/guardian_tile.dart';
 import 'package:remindus/widgets/profile/profile_footer.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -44,10 +43,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   // Widget _buildFamilySwitcher(BuildContext context) {
   //   return BlocBuilder<UserBloc, UserState>(
   //     builder: (context, state) {
-  //       log("UserBloc state: ${state.runtimeType}");
 
   //       if (state is UserLoadingState) {
-  //         log("888888888888888888888888888888887777777777777777");
+
   //         return const Center(child: CircularProgressIndicator());
   //       }
 
@@ -81,7 +79,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   //               onChanged: (selectedId) {
   //                 if (selectedId != null &&
   //                     selectedId != state.activeFamilyId) {
-  //                       log("lllllllllllllllllllllllllllllllllllllllllll activeFamilyId ${selectedId}");
+
   //                   context.read<UserBloc>().add(
   //                     SwitchActiveFamilyEvent(familyId: selectedId),
   //                   );
@@ -131,8 +129,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     final String id = familyMap['id'];
                     final String name = familyMap['name'];
                     final bool isSelected = id == state.activeFamilyId;
-                    final bool isMyHome = id == state.userId;
-
                     return GestureDetector(
                       onTap: () {
                         if (!isSelected) {
@@ -161,21 +157,29 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                               backgroundColor: isSelected
                                   ? Colors.blue
                                   : Colors.blue.shade100,
-                              child: Text(
-                                isMyHome ? "H" : name[0].toUpperCase(),
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.blue.shade700,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
+                              child: familyMap['profileImageUrl'] != null
+                                  ? ShimmerImage(
+                                      imageUrl: familyMap['profileImageUrl'],
+                                      borderRadius: BorderRadius.circular(28),
+                                      width: 56,
+                                      height: 56,
+                                    )
+                                  : Text(
+                                      name[0].toUpperCase(),
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.blue.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            isMyHome ? "My Home" : name,
+                            name[0].toUpperCase() +
+                                name.substring(1).toLowerCase(),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
@@ -223,9 +227,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         // State eka UserLoadedState nam witharak oyaage profile content eka pennanna
         if (state is UserLoadedState) {
           activeFamilyId = state.activeFamilyId;
-          log("user iD ${state.userId}");
-          log("user name ${state.userName}");
-          log("activeFamilyId8888888888 ${state.activeFamilyId}");
+
           return Scaffold(
             backgroundColor: appColors.bgColor,
             body: SizedBox(
@@ -381,6 +383,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                 name: state.userName,
                                 email: state.email,
                                 phone: state.phone,
+                                profileImageUrl: state.profileImageUrl,
                               ),
                               if (_version.isNotEmpty)
                                 Padding(

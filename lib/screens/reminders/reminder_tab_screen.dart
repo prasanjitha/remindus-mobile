@@ -5,10 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/base_reminder_model.dart';
+import 'package:remindus/models/vaccination_record.dart';
 import 'package:remindus/screens/reminders/add_reminder_screen.dart';
 import 'package:remindus/screens/reminders/calendar_screen.dart';
+import 'package:remindus/screens/tab/blood_pressure_screen.dart';
+import 'package:remindus/screens/tab/heart_rate_screen.dart';
+import 'package:remindus/screens/vaccination/add_edit_vaccination_screen.dart';
 import 'package:remindus/services/reminder_service.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/common-header.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:intl/intl.dart';
@@ -38,98 +43,96 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
       }
       return false;
     });
-    return Scaffold(
-      backgroundColor: appColors.bgColor,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(Assets.bgColorMap),
-            fit: BoxFit.cover,
-            opacity: 0.6,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CommonHeader(onProfileTap: widget.onProfileTap),
-              const SizedBox(height: 10.0),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Upcoming Reminders",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        color: appColors.textPrimary,
-                        fontSize: 28.0,
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CommonHeader(onProfileTap: widget.onProfileTap),
+                const SizedBox(height: 10.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Upcoming Reminders",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          color: appColors.textPrimary,
+                          fontSize: 28.0,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "What's coming up next",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            color: appColors.textSecondary,
-                            fontSize: 16.0,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const CalendarScreen(),
-                              ),
-                            );
-                          },
-                          child: Icon(
-                            Icons.calendar_month,
-                            color: appColors.primary,
-                            size: 24.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20.0),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
+                      const SizedBox(height: 4.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildFilterTab("Upcoming", ReminderFilter.upcoming),
-                          _buildFilterTab(
-                            "Completed",
-                            ReminderFilter.completed,
+                          Text(
+                            "What's coming up next",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              color: appColors.textSecondary,
+                              fontSize: 16.0,
+                            ),
                           ),
-                          _buildFilterTab("All", ReminderFilter.all),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CalendarScreen(),
+                                ),
+                              );
+                            },
+                            child: Icon(
+                              Icons.calendar_month,
+                              color: appColors.primary,
+                              size: 24.0,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 12.0),
-                    if (isAdmin) _buildAddButton(appColors),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 12),
+                const SizedBox(height: 20.0),
 
-              Expanded(child: _buildReminderList(appColors)),
-            ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            _buildFilterTab(
+                              "Upcoming",
+                              ReminderFilter.upcoming,
+                            ),
+                            _buildFilterTab(
+                              "Completed",
+                              ReminderFilter.completed,
+                            ),
+                            _buildFilterTab("All", ReminderFilter.all),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12.0),
+                      if (isAdmin) _buildAddButton(appColors),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Expanded(child: _buildReminderList(appColors)),
+              ],
+            ),
           ),
         ),
       ),
@@ -220,7 +223,7 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: reminders.length,
-          itemBuilder: (context, index) {
+          itemBuilder: (itemContext, index) {
             return Builder(
               builder: (innerContext) {
                 final isAdmin = innerContext.select<UserBloc, bool>((bloc) {
@@ -231,6 +234,7 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
                   isAdmin: isAdmin,
                   reminder: reminders[index],
                   appColors: appColors,
+                  parentContext: context,
                 );
               },
             );
@@ -245,12 +249,14 @@ class ReminderCard extends StatelessWidget {
   final ReminderModel reminder;
   final dynamic appColors;
   final bool isAdmin;
+  final BuildContext parentContext;
 
   const ReminderCard({
     super.key,
     required this.reminder,
     required this.appColors,
     required this.isAdmin,
+    required this.parentContext,
   });
 
   @override
@@ -295,20 +301,34 @@ class ReminderCard extends StatelessWidget {
                   Image.asset(Assets.pillIcon, width: 18.0, height: 18.0),
 
                   if (reminder.isRead == false) ...[
-                    if (isAdmin) ...[
+                    if (isAdmin && reminder.type != "Vaccination") ...[
                       const SizedBox(width: 12.0),
                       GestureDetector(
                         onTap: () {
-                          log("${reminder}");
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AddReminderScreen(
-                                existingReminder: reminder,
-                                isEditReminder: true,
+                          if (reminder.type == "Heart Rate") {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const HeartRateAddSceen(),
                               ),
-                            ),
-                          );
+                            );
+                          } else if (reminder.type == "Blood Pressure") {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const BloodPressureScreen(),
+                              ),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddReminderScreen(
+                                  existingReminder: reminder,
+                                  isEditReminder: true,
+                                ),
+                              ),
+                            );
+                          }
                         },
                         child: Image.asset(
                           Assets.pencilEditIcon,
@@ -318,11 +338,11 @@ class ReminderCard extends StatelessWidget {
                       ),
                     ],
                   ],
-                  if (isAdmin) ...[
+                  if (isAdmin && reminder.type != "Vaccination") ...[
                     const SizedBox(width: 12.0),
                     GestureDetector(
                       onTap: () => _showDeleteConfirmation(
-                        context,
+                        parentContext,
                         reminder.reminderId!,
                         activeFamilyId: activeFamilyId!,
                       ),
@@ -342,14 +362,25 @@ class ReminderCard extends StatelessWidget {
 
           Row(
             children: [
-              Text(
-                reminder.title ??
-                    (reminder.type == "Medicine" ? "Medicine" : "Meeting"),
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  color: appColors.textPrimary,
-                  fontSize: 16,
-                ),
+              Wrap(
+                children: [
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                    ), // Limits width so it forces a wrap
+                    child: Text(
+                      reminder.title ??
+                          (reminder.type == "Medicine"
+                              ? "Medicine"
+                              : "Meeting"),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        color: appColors.textPrimary,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               if (reminder.type == "Medicine" &&
                   reminder.medicineName != null) ...[
@@ -440,75 +471,83 @@ class ReminderCard extends StatelessWidget {
       context: screenContext,
       barrierDismissible: true,
       builder: (dialogContext) {
-        return Dialog(
-          backgroundColor: appColors.bgColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTrashIcon(context),
-                const SizedBox(height: 20.0),
-                Text(
-                  "Delete Reminder?",
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w400,
-                    color: appColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 12.0),
-                Text(
-                  "Are you sure you want to delete this reminder?\nThis action cannot be undone.",
-                  style: TextStyle(
-                    fontSize: 14.0,
-                    color: appColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 20.0),
-                Row(
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: appColors.bgColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: AppButton(
-                        height: 54,
-                        text: "Delete",
-                        onPressed: () async {
-                          await ReminderService().deleteReminder(
-                            reminderId,
-                            activeFamilyId: activeFamilyId,
-                          );
-                          if (Navigator.canPop(dialogContext)) {
-                            Navigator.pop(dialogContext);
-                          }
-                          Future.delayed(const Duration(milliseconds: 10), () {
-                            if (screenContext.mounted) {
-                              _showSuccessModal(screenContext);
-                            }
-                          });
-                        },
-
-                        backgroundColor: appColors.errorRed,
+                    _buildTrashIcon(context),
+                    const SizedBox(height: 20.0),
+                    Text(
+                      "Delete Reminder?",
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w400,
+                        color: appColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppButton(
-                        height: 54,
-                        text: "Cancel",
-                        textColor: appColors.textPrimary,
-                        onPressed: () => Navigator.pop(dialogContext),
-                        backgroundColor: appColors.primary.withOpacity(0.2),
+                    const SizedBox(height: 12.0),
+                    Text(
+                      "Are you sure you want to delete this reminder?\nThis action cannot be undone.",
+                      style: TextStyle(
+                        fontSize: 14.0,
+                        color: appColors.textSecondary,
                       ),
+                    ),
+                    const SizedBox(height: 20.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            height: 54,
+                            text: "Delete",
+                            isLoading: isLoading,
+                            onPressed: () async {
+                              setDialogState(() => isLoading = true);
+                              try {
+                                await ReminderService().deleteReminder(
+                                  reminderId,
+                                  activeFamilyId: activeFamilyId,
+                                );
+                                if (Navigator.canPop(dialogContext)) {
+                                  Navigator.pop(dialogContext);
+                                }
+                                if (screenContext.mounted) {
+                                  _showSuccessModal(screenContext);
+                                }
+                              } catch (e) {
+                                setDialogState(() => isLoading = false);
+                              }
+                            },
+                            backgroundColor: appColors.errorRed,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AppButton(
+                            height: 54,
+                            text: "Cancel",
+                            textColor: appColors.textPrimary,
+                            onPressed: () => Navigator.pop(dialogContext),
+                            backgroundColor: appColors.primary.withOpacity(0.2),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

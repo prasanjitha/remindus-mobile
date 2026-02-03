@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../globals.dart';
 import '../../repositories/authentication/authentication_repository.dart';
@@ -38,7 +40,7 @@ class AuthenticationBloc
           await _signInWithGoogle(event, emit);
         } else if (event is SignOutEvent) {
           await _signOutUser(event, emit);
-        } else if (event is ResetPasswordEvent){
+        } else if (event is ResetPasswordEvent) {
           await _resetPassword(event, emit);
         }
       } else {
@@ -64,6 +66,7 @@ class AuthenticationBloc
   }
 
   // ---------------------------------------------------------------------------
+
   // Sign-In with Email and Password
   Future<void> _signInWithEmailAndPassword(
     SignInWithEmailAndPasswordEvent event,
@@ -76,7 +79,12 @@ class AuthenticationBloc
         password: event.password,
       );
 
-      if (credential != null) {
+      if (credential != null && credential.user != null) {
+        await authRepository.updateRememberMeStatus(
+          uid: credential.user!.uid,
+          rememberMe: event.rememberMe,
+        );
+        await authRepository.setLocalRememberMe(event.rememberMe);
         emit(AuthenticationSuccessState(isAuthenticated: true));
       } else {
         // FIX: Create a NEW instance instead of casting
@@ -107,6 +115,7 @@ class AuthenticationBloc
         email: event.email,
         password: event.password,
       );
+      await authRepository.setLocalRememberMe(false);
       _safeEmit(emit, const AuthenticationSuccessState(isAuthenticated: true));
       await authRepository.handleAuthentication();
     } on CustomException catch (error) {
@@ -129,7 +138,6 @@ class AuthenticationBloc
             _safeEmit(emit, const SusseccMessageState("OTP sent successfully"));
             _safeEmit(emit, const LoadingState(isLoading: false));
             completer.complete(OtpSentState(verificationId: verificationId));
-            
           }
         },
 
@@ -166,7 +174,10 @@ class AuthenticationBloc
     _safeEmit(emit, const LoadingState(isLoading: true));
     try {
       // await authRepository.signInWithOtp(event.verificationId, event.smsCode);
-      await authRepository.signInWithOtpsmaple(event.verificationId, event.smsCode);
+      await authRepository.signInWithOtpsmaple(
+        event.verificationId,
+        event.smsCode,
+      );
       _safeEmit(emit, const LoadingState(isLoading: false));
       _safeEmit(emit, const AuthenticationSuccessState(isAuthenticated: true));
     } catch (e) {
@@ -187,6 +198,7 @@ class AuthenticationBloc
       if (userCredential != null) {
         final user = userCredential.user;
         if (user != null) {
+          await authRepository.setLocalRememberMe(false);
           _safeEmit(emit, GoogleSignInSuccessState(user: user));
           await authRepository.handleAuthentication();
         } else {
@@ -213,6 +225,7 @@ class AuthenticationBloc
       _safeEmit(emit, const GoogleLoadingState(isLoading: true));
 
       await authRepository.signOut();
+      await authRepository.setLocalRememberMe(false);
       _safeEmit(emit, const GoogleLoadingState(isLoading: false));
       _safeEmit(emit, const LoadingState(isLoading: false));
 
@@ -237,11 +250,16 @@ class AuthenticationBloc
       _safeEmit(emit, const LoadingState(isLoading: true));
       await authRepository.resetPassword(event.email);
       _safeEmit(emit, const LoadingState(isLoading: false));
-      _safeEmit(emit, SusseccMessageState("We have sent a password reset link to ${event.email}. Please check your inbox and follow the instructions to reset your password."));
+      _safeEmit(
+        emit,
+        SusseccMessageState(
+          "We have sent a password reset link to ${event.email}. Please check your inbox and follow the instructions to reset your password.",
+        ),
+      );
     } catch (e) {
       final errorMessage = e is CustomException ? e.message : e.toString();
       _safeEmit(emit, ErrorState(CustomException(message: errorMessage)));
-      _safeEmit(emit, const LoadingState(isLoading: false));  
+      _safeEmit(emit, const LoadingState(isLoading: false));
     }
   }
 }

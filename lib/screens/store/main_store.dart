@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +6,7 @@ import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/screens/store/add_to_store.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/common-header.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/medicine_card.dart';
@@ -16,7 +15,8 @@ import 'package:remindus/models/medicine_store_model.dart';
 class MainStoreScreen extends StatefulWidget {
   final VoidCallback onProfileTap;
 
-  const MainStoreScreen({Key? key, required this.onProfileTap}) : super(key: key);
+  const MainStoreScreen({Key? key, required this.onProfileTap})
+    : super(key: key);
 
   @override
   State<MainStoreScreen> createState() => _MainStoreScreenState();
@@ -63,247 +63,230 @@ class _MainStoreScreenState extends State<MainStoreScreen> {
         ? (context.read<UserBloc>().state as UserLoadedState).activeFamilyId
         : FirebaseAuth.instance.currentUser?.uid;
 
-    return Scaffold(
-      backgroundColor: appColors.bgColor,
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: Stack(
-          children: [
-            // 1. Background Image
-            Positioned.fill(
-              child: Image.asset(
-                Assets.bgColorMap,
-                fit: BoxFit.cover,
-                opacity: const AlwaysStoppedAnimation(.5),
-              ),
-            ),
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child:
+              // 2. Main Content
+              activeFamilyId == null
+              ? const Center(child: Text("Please Login First"))
+              : StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(activeFamilyId)
+                      .collection('medicinesStore')
+                      .orderBy('createdAt', descending: true)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-            // 2. Main Content
-            activeFamilyId == null
-                ? const Center(child: Text("Please Login First"))
-                : StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(activeFamilyId)
-                        .collection('medicinesStore')
-                        .orderBy('createdAt', descending: true)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return _buildEmptyState(context, appColors);
+                    }
+                    List<MedicineStoreModel> allItems = snapshot.data!.docs.map(
+                      (doc) {
+                        var model = MedicineStoreModel.fromMap(
+                          doc.data() as Map<String, dynamic>,
+                        );
+                        model.medicineStoreId = doc.id;
+                        return model;
+                      },
+                    ).toList();
 
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return _buildEmptyState(context, appColors);
-                      }
-                      List<MedicineStoreModel> allItems = snapshot.data!.docs
-                          .map((doc) {
-                            var model = MedicineStoreModel.fromMap(
-                              doc.data() as Map<String, dynamic>,
-                            );
-                            model.medicineStoreId = doc.id;
-                            return model;
-                          })
-                          .toList();
+                    List<MedicineStoreModel> needsAttention = allItems
+                        .where(
+                          (item) =>
+                              (item.status == 'refill' ||
+                              item.status == 'lowRemaining'),
+                        )
+                        .toList();
 
-                      List<MedicineStoreModel> needsAttention = allItems
-                          .where(
-                            (item) =>
-                                (item.status == 'refill' ||
-                                item.status == 'lowRemaining'),
-                          )
-                          .toList();
-                      log("Needs Attention Items: ${needsAttention.length}");
+                    List<MedicineStoreModel> wellStocked = allItems
+                        .where((item) => item.status == 'wellStocked')
+                        .toList();
 
-                      List<MedicineStoreModel> wellStocked = allItems
-                          .where((item) => item.status == 'wellStocked')
-                          .toList();
-                      log("Well Stocked Items: ${wellStocked.length}");
-
-                      return SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: 30.0,
-                            bottom: 100,
-                          ),
-                          child: Column(
-                            children: [
-                               CommonHeader(onProfileTap: widget.onProfileTap,),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20.0,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'My Medicines',
-                                      style: TextStyle(
-                                        fontSize: 28.0,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                    const Text(
-                                      'Track and manage your medications',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 32),
-
-                                    // --- Needs Attention Section ---
-                                    if (needsAttention.isNotEmpty) ...[
-                                      _buildSectionTitle(
-                                        'Needs Attention',
-                                        appColors,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ListView.builder(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: needsAttention.length,
-                                        itemBuilder: (context, index) {
-                                          final med = needsAttention[index];
-                                          return Builder(
-                                            builder: (innerContext) {
-                                              final isAdmin = innerContext
-                                                  .select<UserBloc, bool>((
-                                                    bloc,
-                                                  ) {
-                                                    final state = bloc.state;
-                                                    return state
-                                                            is UserLoadedState
-                                                        ? state.isAdmin
-                                                        : false;
-                                                  });
-
-                                              return MedicineCard(
-                                                canEdit: isAdmin,
-                                                name: med.name,
-                                                detail: med.status == 'refill'
-                                                    ? "Stock Empty"
-                                                    : "Remaining: ${med.quantity} Tablets",
-                                                status: _getStatusEnum(
-                                                  med.status,
-                                                ),
-                                                onEdit: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AddMedicineToStoreScreen(
-                                                            medicineStrore: med,
-                                                            isEditMode: true,
-                                                          ),
-                                                    ),
-                                                  );
-                                                },
-                                                onDelete: () =>
-                                                    _showDeleteConfirmation(
-                                                      context,
-                                                      med.medicineStoreId!,
-                                                      activeFamilyId,
-                                                    ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ],
-
-                                    // --- Well Stocked Section ---
-                                    if (wellStocked.isNotEmpty) ...[
-                                      _buildSectionTitle(
-                                        'Well Stocked',
-                                        appColors,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      ListView.builder(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: wellStocked.length,
-                                        itemBuilder: (context, index) {
-                                          final med = wellStocked[index];
-                                          return Builder(
-                                            builder: (innerContext) {
-                                              final isAdmin = innerContext
-                                                  .select<UserBloc, bool>((
-                                                    bloc,
-                                                  ) {
-                                                    final state = bloc.state;
-                                                    return state
-                                                            is UserLoadedState
-                                                        ? state.isAdmin
-                                                        : false;
-                                                  });
-                                              return MedicineCard(
-                                                canEdit: isAdmin,
-                                                name: med.name,
-                                                detail:
-                                                    "Remaining: ${med.quantity} Tablets",
-                                                status:
-                                                    MedicineStatus.wellStocked,
-                                                onEdit: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AddMedicineToStoreScreen(
-                                                            medicineStrore: med,
-                                                            isEditMode: true,
-                                                          ),
-                                                    ),
-                                                  );
-                                                },
-                                                onDelete: () =>
-                                                    _showDeleteConfirmation(
-                                                      context,
-                                                      med.medicineStoreId!,
-                                                      activeFamilyId,
-                                                    ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ],
-                                ),
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 30.0, bottom: 100),
+                        child: Column(
+                          children: [
+                            CommonHeader(onProfileTap: widget.onProfileTap),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
                               ),
-                            ],
-                          ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'My Medicines',
+                                    style: TextStyle(
+                                      fontSize: 28.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Track and manage your medications',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
+
+                                  // --- Needs Attention Section ---
+                                  if (needsAttention.isNotEmpty) ...[
+                                    _buildSectionTitle(
+                                      'Needs Attention',
+                                      appColors,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: needsAttention.length,
+                                      itemBuilder: (context, index) {
+                                        final med = needsAttention[index];
+                                        return Builder(
+                                          builder: (innerContext) {
+                                            final isAdmin = innerContext
+                                                .select<UserBloc, bool>((bloc) {
+                                                  final state = bloc.state;
+                                                  return state
+                                                          is UserLoadedState
+                                                      ? state.isAdmin
+                                                      : false;
+                                                });
+
+                                            return MedicineCard(
+                                              canEdit: isAdmin,
+                                              name: med.name,
+                                              detail: med.status == 'refill'
+                                                  ? "Stock Empty"
+                                                  : "Remaining: ${med.quantity} Tablets",
+                                              status: _getStatusEnum(
+                                                med.status,
+                                              ),
+                                              imageUrl: med.imageUrl,
+                                              onEdit: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        AddMedicineToStoreScreen(
+                                                          medicineStrore: med,
+                                                          isEditMode: true,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                              onDelete: () =>
+                                                  _showDeleteConfirmation(
+                                                    context,
+                                                    med.medicineStoreId!,
+                                                    activeFamilyId,
+                                                  ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+                                  ],
+
+                                  // --- Well Stocked Section ---
+                                  if (wellStocked.isNotEmpty) ...[
+                                    _buildSectionTitle(
+                                      'Well Stocked',
+                                      appColors,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: wellStocked.length,
+                                      itemBuilder: (context, index) {
+                                        final med = wellStocked[index];
+                                        return Builder(
+                                          builder: (innerContext) {
+                                            final isAdmin = innerContext
+                                                .select<UserBloc, bool>((bloc) {
+                                                  final state = bloc.state;
+                                                  return state
+                                                          is UserLoadedState
+                                                      ? state.isAdmin
+                                                      : false;
+                                                });
+                                            return MedicineCard(
+                                              canEdit: isAdmin,
+                                              name: med.name,
+                                              detail:
+                                                  "Remaining: ${med.quantity} Tablets",
+                                              status:
+                                                  MedicineStatus.wellStocked,
+                                              imageUrl: med.imageUrl,
+                                              onEdit: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        AddMedicineToStoreScreen(
+                                                          medicineStrore: med,
+                                                          isEditMode: true,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                              onDelete: () =>
+                                                  _showDeleteConfirmation(
+                                                    context,
+                                                    med.medicineStoreId!,
+                                                    activeFamilyId,
+                                                  ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-          ],
+                      ),
+                    );
+                  },
+                ),
         ),
+        bottomNavigationBar: canEdit(context)
+            ? Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 10.0,
+                ),
+                child: AppButton(
+                  text: 'Add New Medicine',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddMedicineToStoreScreen(),
+                      ),
+                    );
+                  },
+                  backgroundColor: appColors.primary,
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
-      bottomNavigationBar: canEdit(context) 
-    ? Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20.0,
-          vertical: 10.0,
-        ),
-        child: AppButton(
-          text: 'Add New Medicine',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AddMedicineToStoreScreen(),
-              ),
-            );
-          },
-          backgroundColor: appColors.primary,
-        ),
-      )
-    : const SizedBox.shrink(),
     );
   }
 

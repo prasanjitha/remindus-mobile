@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
-import '../../models/user_model.dart';
-import '../../services/reminder_service.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 class CommonHeaderWithBack extends StatelessWidget {
   final VoidCallback? onProfileTap;
@@ -19,15 +18,16 @@ class CommonHeaderWithBack extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    //     final user = context.select<UserBloc, UserModel?>((bloc) {
-    //   final state = bloc.state;
-    //   return state is UserLoadedState ? state.user : null;
-    // });
+    final userState = context.watch<UserBloc>().state;
+    String initial = "U";
+    String? profileImageUrl;
 
-    // final String initial =
-    //     (user?.name != null && user!.name!.isNotEmpty)
-    //         ? user.name![0].toUpperCase()
-    //         : 'U';
+    if (userState is UserLoadedState) {
+      initial = userState.userName.isNotEmpty
+          ? userState.userName[0].toUpperCase()
+          : "U";
+      profileImageUrl = userState.profileImageUrl;
+    }
 
     return Row(
       children: [
@@ -40,26 +40,44 @@ class CommonHeaderWithBack extends StatelessWidget {
           ),
         ),
         const Spacer(),
-
         Image.asset(Assets.notificationIcon, width: 24.0, height: 24.0),
         const SizedBox(width: 10.0),
-
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: appColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              "K",
-              style: TextStyle(
-                color: appColors.bgColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
+        GestureDetector(
+          onTap: onProfileTap,
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: appColors.primary,
+              shape: BoxShape.circle,
             ),
+            child: profileImageUrl != null
+                ? ShimmerImage(
+                    imageUrl: profileImageUrl,
+                    width: 32,
+                    height: 32,
+                    borderRadius: BorderRadius.circular(16),
+                    errorWidget: Center(
+                      child: Text(
+                        initial,
+                        style: TextStyle(
+                          color: appColors.bgColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      initial,
+                      style: TextStyle(
+                        color: appColors.bgColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
           ),
         ),
       ],

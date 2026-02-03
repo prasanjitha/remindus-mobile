@@ -67,6 +67,8 @@ class UserLoadedState extends UserState {
   final String userName;
   final String email;
   final String phone;
+  final String? profileImageUrl;
+  final bool rememberMe;
 
   const UserLoadedState({
     required this.userId,
@@ -76,6 +78,8 @@ class UserLoadedState extends UserState {
     required this.userName,
     required this.email,
     required this.phone,
+    this.profileImageUrl,
+    this.rememberMe = false,
   });
 
   bool get isAppowner => userId == activeFamilyId;
@@ -92,6 +96,8 @@ class UserLoadedState extends UserState {
     userName,
     email,
     phone,
+    profileImageUrl,
+    rememberMe,
   ];
 }
 

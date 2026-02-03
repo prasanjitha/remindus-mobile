@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/widgets/forgot_password_header.dart';
@@ -31,8 +32,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _submitted = true);
     if (_formKey.currentState!.validate()) {
       context.read<AuthenticationBloc>().add(
-            ResetPasswordEvent(email: _emailController.text.trim()),
-          );
+        ResetPasswordEvent(email: _emailController.text.trim()),
+      );
     }
   }
 
@@ -40,64 +41,66 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Scaffold(
-      backgroundColor: appColors.bgColor,
-      body: BlocConsumer<AuthenticationBloc, AuthenticationState>(
-        listener: (context, state) {
-          if (state is SusseccMessageState) {
-            _showSuccessDialog(context, state.message);
-          }
-          if (state is ErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.exception.message),
-                backgroundColor: Colors.redAccent,
-                behavior: SnackBarBehavior.floating,
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: BlocConsumer<AuthenticationBloc, AuthenticationState>(
+          listener: (context, state) {
+            if (state is SusseccMessageState) {
+              _showSuccessDialog(context, state.message);
+            }
+            if (state is ErrorState) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.exception.message),
+                  backgroundColor: Colors.redAccent,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is LoadingState && state.isLoading;
+
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ForgotPasswordHeader(),
+
+                    const SizedBox(height: 20),
+                    Divider(color: appColors.surfceSecondary, thickness: 2),
+                    const SizedBox(height: 20),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Column(
+                        children: [
+                          Form(
+                            key: _formKey,
+                            autovalidateMode: _submitted
+                                ? AutovalidateMode.onUserInteraction
+                                : AutovalidateMode.disabled,
+                            child: AppTextField(
+                              controller: _emailController,
+                              label: "Email address",
+                              hintText: "Your email address",
+                              prefixIconPath: Assets.emailIcon,
+                              validator: (value) => _validateEmail(value),
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          _buildSubmitButton(isLoading, appColors),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is LoadingState && state.isLoading;
-
-          return SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const ForgotPasswordHeader(),
-                  
-                  const SizedBox(height: 20),
-                  Divider(color: appColors.surfceSecondary, thickness: 2),
-                  const SizedBox(height: 20),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Column(
-                      children: [
-                        Form(
-                          key: _formKey,
-                          autovalidateMode: _submitted 
-                              ? AutovalidateMode.onUserInteraction 
-                              : AutovalidateMode.disabled,
-                          child: AppTextField(
-                            controller: _emailController,
-                            label: "Email address",
-                            hintText: "Your email address",
-                            prefixIconPath: Assets.emailIcon,
-                            validator: (value) => _validateEmail(value),
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        _buildSubmitButton(isLoading, appColors),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -125,7 +128,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'Please enter your email';
     final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegExp.hasMatch(value)) return 'Please enter a valid email address';
+    if (!emailRegExp.hasMatch(value))
+      return 'Please enter a valid email address';
     return null;
   }
 

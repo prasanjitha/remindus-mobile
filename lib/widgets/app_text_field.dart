@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:remindus/theme/app_colors.dart';
 
-class AppTextField extends StatelessWidget {
+class AppTextField extends StatefulWidget {
   final String label;
   final String hintText;
   final Widget? suffixIcon;
@@ -35,12 +35,25 @@ class AppTextField extends StatelessWidget {
   });
 
   @override
+  State<AppTextField> createState() => _AppTextFieldState();
+}
+
+class _AppTextFieldState extends State<AppTextField> {
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.isPassword;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          widget.label,
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: 16,
@@ -49,16 +62,16 @@ class AppTextField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          readOnly: readOnly!,
-          controller: controller,
-          obscureText: isPassword,
-          validator: validator,
-          onChanged: onChanged,
-          focusNode: focusNode,
-          keyboardType: keyboardType,
-          onTap: onTap,
+          readOnly: widget.readOnly!,
+          controller: widget.controller,
+          obscureText: _obscureText,
+          validator: widget.validator,
+          onChanged: widget.onChanged,
+          focusNode: widget.focusNode,
+          keyboardType: widget.keyboardType,
+          onTap: widget.onTap,
           decoration: InputDecoration(
-            hintText: hintText,
+            hintText: widget.hintText,
             suffixIconConstraints: BoxConstraints(
               minWidth: 24.0,
               minHeight: 24.0,
@@ -68,16 +81,34 @@ class AppTextField extends StatelessWidget {
               fontWeight: FontWeight.w400,
               fontSize: 16,
             ),
-            suffixIcon: suffixIcon != null
-                ? GestureDetector(onTap: onSuffixTap, child: suffixIcon)
+            suffixIcon: widget.isPassword
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: context.appColors.placeholder,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
+                    ),
+                  )
+                : widget.suffixIcon != null
+                ? GestureDetector(
+                    onTap: widget.onSuffixTap,
+                    child: widget.suffixIcon,
+                  )
                 : null,
             prefixIcon: Padding(
               padding: const EdgeInsets.all(12),
               child: Image.asset(
-                prefixIconPath,
+                widget.prefixIconPath,
                 width: 20,
                 height: 20,
-                color: context.appColors.textPrimary,
+                color: context.appColors.placeholder,
               ),
             ),
             filled: true,

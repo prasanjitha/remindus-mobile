@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/medicine_store_model.dart';
 import 'package:remindus/services/notification_service.dart';
@@ -16,8 +14,6 @@ class MedicalStoreRepository extends BaseMedicalStoreRepositories {
     String activeFamilyId,
   ) async {
     try {
-      log("user not logged in 2");
-
       final docRef = _firestore
           .collection('users')
           .doc(activeFamilyId)
@@ -28,9 +24,6 @@ class MedicalStoreRepository extends BaseMedicalStoreRepositories {
       await docRef.set(medicineStoreModel.toMap());
 
       final int qty = int.tryParse(medicineStoreModel.quantity) ?? 0;
-      log(
-        "Adding medical store item: ${medicineStoreModel.name}, qty: $qty to family: $activeFamilyId",
-      );
 
       final notificationService = NotificationService();
       // Create notification for new medicine
@@ -52,7 +45,6 @@ class MedicalStoreRepository extends BaseMedicalStoreRepositories {
 
       return true;
     } catch (e) {
-      log('Error adding medical store: $e');
       rethrow;
     }
   }
@@ -63,8 +55,6 @@ class MedicalStoreRepository extends BaseMedicalStoreRepositories {
     String activeFamilyId,
   ) async {
     try {
-      log("user not logged in 3");
-
       String? finalImageUrl = medicineStoreModel.imageUrl;
 
       await FirebaseFirestore.instance
@@ -83,9 +73,6 @@ class MedicalStoreRepository extends BaseMedicalStoreRepositories {
           });
 
       final int qty = int.tryParse(medicineStoreModel.quantity) ?? 0;
-      log(
-        "Updating medical store item: ${medicineStoreModel.name}, qty: $qty in family: $activeFamilyId",
-      );
 
       // Create notification if quantity is 0
       if (qty == 0) {
@@ -99,7 +86,6 @@ class MedicalStoreRepository extends BaseMedicalStoreRepositories {
 
       return true;
     } catch (e) {
-      log('Error updating medical store: $e');
       rethrow;
     }
   }

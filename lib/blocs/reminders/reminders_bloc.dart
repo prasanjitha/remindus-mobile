@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -25,10 +24,8 @@ class ReminderBloc extends Bloc<RemindersEvent, ReminderState> {
       if (isConnected) {
         if (event is AddMeetingsReminderEvent) {
           await _addMeetingsReminder(event, emit);
-        }
-        else if (event is SetVoiceNotificationEvent){
+        } else if (event is SetVoiceNotificationEvent) {
           await _addVoiceNotification(event, emit);
-
         } else if (event is UpdateMeetingsReminderEvent) {
           await _updateReminder(event, emit);
         }
@@ -56,9 +53,7 @@ class ReminderBloc extends Bloc<RemindersEvent, ReminderState> {
         activeFamilyId: event.activeFamilyId,
       );
       _safeEmit(emit, ReminderAddedSuccessState(isReminderAddedSuccess: true));
-
     } catch (e) {
-      log('Error adding meetings reminder: $e');
       _safeEmit(emit, ReminderAddedSuccessState(isReminderAddedSuccess: false));
 
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: false));
@@ -78,13 +73,16 @@ class ReminderBloc extends Bloc<RemindersEvent, ReminderState> {
         activeFamilyId: event.activeFamilyId,
       );
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: false));
-      _safeEmit(emit, ReminderUpdatedSuccessState(isReminderUpdatedSuccess: true));
-
+      _safeEmit(
+        emit,
+        ReminderUpdatedSuccessState(isReminderUpdatedSuccess: true),
+      );
     } catch (e) {
-      log('Error updating meetings reminder: $e');
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: false));
-      _safeEmit(emit, ReminderUpdatedSuccessState(isReminderUpdatedSuccess: false));
-
+      _safeEmit(
+        emit,
+        ReminderUpdatedSuccessState(isReminderUpdatedSuccess: false),
+      );
     }
   }
 
@@ -102,14 +100,10 @@ class ReminderBloc extends Bloc<RemindersEvent, ReminderState> {
       );
       _safeEmit(emit, ReminderAddedSuccessState(isReminderAddedSuccess: true));
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: false));
-
-
     } catch (e) {
-      log('Error adding meetings reminder: $e');
       _safeEmit(emit, ReminderAddedSuccessState(isReminderAddedSuccess: false));
 
       _safeEmit(emit, IsReminderLoadingState(isReminderLoading: false));
     }
   }
-
-}  
+}

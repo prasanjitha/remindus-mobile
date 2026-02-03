@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -54,9 +53,7 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
       backgroundColor: context.appColors.bgColor,
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
-          if (state is UserLoadingState) {
-            log("inside listner isloading ----> ${state.isLoading}");
-          }
+          if (state is UserLoadingState) {}
         },
         builder: (context, state) {
           if (state is UserLoadingState || state is UserInitialState) {
@@ -190,7 +187,7 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                             children: [
                               StreamBuilder<List<ReminderModel>>(
                                 stream: reminderService.getLatestTwoUpcoming(
-                                  activeFamilyId: activeFamilyId!,
+                                  activeFamilyId: activeFamilyId,
                                 ),
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
@@ -315,7 +312,7 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                           QuickGridAction(
                                             context: context,
                                             title: 'Add Reminder',
-                                            subtitle: 'Upload NHS Prescription',
+                                            subtitle: 'Add reminder manually',
                                             imagePath: Assets.addSquareIcon,
                                             onTap: () {
                                               if (canEdit) {
@@ -323,10 +320,8 @@ class _HealthcareHomeScreenState extends State<HealthcareHomeScreen> {
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                        ScanPrescriptionScreen(
-                                                          activeFamilyId:
-                                                              activeFamilyId,
-                                                          isScan: false,
+                                                        MainTabScreen(
+                                                          initialIndex: 1,
                                                         ),
                                                   ),
                                                 );

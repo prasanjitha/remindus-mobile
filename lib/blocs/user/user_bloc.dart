@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -58,6 +57,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           uid: user.uid,
           name: event.name,
           phone: event.phone,
+          profileImageUrl: event.profileImageUrl,
         );
         emit(const ProfileUpdateSuccessState());
       } else {
@@ -169,6 +169,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       await guardianRepository.sendInviteEmail(
         event.email,
         event.activeFamilyId,
+        event.curentUserName,
+        event.guardianName,
       );
       emit(const InviteSentSuccessState());
     } catch (e) {
@@ -267,7 +269,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   Future<void> _onLoadUser(LoadUserEvent event, Emitter<UserState> emit) async {
     final user = _auth.currentUser;
     if (user == null) {
-      log("user not logged in 1");
       emit(const UserErrorState('User not logged in'));
       return;
     }
@@ -278,7 +279,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
     await emit.forEach<UserLoadedState>(
       userStream.asyncMap((userDoc) async {
-        final userData = userDoc.data() as Map<String, dynamic>? ?? {};
+        final userData = userDoc.data() ?? {};
         final activeFamilyId = userData['activeFamilyId'] ?? user.uid;
         final rawJoinedFamilies =
             userData['joinedFamilies'] as List<dynamic>? ?? [];
@@ -289,17 +290,35 @@ class UserBloc extends Bloc<UserEvent, UserState> {
             .collection('users')
             .doc(activeFamilyId)
             .get();
-        final familyData = familyDoc.data() as Map<String, dynamic>? ?? {};
+        final familyData = familyDoc.data() ?? {};
 
-        final List<Map<String, dynamic>> joinedFamilies = rawJoinedFamilies.map(
-          (item) {
-            if (item is Map) return Map<String, dynamic>.from(item);
-            return {
-              'id': item.toString(),
-              'name': item.toString() == user.uid ? "My Home" : "Shared Family",
-            };
-          },
-        ).toList();
+        final List<Map<String, dynamic>> joinedFamilies = [];
+        for (final item in rawJoinedFamilies) {
+          String memberUid;
+          if (item is Map) {
+            memberUid = item['id']?.toString() ?? '';
+          } else {
+            memberUid = item.toString();
+          }
+
+          if (memberUid.isEmpty) continue;
+
+          // Member info fetch kirima
+          final memberDoc = await _firestore
+              .collection('users')
+              .doc(memberUid)
+              .get();
+          final memberData = memberDoc.data() ?? {};
+
+          String fullName = memberData['name'] ?? "Shared Family";
+          String displayName = fullName;
+
+          joinedFamilies.add({
+            'id': memberUid,
+            'name': displayName,
+            'profileImageUrl': memberData['profileImageUrl'],
+          });
+        }
 
         String role;
         if (activeFamilyId == user.uid) {
@@ -318,6 +337,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           userName: familyData['name'] ?? 'No Name',
           email: familyData['email'] ?? 'No Email',
           phone: familyData['phone'] ?? 'No Phone',
+          profileImageUrl: userData['profileImageUrl'],
+          rememberMe: userData['rememberMe'] ?? false,
         );
       }),
       // FIX: onData eka athule kelinma return karanna, emit use karanna epa

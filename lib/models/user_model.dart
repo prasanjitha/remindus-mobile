@@ -11,6 +11,8 @@ class UserModel {
   final List<dynamic>? joinedFamilies;
   final String? accessLevel;
   final Timestamp? createdAt;
+  final String? profileImageUrl;
+  final bool? rememberMe;
 
   UserModel({
     this.uid,
@@ -22,6 +24,8 @@ class UserModel {
     this.joinedFamilies,
     this.accessLevel,
     this.createdAt,
+    this.profileImageUrl,
+    this.rememberMe,
   });
 
   factory UserModel.fromMap(Map<String, dynamic>? map) {
@@ -37,6 +41,8 @@ class UserModel {
       joinedFamilies: map['joinedFamilies'] as List<dynamic>?,
       accessLevel: map['accessLevel'] as String?,
       createdAt: map['createdAt'] as Timestamp?,
+      profileImageUrl: map['profileImageUrl'] as String?,
+      rememberMe: map['rememberMe'] as bool?,
     );
   }
   Map<String, dynamic> toMap() {
@@ -50,6 +56,8 @@ class UserModel {
       'joinedFamilies': joinedFamilies,
       'accessLevel': accessLevel,
       'createdAt': createdAt,
+      'profileImageUrl': profileImageUrl,
+      'rememberMe': rememberMe,
     };
   }
 }

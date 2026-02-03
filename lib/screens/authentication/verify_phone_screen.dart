@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/screens/authentication/send_otp_screen.dart';
@@ -55,19 +56,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           }
 
           if (state is ErrorState) {
-             ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.exception.message,
-                style: TextStyle(color: Colors.white, fontSize: 14.0),
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.exception.message,
+                  style: TextStyle(color: Colors.white, fontSize: 14.0),
+                ),
+                backgroundColor: Colors.redAccent,
+                behavior: SnackBarBehavior.floating,
               ),
-              backgroundColor: Colors.redAccent,
-              behavior: SnackBarBehavior.floating,
-            )
-          );
-          setState(() {
-            _isLoading = false;
-          });
+            );
+            setState(() {
+              _isLoading = false;
+            });
           }
           if (state is SusseccMessageState) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -88,220 +89,221 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 50.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: Image.asset(Assets.logoIcon),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Enter Verification Code',
-                        style: TextStyle(
-                          fontSize: 32.0,
-                          fontWeight: FontWeight.w400,
-                          color: appColors.textPrimary,
+          return AppGradientBackground(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 50.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Image.asset(Assets.logoIcon),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "We've sent a code by text message.",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: appColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  height: 2.0,
-                  decoration: BoxDecoration(color: appColors.surfceSecondary),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      AppTextField(
-                        readOnly: true,
-                        label: 'Entered phone number',
-                        hintText: '',
-                        controller: _phoneController,
-                        prefixIconPath: Assets.phoneIcon,
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            Assets.pencilEditIcon,
-                            width: 24.0,
-                            height: 24.0,
-                            fit: BoxFit.cover,
+                        const SizedBox(height: 20),
+                        Text(
+                          'Enter Verification Code',
+                          style: TextStyle(
+                            fontSize: 32.0,
+                            fontWeight: FontWeight.w400,
+                            color: appColors.textPrimary,
                           ),
                         ),
-                        onSuffixTap: () {
-                           FirebaseAuth.instance.signOut();
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const VerifyPhoneScreen(),
+                        const SizedBox(height: 16),
+                        Text(
+                          "We've sent a code by text message.",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: appColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    height: 2.0,
+                    decoration: BoxDecoration(color: appColors.surfceSecondary),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        AppTextField(
+                          readOnly: true,
+                          label: 'Entered phone number',
+                          hintText: '',
+                          controller: _phoneController,
+                          prefixIconPath: Assets.phoneIcon,
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset(
+                              Assets.pencilEditIcon,
+                              width: 24.0,
+                              height: 24.0,
+                              fit: BoxFit.cover,
                             ),
-                            (route) => false,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 28.0),
-                      Container(
-                        width: double.infinity,
-                        height: 2.0,
-                        decoration: BoxDecoration(
-                          color: appColors.surfceSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 28.0),
-                      const Text(
-                        'Enter code',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(6, (index) {
-                          return SizedBox(
-                            width: 45,
-                            height: 50,
-                            child: TextField(
-                              controller: _otpControllers[index],
-                              focusNode: _focusNodes[index],
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              maxLength: 1,
-                              decoration:  InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: appColors.primary,
-                                  )
-                                ),
-                                counterText: '',
+                          ),
+                          onSuffixTap: () {
+                            FirebaseAuth.instance.signOut();
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const VerifyPhoneScreen(),
                               ),
-                              onChanged: (value) {
-                                if (value.isNotEmpty) {
-                                  if (index < 5) {
+                              (route) => false,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 28.0),
+                        Container(
+                          width: double.infinity,
+                          height: 2.0,
+                          decoration: BoxDecoration(
+                            color: appColors.surfceSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 28.0),
+                        const Text(
+                          'Enter code',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: List.generate(6, (index) {
+                            return SizedBox(
+                              width: 45,
+                              height: 50,
+                              child: TextField(
+                                controller: _otpControllers[index],
+                                focusNode: _focusNodes[index],
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                maxLength: 1,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: appColors.primary,
+                                    ),
+                                  ),
+                                  counterText: '',
+                                ),
+                                onChanged: (value) {
+                                  if (value.isNotEmpty) {
+                                    if (index < 5) {
+                                      FocusScope.of(
+                                        context,
+                                      ).requestFocus(_focusNodes[index + 1]);
+                                    } else {
+                                      _focusNodes[index].unfocus();
+                                    }
+                                  } else if (value.isEmpty && index > 0) {
                                     FocusScope.of(
                                       context,
-                                    ).requestFocus(_focusNodes[index + 1]);
-                                  } else {
-                                    _focusNodes[index].unfocus();
+                                    ).requestFocus(_focusNodes[index - 1]);
                                   }
-                                } else if (value.isEmpty && index > 0) {
-                                  FocusScope.of(
-                                    context,
-                                  ).requestFocus(_focusNodes[index - 1]);
-                                }
+                                },
+                              ),
+                            );
+                          }),
+                        ),
+
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Text(
+                              "Didn't receive the code? ",
+                              style: TextStyle(
+                                color: appColors.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                // if (_phoneController.text.trim().isNotEmpty) {
+                                //   context.read<AuthenticationBloc>().add(
+                                //     SendOtpEvent(
+                                //       phoneNumber: _phoneController.text.trim(),
+                                //     ),
+                                //   );
+                                // }
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "We’ve sent a new OTP to your phone number",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.0,
+                                      ),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
                               },
+                              child: Text(
+                                "Resend",
+                                style: TextStyle(
+                                  color: appColors.primaryDark,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          );
-                        }),
-                      ),
+                          ],
+                        ),
 
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Text(
-                            "Didn't receive the code? ",
-                            style: TextStyle(
-                              color: appColors.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              // log(_phoneController.text.trim());
-                              // if (_phoneController.text.trim().isNotEmpty) {
-                              //   context.read<AuthenticationBloc>().add(
-                              //     SendOtpEvent(
-                              //       phoneNumber: _phoneController.text.trim(),
-                              //     ),
-                              //   );
-                              // }
-
+                        const SizedBox(height: 28.0),
+                        AppButton(
+                          text: 'Verify & Continue',
+                          isLoading: _isLoading,
+                          backgroundColor: appColors.primary,
+                          onPressed: () {
+                            if (_otpCode.length != 6) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    "We’ve sent a new OTP to your phone number",
+                                    "Please enter full OTP",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 14.0,
                                     ),
                                   ),
-                                  backgroundColor: Colors.green,
+                                  backgroundColor: Colors.redAccent,
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
-                            },
-                            child: Text(
-                              "Resend",
-                              style: TextStyle(
-                                color: appColors.primaryDark,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                              return;
+                            }
 
-                      const SizedBox(height: 28.0),
-                      AppButton(
-                        text: 'Verify & Continue',
-                        isLoading: _isLoading,
-                        backgroundColor: appColors.primary,
-                        onPressed: () {
-                          if (_otpCode.length != 6) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Please enter full OTP",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14.0,
-                                  ),
-                                ),
-                                backgroundColor: Colors.redAccent,
-                                behavior: SnackBarBehavior.floating,
+                            context.read<AuthenticationBloc>().add(
+                              VerifyOtpEvent(
+                                verificationId: widget.verificationId,
+                                smsCode: _otpCode,
                               ),
                             );
-                            return;
-                          }
-
-                          context.read<AuthenticationBloc>().add(
-                            VerifyOtpEvent(
-                              verificationId: widget.verificationId,
-                              smsCode: _otpCode,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
@@ -18,13 +17,9 @@ class NotificationBadge extends StatelessWidget {
     });
 
     if (activeFamilyId == null) {
-      log("NotificationBadge: activeFamilyId is null, not showing badge");
       return child;
     }
 
-    log(
-      "NotificationBadge: listening to unread count for user: $activeFamilyId",
-    );
     final notificationService = NotificationService();
 
     return Stack(

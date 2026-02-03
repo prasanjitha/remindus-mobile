@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
+
 import 'package:battery_plus/battery_plus.dart';
 import 'package:remindus/services/local_notification_service.dart';
 
@@ -10,7 +10,6 @@ class BatteryService {
   bool _hasNotifiedLowBattery = false;
 
   void startMonitoring() {
-    log("Battery monitoring started");
     _batteryStateSubscription = _battery.onBatteryStateChanged.listen((
       BatteryState state,
     ) async {
@@ -28,7 +27,6 @@ class BatteryService {
   }
 
   void _checkBatteryLevel(int level) {
-    log("Current battery level: $level%");
     if (level <= 20) {
       if (!_hasNotifiedLowBattery) {
         _sendLowBatteryNotification(level);

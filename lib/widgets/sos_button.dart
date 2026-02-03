@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -27,11 +25,7 @@ class _SOSButtonState extends State<SOSButton>
     );
 
     _controller.addStatusListener((status) {
-   if (_controller.value > 0 && !_isCompleted) {
-      log("Animation Status: $status, Value: ${_controller.value}");
-    }
       if (status == AnimationStatus.completed) {
-        log("SOS Button Triggered");
         setState(() {
           _isCompleted = true;
         });
@@ -57,7 +51,7 @@ class _SOSButtonState extends State<SOSButton>
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    
+
     return GestureDetector(
       onLongPressStart: (_) {
         if (!_isCompleted) _controller.forward();
@@ -65,10 +59,10 @@ class _SOSButtonState extends State<SOSButton>
       onLongPressEnd: (_) {
         if (!_isCompleted) _controller.reverse();
       },
-      child: AnimatedBuilder( // <--- මුළු Stack එකම මේක ඇතුළට දාන්න
+      child: AnimatedBuilder(
+        // <--- මුළු Stack එකම මේක ඇතුළට දාන්න
         animation: _controller,
         builder: (context, child) {
-          
           // මෙන්න මෙතනදී තමයි dynamic color එක තීරණය වෙන්නේ
           final Color buttonColor = (_controller.value > 0 && !_isCompleted)
               ? appColors.errorRed!.withOpacity(0.5) // Progress වෙන වෙලාවට
@@ -131,7 +125,7 @@ class _SOSButtonState extends State<SOSButton>
                             ),
                     ),
                   ),
-                  if(_isCompleted) ...[
+                  if (_isCompleted) ...[
                     Positioned(
                       left: 30.0,
                       child: Container(
@@ -152,6 +146,4 @@ class _SOSButtonState extends State<SOSButton>
       ),
     );
   }
-    }
-
-    
+}

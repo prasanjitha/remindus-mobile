@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/models/medicine_store_model.dart';
@@ -16,7 +14,6 @@ class ReminderService {
   Stream<List<ReminderModel>> getAllReminders({
     required String activeFamilyId,
   }) {
-    log("Active Family ID: $activeFamilyId");
     return _reminderRef(
       activeFamilyId,
     ).orderBy('scheduledAt', descending: false).snapshots().map(_mapSnapshot);
@@ -109,7 +106,6 @@ class ReminderService {
         return ReminderModel.fromMap({...doc.data(), 'reminderId': doc.id});
       }).toList();
     } catch (e) {
-      print("Mapping Error: $e");
       return [];
     }
   }

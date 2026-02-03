@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -128,9 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         }),
       );
-    } catch (e) {
-      log("Email Error: $e");
-    }
+    } catch (e) {}
   }
 
   void _showInviteDialog(String email) {

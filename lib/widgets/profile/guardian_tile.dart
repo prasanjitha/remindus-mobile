@@ -3,6 +3,7 @@ import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/guardian_model.dart';
 import 'package:remindus/screens/profile/add_guardian_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 class GuardianTile extends StatelessWidget {
   final GuardianModel guardianModel;
@@ -28,17 +29,24 @@ class GuardianTile extends StatelessWidget {
         leading: CircleAvatar(
           radius: 26.0,
           backgroundColor: appColor.primary,
-          child: Text(
-            guardianModel.name!.isNotEmpty
-                ? guardianModel.name![0].toUpperCase()
-                : '',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: appColor.bgColor,
-              fontSize: 28.0,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
+          child: guardianModel.profileImageUrl != null
+              ? ShimmerImage(
+                  imageUrl: guardianModel.profileImageUrl!,
+                  borderRadius: BorderRadius.circular(26),
+                  width: 52,
+                  height: 52,
+                )
+              : Text(
+                  guardianModel.name!.isNotEmpty
+                      ? guardianModel.name![0].toUpperCase()
+                      : '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: appColor.bgColor,
+                    fontSize: 28.0,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
         ),
         title: Text(
           guardianModel.name ?? '',
@@ -61,7 +69,7 @@ class GuardianTile extends StatelessWidget {
                 fontSize: 14.0,
               ),
             ),
-          
+
             Text(
               " . ",
               style: TextStyle(
@@ -100,27 +108,33 @@ class GuardianTile extends StatelessWidget {
             ],
           ],
         ),
-        trailing: canEdit==true? GestureDetector(
-          onTap: () {
-                 Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) =>  AddGuardianScreen(
-                  guardianModel: guardianModel,
-                  isEditFlow: true,
-
+        trailing: canEdit == true
+            ? GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddGuardianScreen(
+                        guardianModel: guardianModel,
+                        isEditFlow: true,
+                      ),
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      Assets.settings02Icon,
+                      width: 20.0,
+                      height: 20.0,
+                    ),
+                    const SizedBox(width: 10.0),
+                    Image.asset(Assets.arrowUpIcon, width: 20.0, height: 20.0),
+                  ],
                 ),
-                ),
-              );
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(Assets.settings02Icon, width: 20.0, height: 20.0),
-              const SizedBox(width: 10.0),
-              Image.asset(Assets.arrowUpIcon, width: 20.0, height: 20.0),
-            ],
-          ),
-        ):null,
+              )
+            : null,
         onTap: () {},
       ),
     );

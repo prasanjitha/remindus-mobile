@@ -74,12 +74,14 @@ class VaccinationBloc extends Bloc<VaccinationEvent, VaccinationState> {
     DeleteVaccinationEvent event,
     Emitter<VaccinationState> emit,
   ) async {
-    emit(VaccinationLoading());
+    emit(VaccinationDeletedLoading());
     try {
-      await _repository.deleteVaccination(event.recordId, event.activeFamilyId);
-      emit(
-        const VaccinationOperationSuccess("Vaccination Deleted Successfully"),
+      await _repository.deleteVaccination(
+        recordId: event.recordId,
+        activeFamilyId: event.activeFamilyId,
+        reminderId: event.reminderId,
       );
+      emit(VaccinationDeletedSuccess());
     } catch (e) {
       emit(VaccinationError(e.toString()));
     }

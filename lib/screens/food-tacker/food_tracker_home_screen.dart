@@ -9,18 +9,25 @@ import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
 import 'package:remindus/helpers/delete_dialog_helper.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 // Model Class
 class FoodItem {
   final String name;
   final String brand;
   final int calories;
+  final double carbs;
+  final double protein;
+  final double fat;
   final String imagePath;
 
   const FoodItem({
     required this.name,
     required this.brand,
     required this.calories,
+    this.carbs = 0.0,
+    this.protein = 0.0,
+    this.fat = 0.0,
     required this.imagePath,
   });
 }
@@ -220,7 +227,7 @@ class _FoodTrackerScreenState extends State<FoodTrackerScreen> {
   Widget _buildSliverList(
     AsyncSnapshot<QuerySnapshot> snapshot,
     List<QueryDocumentSnapshot> docs,
-  bool isAppOwner,
+    bool isAppOwner,
   ) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const SliverToBoxAdapter(
@@ -251,6 +258,9 @@ class _FoodTrackerScreenState extends State<FoodTrackerScreen> {
             name: data['name'] ?? 'Unknown',
             brand: data['brand'] ?? '',
             calories: data['calories'] ?? 0,
+            carbs: (data['carbs'] ?? 0).toDouble(),
+            protein: (data['protein'] ?? 0).toDouble(),
+            fat: (data['fat'] ?? 0).toDouble(),
             imagePath: data['imageUrl'] ?? '',
           );
 
@@ -372,21 +382,18 @@ class FoodItemCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: foodItem.imagePath.startsWith('http')
-                ? Image.network(
-                    foodItem.imagePath,
-                    width: 54,
-                    height: 54,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                    loadingBuilder: (ctx, child, progress) => progress == null
-                        ? child
-                        : _buildPlaceholder(loading: true),
-                  )
-                : _buildPlaceholder(),
-          ),
+          foodItem.imagePath.startsWith('http')
+              ? ShimmerImage(
+                  imageUrl: foodItem.imagePath,
+                  width: 54,
+                  height: 54,
+                  borderRadius: BorderRadius.circular(12),
+                  errorWidget: _buildPlaceholder(),
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: _buildPlaceholder(),
+                ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -414,6 +421,27 @@ class FoodItemCard extends StatelessWidget {
                     Text(
                       '• ${foodItem.calories} kcal',
                       style: TextStyle(fontSize: 13, color: appColors.primary),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    _buildNutritionChip(
+                      label: 'Carbs',
+                      value: '${foodItem.carbs.toStringAsFixed(1)}g',
+                      color: Colors.orange,
+                    ),
+                    _buildNutritionChip(
+                      label: 'Protein',
+                      value: '${foodItem.protein.toStringAsFixed(1)}g',
+                      color: Colors.blue,
+                    ),
+                    _buildNutritionChip(
+                      label: 'Fat',
+                      value: '${foodItem.fat.toStringAsFixed(1)}g',
+                      color: Colors.red,
                     ),
                   ],
                 ),
@@ -446,6 +474,29 @@ class FoodItemCard extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : const Icon(Icons.fastfood, color: Colors.grey, size: 24),
+    );
+  }
+
+  Widget _buildNutritionChip({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        '$label: $value',
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          color: color,
+        ),
+      ),
     );
   }
 }

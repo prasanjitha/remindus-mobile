@@ -45,3 +45,10 @@ RemindUs is a collaborative inventory management and notification app built with
                                           const VaccinationListScreen(),
                                     ),
                                   );
+
+
+                                   Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const MainTabScreen()),
+                (route) => false,
+              );

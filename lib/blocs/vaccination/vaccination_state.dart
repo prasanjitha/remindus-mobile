@@ -11,6 +11,10 @@ class VaccinationInitial extends VaccinationState {}
 
 class VaccinationLoading extends VaccinationState {}
 
+class VaccinationDeletedSuccess extends VaccinationState {}
+
+class VaccinationDeletedLoading extends VaccinationState {}
+
 class VaccinationLoaded extends VaccinationState {
   final List<VaccinationRecord> records;
 

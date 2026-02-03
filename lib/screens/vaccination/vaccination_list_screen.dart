@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/blocs/vaccination/vaccination_bloc.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/helpers/snackbar_helper.dart';
 import 'package:remindus/models/vaccination_record.dart';
 import 'package:remindus/screens/tab/main_tab_screen.dart';
 import 'package:remindus/screens/vaccination/add_edit_vaccination_screen.dart';
@@ -77,19 +78,14 @@ class _VaccinationListScreenState extends State<VaccinationListScreen> {
         child: BlocListener<VaccinationBloc, VaccinationState>(
           listener: (context, state) {
             if (state is VaccinationError) {
-              ScaffoldMessenger.of(
+              SnackbarHelper.showError(context, state.message);
+              Navigator.push(
                 context,
-              ).showSnackBar(SnackBar(content: Text(state.message)));
-            } else if (state is VaccinationOperationSuccess) {
-              CustomDialogs.showSuccess(
-                type: "edit",
-                context: context,
-                title: "Success",
-                subtitle: state.message,
-                buttonText: "OK",
-                onBackPressed: () => Navigator.pop(context),
+                MaterialPageRoute(
+                  builder: (context) => const VaccinationListScreen(),
+                ),
               );
-            }
+            } else if (state is VaccinationOperationSuccess) {}
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(

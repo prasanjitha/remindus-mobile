@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -33,15 +31,12 @@ class VoiceReminderBloc extends Bloc<VoiceReminderEvent, VoiceReminderState> {
     StartListening event,
     Emitter<VoiceReminderState> emit,
   ) async {
-    log("_onStartListening");
     bool available = await _speechToText.initialize();
     if (available) {
-      log("_onStartListening available");
       _isListening = true;
       emit(const VoiceReminderListening(partialText: ''));
       _speechToText.listen(
         onResult: (result) {
-          log("_onStartListening result: ${result.recognizedWords}");
           // Dispatch event instead of emit to properly update UI
           add(UpdateVoiceText(result.recognizedWords));
         },
@@ -74,7 +69,6 @@ class VoiceReminderBloc extends Bloc<VoiceReminderEvent, VoiceReminderState> {
     ProcessVoiceInput event,
     Emitter<VoiceReminderState> emit,
   ) async {
-    log("event.text: ${event.text}");
     emit(VoiceReminderProcessing());
     try {
       if (event.text.isEmpty) {
@@ -157,7 +151,6 @@ class VoiceReminderBloc extends Bloc<VoiceReminderEvent, VoiceReminderState> {
         emit(const VoiceReminderError('Failed to save reminder'));
       }
     } catch (e) {
-      log('Error saving voice reminder: $e');
       emit(VoiceReminderError('Failed to save reminder: ${e.toString()}'));
     }
   }

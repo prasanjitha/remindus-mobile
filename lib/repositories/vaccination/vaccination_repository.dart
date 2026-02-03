@@ -45,14 +45,29 @@ class VaccinationRepository {
     }
   }
 
-  Future<void> deleteVaccination(String recordId, String activeFamilyId) async {
+  Future<void> deleteVaccination({
+    required String recordId,
+    required String activeFamilyId,
+    String? reminderId,
+  }) async {
     try {
+      // Delete vaccination record
       await _firestore
           .collection('users')
           .doc(activeFamilyId)
           .collection('vaccination-records')
           .doc(recordId)
           .delete();
+
+      // Delete linked reminder if provided
+      if (reminderId != null && reminderId.isNotEmpty) {
+        await _firestore
+            .collection('users')
+            .doc(activeFamilyId)
+            .collection('reminders')
+            .doc(reminderId)
+            .delete();
+      }
     } catch (e) {
       throw Exception("Failed to delete vaccination record: $e");
     }

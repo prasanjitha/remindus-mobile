@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,8 +7,15 @@ import 'package:remindus/repositories/reminder/reminder_repository.dart';
 import 'package:remindus/screens/tab/main_tab_screen.dart';
 import 'package:remindus/screens/tab/watch_connect_now_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/utils/health_utils.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/widgets/health_status_indicator.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
+import 'package:remindus/screens/tab/heart_rate_screen.dart';
+import 'package:remindus/screens/tab/blood_pressure_screen.dart';
+import 'package:remindus/screens/tab/blood_type_screen.dart';
+import 'package:remindus/screens/tab/manage_allergies_screen.dart';
 
 class HealthCheckupScreen extends StatefulWidget {
   const HealthCheckupScreen({super.key});
@@ -35,75 +40,65 @@ class _HealthCheckupScreenState extends State<HealthCheckupScreen> {
       return state is UserLoadedState ? state.isAppowner : false;
     });
 
-    return Scaffold(
-      backgroundColor: appColors.bgColor,
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Image.asset(
-                Assets.bgColorMap,
-                fit: BoxFit.cover,
-                opacity: const AlwaysStoppedAnimation(0.6),
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MainHeaderAppBar(
+                    onClose: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MainTabScreen(initialIndex: 3),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    "Health Checkup",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: appColors.textPrimary,
+                      fontSize: 28.0,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    "Track your vital health information",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: appColors.textSecondary,
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  const SizedBox(height: 40.0),
+
+                  _buildDeviceCard(context, isAppOwner),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Vital Signs',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      color: appColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildVitalGrid(activeFamilyId!),
+                ],
               ),
             ),
-            SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    MainHeaderAppBar(
-                      onClose: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                MainTabScreen(initialIndex: 3),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    Text(
-                      "Health Checkup",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        color: appColors.textPrimary,
-                        fontSize: 28.0,
-                      ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      "Track your vital health information",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        color: appColors.textSecondary,
-                        fontSize: 16.0,
-                      ),
-                    ),
-                    const SizedBox(height: 40.0),
-
-                    _buildDeviceCard(context, isAppOwner),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Vital Signs',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w400,
-                        color: appColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildVitalGrid(activeFamilyId!),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -264,21 +259,51 @@ class _HealthCheckupScreenState extends State<HealthCheckupScreen> {
               iconpath: Assets.healthIcon,
               title: 'Heart Rate',
               value: heartRate,
+              status: HealthUtils.getHeartRateStatus(heartRate),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const HeartRateAddSceen(),
+                  ),
+                );
+              },
             ),
             VitalCard(
               iconpath: Assets.bloodPressureIcon,
               title: 'Blood Pressure',
               value: bp,
+              status: HealthUtils.getBloodPressureStatus(bp),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const BloodPressureScreen(),
+                  ),
+                );
+              },
             ),
             VitalCard(
               iconpath: Assets.bloodTypeIcon,
               title: 'Blood Type',
               value: bloodGroup,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const BloodTypeScreen(),
+                  ),
+                );
+              },
             ),
             VitalCard(
               iconpath: Assets.alertSquareIcon,
               title: 'Allergies',
               value: allergiesText,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ManageAllergiesScreen(),
+                  ),
+                );
+              },
             ),
           ],
         );
@@ -291,12 +316,16 @@ class VitalCard extends StatelessWidget {
   final String iconpath;
   final String title;
   final String value;
+  final HealthStatus? status;
+  final VoidCallback onTap;
 
   const VitalCard({
     super.key,
     required this.iconpath,
     required this.title,
     required this.value,
+    required this.onTap,
+    this.status,
   });
 
   @override
@@ -337,86 +366,41 @@ class VitalCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8.0),
-          _buildHealthValueTile(
-            title,
-            value,
-            title == "Blood Pressure"
-                ? getBPStatus(value)
-                : title == "Heart Rate"
-                ? getHeartRateStatus(value)
-                : "",
-            context.appColors,
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: context.appColors.textPrimary,
+                    ),
+                  ),
+                  if (status != null && status != HealthStatus.unknown) ...[
+                    const SizedBox(width: 8),
+                    HealthStatusIndicator(status: status!, compact: true),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          GestureDetector(
+            onTap: onTap,
+            child: Text(
+              "+ Add Now",
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                color: context.appColors.primary,
+                fontSize: 14,
+              ),
+            ),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildHealthValueTile(
-    String label,
-    String value,
-    String status,
-    AppColors appColors,
-  ) {
-    Color statusColor = status == "Normal" ? Colors.green : Colors.redAccent;
-
-    return Flexible(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            Text(
-              value,
-              style: TextStyle(fontSize: 18, color: appColors.textPrimary),
-            ),
-            const SizedBox(width: 10),
-            if (status.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: statusColor),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String getBPStatus(String value) {
-    if (value.isEmpty) return "";
-    try {
-      final String numericOnly = value.replaceAll(RegExp(r'[^0-9/]'), '');
-      final parts = numericOnly.split('/');
-      int systolic = int.parse(parts[0].trim());
-
-      if (systolic >= 140) return "High";
-      if (systolic >= 120) return "Elevated";
-      return "Normal";
-    } catch (e) {
-      log("Error parsing BP: $e");
-      return "";
-    }
-  }
-
-  String getHeartRateStatus(String value) {
-    if (value.isEmpty) return "";
-    int? rate = int.tryParse(value);
-    if (rate == null) return "";
-
-    if (rate > 100) return "High";
-    if (rate < 60) return "Low";
-    return "Normal";
   }
 }

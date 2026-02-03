@@ -46,154 +46,159 @@ class _AddReminderMeetingState extends State<AddReminderMeeting> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppTextField(
-          controller: widget.titleController,
-          hintText: 'Title',
-          prefixIconPath: Assets.subtitleIcon,
-          label: 'Appointment title',
-          isPassword: false,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a title';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 20),
-
-        Text(
-          'Pick a Date',
-          style: TextStyle(
-            fontWeight: FontWeight.w400,
-            color: appColors.textPrimary,
-            fontSize: 16,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppTextField(
+            controller: widget.titleController,
+            hintText: 'Title',
+            prefixIconPath: Assets.subtitleIcon,
+            label: 'Appointment title',
+            isPassword: false,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a title';
+              }
+              return null;
+            },
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 20),
 
-        GestureDetector(
-          onTap: widget.onSelectDate,
-          child: Container(
+          Text(
+            'Pick a Date',
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: appColors.textPrimary,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          GestureDetector(
+            onTap: widget.onSelectDate,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: appColors.bgColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Image.asset(Assets.calenderAddIcon, width: 20, height: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    widget.selectedDate != null
+                        ? DateFormat.yMd().format(widget.selectedDate!)
+                        : 'No date selected',
+                    style: TextStyle(
+                      color: appColors.textSecondary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Text(
+            'Time',
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 16,
+              color: appColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: appColors.bgColor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.0),
             ),
             child: Row(
               children: [
-                Image.asset(Assets.calenderAddIcon, width: 20, height: 20),
-                const SizedBox(width: 12),
-                Text(
-                  widget.selectedDate != null
-                      ? DateFormat.yMd().format(widget.selectedDate!)
-                      : 'No date selected',
-                  style: TextStyle(
-                    color: appColors.textSecondary,
-                    fontSize: 16,
+                Expanded(
+                  child: InkWell(
+                    onTap: _selectTime,
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          Assets.alarmClockIcon,
+                          width: 20.0,
+                          height: 20.0,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          widget.selectedTime == null
+                              ? 'Select time'
+                              : widget.selectedTime!.format(context),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                _buildAmPmButton('AM', context),
+                const SizedBox(width: 8),
+                _buildAmPmButton('PM', context),
               ],
             ),
           ),
-        ),
-
-        const SizedBox(height: 20),
-
-        Text(
-          'Time',
-          style: TextStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: appColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: appColors.bgColor,
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: _selectTime,
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        Assets.alarmClockIcon,
-                        width: 20.0,
-                        height: 20.0,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        widget.selectedTime == null
-                            ? '08:00'
-                            : widget.selectedTime!.format(context),
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              _buildAmPmButton('AM', context),
-              const SizedBox(width: 8),
-              _buildAmPmButton('PM', context),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-      ],
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 
   Widget _buildAmPmButton(String period, BuildContext context) {
-  final appColors = context.appColors;
-  
-  final currentPeriod = widget.selectedTime != null && widget.selectedTime!.hour >= 12
-      ? 'PM'
-      : 'AM';
-  final isSelected = currentPeriod == period;
+    final appColors = context.appColors;
 
-  return InkWell(
-    onTap: () {
-      if (widget.selectedTime != null) {
-        int hour = widget.selectedTime!.hour;
-        int minute = widget.selectedTime!.minute;
+    final currentPeriod =
+        widget.selectedTime != null && widget.selectedTime!.hour >= 12
+        ? 'PM'
+        : 'AM';
+    final isSelected = currentPeriod == period;
 
-        if (period == 'AM' && hour >= 12) {
-          hour -= 12;
-        } else if (period == 'PM' && hour < 12) {
-          hour += 12;
+    return InkWell(
+      onTap: () {
+        if (widget.selectedTime != null) {
+          int hour = widget.selectedTime!.hour;
+          int minute = widget.selectedTime!.minute;
+
+          if (period == 'AM' && hour >= 12) {
+            hour -= 12;
+          } else if (period == 'PM' && hour < 12) {
+            hour += 12;
+          }
+
+          widget.onTimeChanged(TimeOfDay(hour: hour, minute: minute));
         }
-
-        widget.onTimeChanged(TimeOfDay(hour: hour, minute: minute));
-      }
-    },
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? appColors.primary.withOpacity(0.16)
-            : Colors.transparent, 
-        borderRadius: BorderRadius.circular(8),
-        
-      ),
-      child: Text(
-        period,
-        style: TextStyle(
-          color: isSelected ? appColors.primary : appColors.textPrimary,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
-          fontSize: 16.0,
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? appColors.primary.withOpacity(0.16)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          period,
+          style: TextStyle(
+            color: isSelected ? appColors.primary : appColors.textPrimary,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
+            fontSize: 16.0,
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

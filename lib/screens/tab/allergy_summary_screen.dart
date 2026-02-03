@@ -99,14 +99,7 @@ class _AllergySummaryScreenState extends State<AllergySummaryScreen> {
                           "Allergies updated successfully!",
                         );
                         if (context.mounted) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const HealthCheckupScreen(),
-                            ),
-                            (route) => false,
-                          );
+                          Navigator.of(context).pop();
                         }
                       } else {
                         SnackbarHelper.showError(

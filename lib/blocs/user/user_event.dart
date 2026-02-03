@@ -12,11 +12,23 @@ class LoadUserEvent extends UserEvent {}
 class SendInviteEvent extends UserEvent {
   final String email;
   final String activeFamilyId;
+  final String curentUserName;
+  final String guardianName;
 
-  const SendInviteEvent({required this.email, required this.activeFamilyId});
+  const SendInviteEvent({
+    required this.email,
+    required this.activeFamilyId,
+    required this.curentUserName,
+    required this.guardianName,
+  });
 
   @override
-  List<Object?> get props => [email, activeFamilyId];
+  List<Object?> get props => [
+    email,
+    activeFamilyId,
+    curentUserName,
+    guardianName,
+  ];
 }
 
 class SwitchActiveFamilyEvent extends UserEvent {
@@ -84,11 +96,16 @@ class AddNewGuardianEvent extends UserEvent {
 class UpdateUserProfileEvent extends UserEvent {
   final String name;
   final String phone;
+  final String? profileImageUrl;
 
-  const UpdateUserProfileEvent({required this.name, required this.phone});
+  const UpdateUserProfileEvent({
+    required this.name,
+    required this.phone,
+    this.profileImageUrl,
+  });
 
   @override
-  List<Object?> get props => [name, phone];
+  List<Object?> get props => [name, phone, profileImageUrl];
 }
 
 class ChangePasswordEvent extends UserEvent {

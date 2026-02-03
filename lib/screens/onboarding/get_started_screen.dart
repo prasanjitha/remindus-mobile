@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/custom_button.dart';
 import 'package:remindus/generated/assets.dart';
@@ -18,7 +19,7 @@ class GetStartedScreen extends StatelessWidget {
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(Assets.getStartedImg),
-                fit: BoxFit.cover, 
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -30,7 +31,10 @@ class GetStartedScreen extends StatelessWidget {
                 children: [
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 28,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -47,7 +51,9 @@ class GetStartedScreen extends StatelessWidget {
                         Text(
                           "A simple and secure way to stay in touch, set reminders, and keep track of health together.",
                           style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: context.appColors.textSecondary),
+                              ?.copyWith(
+                                color: context.appColors.textSecondary,
+                              ),
                         ),
                         const SizedBox(height: 40),
 
@@ -55,7 +61,9 @@ class GetStartedScreen extends StatelessWidget {
                           text: "Create Account",
                           backgroundColor: context.appColors.primaryLight,
                           textColor: context.appColors.textPrimary,
-                          onPressed: () {
+                          onPressed: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool('is_first_time', false);
                             Navigator.pushNamed(context, '/onboarding-one');
                           },
                         ),
@@ -64,9 +72,10 @@ class GetStartedScreen extends StatelessWidget {
                         AppButton(
                           text: "Login",
                           backgroundColor: context.appColors.primary,
-                          onPressed: () {
+                          onPressed: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool('is_first_time', false);
                             Navigator.pushNamed(context, '/login');
-                             
                           },
                         ),
 
@@ -79,29 +88,29 @@ class GetStartedScreen extends StatelessWidget {
                               children: [
                                 TextSpan(
                                   text: "Terms",
-                                  style:  TextStyle(
+                                  style: TextStyle(
                                     color: context.appColors.primary,
                                   ),
                                 ),
-                                  TextSpan(
+                                TextSpan(
                                   text: " & ",
-                                  style:  TextStyle(
+                                  style: TextStyle(
                                     color: context.appColors.textPrimary,
                                   ),
                                 ),
-                                  TextSpan(
+                                TextSpan(
                                   text: "Privacy Policy",
-                                  style:  TextStyle(
+                                  style: TextStyle(
                                     color: context.appColors.primary,
                                   ),
                                 ),
                               ],
                             ),
                             textAlign: TextAlign.center,
-                            style:  TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Figtree',
                               fontSize: 12,
-                              color:  context.appColors.textPrimary,
+                              color: context.appColors.textPrimary,
                             ),
                           ),
                         ),

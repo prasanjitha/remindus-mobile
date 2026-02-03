@@ -3,22 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/helpers/snackbar_helper.dart';
 import 'package:remindus/screens/authentication/siginin_screen.dart';
 import 'package:remindus/screens/profile/change_password_screen.dart';
 import 'package:remindus/screens/profile/edit_profile_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/app/app_router.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 class ProfileFooter extends StatelessWidget {
   final String name;
   final String email;
   final String phone;
+  final String? profileImageUrl;
 
   const ProfileFooter({
     super.key,
     required this.name,
     required this.email,
     required this.phone,
+    this.profileImageUrl,
   });
 
   @override
@@ -40,15 +44,22 @@ class ProfileFooter extends StatelessWidget {
               leading: CircleAvatar(
                 radius: 26.0,
                 backgroundColor: appColor.primary,
-                child: Text(
-                  name.isNotEmpty ? name[0].toUpperCase() : '',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: appColor.bgColor,
-                    fontSize: 32.0,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+                child: profileImageUrl != null
+                    ? ShimmerImage(
+                        imageUrl: profileImageUrl!,
+                        borderRadius: BorderRadius.circular(26),
+                        width: 52,
+                        height: 52,
+                      )
+                    : Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : '',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: appColor.bgColor,
+                          fontSize: 32.0,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
               ),
               title: Text(
                 name,
@@ -113,11 +124,20 @@ class ProfileFooter extends StatelessWidget {
                     iconPath: Assets.logOutIcon,
                     label: 'Log out',
                     onTap: () async {
-                      await FirebaseAuth.instance.signOut();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                      );
+                      try {
+                        await FirebaseAuth.instance.signOut();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      } catch (e) {
+                        if (context.mounted) {
+                          SnackbarHelper.showError(context, e.toString());
+                        }
+                      }
                     },
                   ),
                 ],

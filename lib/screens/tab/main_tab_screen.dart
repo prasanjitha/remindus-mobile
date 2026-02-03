@@ -16,6 +16,7 @@ import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/services/reminder_notification_sync.dart';
 import 'package:remindus/services/battery_service.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainTabScreen extends StatefulWidget {
   final int? initialIndex;
@@ -39,10 +40,16 @@ class _MainTabScreenState extends State<MainTabScreen> {
   @override
   void initState() {
     super.initState();
+    _setFirstTime();
     if (widget.initialIndex != null) {
       _selectedIndex = widget.initialIndex!;
     }
     _batteryService.startMonitoring();
+  }
+
+  Future<void> _setFirstTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_initial_load', false);
   }
 
   @override
@@ -109,7 +116,7 @@ class BottomNavBar extends StatelessWidget {
               Assets.notificationSquareIcon,
               'Reminders',
             ),
-            _buildNavItem(context, 2, Assets.pillBottleIcon, 'Store'),
+            _buildNavItem(context, 2, Assets.pillBottleIcon, 'Medications'),
             _buildNavItem(context, 3, Assets.frameIcon, 'More'),
           ],
         ),

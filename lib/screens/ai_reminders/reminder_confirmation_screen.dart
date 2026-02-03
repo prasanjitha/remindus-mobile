@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -20,8 +19,6 @@ class ReminderConfirmationScreen extends StatelessWidget {
     final appColors = context.appColors;
     final isMedical =
         reminders.isNotEmpty && (reminders.first.type == 'medicine');
-
-    log("isMedical: ${reminders.first.type}");
 
     return Scaffold(
       backgroundColor: appColors.bgColor,

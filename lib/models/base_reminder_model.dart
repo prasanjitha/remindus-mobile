@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:remindus/models/vaccination_record.dart';
 
 class ReminderModel {
   // Common Fields
@@ -15,7 +16,8 @@ class ReminderModel {
   final Timestamp? scheduledAt;
   final String? bloodPressure;
   final String? heartRate;
-
+  final String? frequency;
+  final VaccinationRecord? vaccinationData;
   // Meeting Specific
   final Timestamp? date;
 
@@ -24,10 +26,8 @@ class ReminderModel {
   final String? dose;
   final String? duration;
   final String? dateRange;
-  final bool? morning;
-  final bool? afternoon;
-  final bool? evening;
-  final bool? night;
+  final List<String>? whenToTake;
+  final Timestamp? nextDoseDue;
 
   ReminderModel({
     this.reminderId,
@@ -43,15 +43,15 @@ class ReminderModel {
     this.dose,
     this.duration,
     this.dateRange,
-    this.morning,
-    this.afternoon,
-    this.evening,
-    this.night,
+    this.whenToTake,
     this.schedule,
     this.notificationId,
     this.scheduledAt,
     this.bloodPressure,
     this.heartRate,
+    this.frequency,
+    this.nextDoseDue,
+    this.vaccinationData,
   });
 
   /// ---------------- copyWith ----------------
@@ -69,15 +69,15 @@ class ReminderModel {
     String? dose,
     String? duration,
     String? dateRange,
-    bool? morning,
-    bool? afternoon,
-    bool? evening,
-    bool? night,
+    List<String>? whenToTake,
     List<Map<String, dynamic>>? schedule,
     int? notificationId,
     Timestamp? scheduledAt,
     String? bloodPressure,
     String? heartRate,
+    String? frequency,
+    Timestamp? nextDoseDue,
+    VaccinationRecord? vaccinationData,
   }) {
     return ReminderModel(
       reminderId: reminderId ?? this.reminderId,
@@ -93,15 +93,15 @@ class ReminderModel {
       dose: dose ?? this.dose,
       duration: duration ?? this.duration,
       dateRange: dateRange ?? this.dateRange,
-      morning: morning ?? this.morning,
-      afternoon: afternoon ?? this.afternoon,
-      evening: evening ?? this.evening,
-      night: night ?? this.night,
+      whenToTake: whenToTake ?? this.whenToTake,
       schedule: schedule ?? this.schedule,
       notificationId: notificationId ?? this.notificationId,
       scheduledAt: scheduledAt ?? this.scheduledAt,
       bloodPressure: bloodPressure ?? this.bloodPressure,
       heartRate: heartRate ?? this.heartRate,
+      frequency: frequency ?? this.frequency,
+      nextDoseDue: nextDoseDue ?? this.nextDoseDue,
+      vaccinationData: vaccinationData ?? this.vaccinationData,
     );
   }
 
@@ -121,14 +121,15 @@ class ReminderModel {
       if (dose != null) 'dose': dose,
       if (duration != null) 'duration': duration,
       if (dateRange != null) 'dateRange': dateRange,
-      if (morning != null) 'morning': morning,
-      if (afternoon != null) 'afternoon': afternoon,
-      if (evening != null) 'evening': evening,
-      if (night != null) 'night': night,
+      if (whenToTake != null) 'whenToTake': whenToTake,
       if (notificationId != null) 'notificationId': notificationId,
       if (scheduledAt != null) 'scheduledAt': scheduledAt,
       if (bloodPressure != null) 'bloodPressure': bloodPressure,
       if (heartRate != null) 'heartRate': heartRate,
+      if (frequency != null) 'frequency': frequency,
+      if (nextDoseDue != null) 'nextDoseDue': nextDoseDue,
+      if (vaccinationData != null)
+        'vaccinationData': vaccinationData!.toFirestore(),
     };
   }
 
@@ -147,10 +148,9 @@ class ReminderModel {
       dose: map['dose'],
       duration: map['duration'],
       dateRange: map['dateRange'],
-      morning: map['morning'],
-      afternoon: map['afternoon'],
-      evening: map['evening'],
-      night: map['night'],
+      whenToTake: map['whenToTake'] != null
+          ? List<String>.from(map['whenToTake'])
+          : null,
       schedule: map['schedule'] != null
           ? (map['schedule'] as List)
                 .map((e) => Map<String, dynamic>.from(e))
@@ -160,6 +160,11 @@ class ReminderModel {
       scheduledAt: map['scheduledAt'],
       bloodPressure: map['bloodPressure'],
       heartRate: map['heartRate'],
+      frequency: map['frequency'],
+      nextDoseDue: map['nextDoseDue'],
+      vaccinationData: map['vaccinationData'] != null
+          ? VaccinationRecord.fromMap(map['vaccinationData'])
+          : null,
     );
   }
 }

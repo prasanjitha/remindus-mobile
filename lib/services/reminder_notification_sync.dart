@@ -62,9 +62,7 @@ class ReminderNotificationSync {
           isAppOwner: isAppOwner,
         );
       }
-    } catch (e) {
-      print('Error scheduling notifications: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _syncRefillNotifications(
@@ -97,7 +95,7 @@ class ReminderNotificationSync {
           day: scheduledTime.day,
           month: scheduledTime.month,
           title: 'Stock Alert!',
-          body: medicine.name ?? '',
+          body: medicine.name,
           message:
               'Hello! Your stock for ${medicine.name} is empty. Please refill your medicine store.',
           reminderId: medicine.medicineStoreId,

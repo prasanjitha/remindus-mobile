@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class BaseAuthRepositories {
@@ -28,10 +29,18 @@ abstract class BaseAuthRepositories {
     required String uid,
     required String name,
     required String phone,
+    String? profileImageUrl,
   });
 
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
   });
+
+  Future<void> updateRememberMeStatus({
+    required String uid,
+    required bool rememberMe,
+  });
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getUserDataStream(String uid);
 }

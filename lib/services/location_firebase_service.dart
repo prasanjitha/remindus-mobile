@@ -1,5 +1,5 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:remindus/models/emergency_contact_model.dart';
 import '../models/location_data.dart';
 
 class FirebaseService {
@@ -18,12 +18,10 @@ class FirebaseService {
           .collection('locations')
           .doc('current')
           .set({
-        ...locationData.toJson(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      log('Location shared successfully');
+            ...locationData.toJson(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
     } catch (e) {
-      log('Error sharing location: $e');
       rethrow;
     }
   }
@@ -52,14 +50,8 @@ class FirebaseService {
           .collection('users')
           .doc(userId)
           .collection('check-ins')
-          .add({
-        ...data,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      log('Check-in status updated');
+          .add({...data, 'createdAt': FieldValue.serverTimestamp()});
     } catch (e) {
-      log('Error updating check-in: $e');
       rethrow;
     }
   }
@@ -82,8 +74,6 @@ class FirebaseService {
           .collection('emergencies')
           .add(emergencyData);
 
-      log('Emergency SOS created with ID: ${emergencyRef.id}');
-
       // Notify emergency contacts
       for (String contactId in contactIds) {
         await _firestore
@@ -91,20 +81,18 @@ class FirebaseService {
             .doc(contactId)
             .collection('notifications')
             .add({
-          'type': 'emergency',
-          'userId': userId,
-          'emergencyId': emergencyRef.id,
-          'latitude': locationData.latitude,
-          'longitude': locationData.longitude,
-          'address': locationData.address,
-          'timestamp': DateTime.now().millisecondsSinceEpoch,
-          'read': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+              'type': 'emergency',
+              'userId': userId,
+              'emergencyId': emergencyRef.id,
+              'latitude': locationData.latitude,
+              'longitude': locationData.longitude,
+              'address': locationData.address,
+              'timestamp': DateTime.now().millisecondsSinceEpoch,
+              'read': false,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
       }
-      log('Emergency SOS sent to ${contactIds.length} contacts');
     } catch (e) {
-      log('Error sending SOS: $e');
       rethrow;
     }
   }
@@ -118,11 +106,11 @@ class FirebaseService {
         .doc('current')
         .snapshots()
         .map((snapshot) {
-      if (snapshot.exists && snapshot.data() != null) {
-        return LocationData.fromJson(snapshot.data()!);
-      }
-      return null;
-    });
+          if (snapshot.exists && snapshot.data() != null) {
+            return LocationData.fromJson(snapshot.data()!);
+          }
+          return null;
+        });
   }
 
   /// Add emergency contact
@@ -141,22 +129,13 @@ class FirebaseService {
           .collection('emergency-contact')
           .doc();
 
-      contact = EmergencyContact(
-        id: docRef.id,
-        name: contact.name,
-        phoneNumber: contact.phoneNumber,
-      );
+      contact.emergencyContactId = docRef.id;
+      contact.active = true;
+      contact.createdAt = DateTime.now();
+      contact.updatedAt = DateTime.now();
 
-      await docRef.set({
-        ...contact.toJson(),
-        'active': true,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      log("Emergency contact added successfully with ID: ${docRef.id}");
+      await docRef.set(contact.toMap());
     } catch (e) {
-      log('Error adding contact: $e');
       rethrow;
     }
   }
@@ -168,24 +147,28 @@ class FirebaseService {
         throw Exception("User ID is required. User might not be logged in.");
       }
 
-      return _firestore
+      final collection = _firestore
           .collection('users')
           .doc(userId)
-          .collection('emergency-contact')
-          .where('active', isEqualTo: true)
-          .orderBy('createdAt', descending: true)
-          .snapshots()
-          .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => EmergencyContact.fromJson({
-                  'id': doc.id,
-                  'name': doc.data()['name'],
-                  'phoneNumber': doc.data()['phoneNumber'],
-                }))
-            .toList();
+          .collection('emergency-contact');
+
+      // Create a stream that starts with a 'get' to avoid waiting state
+      return Stream.fromFuture(collection.get()).asyncExpand((firstSnapshot) {
+        return collection.snapshots().map((snapshot) {
+          final List<EmergencyContact> contacts = snapshot.docs
+              .map((doc) => EmergencyContact.fromMap(doc.data(), doc.id))
+              .where((c) => c.active == true)
+              .toList();
+
+          contacts.sort((a, b) {
+            final dateA = a.createdAt ?? DateTime(2000);
+            final dateB = b.createdAt ?? DateTime(2000);
+            return dateB.compareTo(dateA);
+          });
+          return contacts;
+        });
       });
     } catch (e) {
-      log('Error fetching emergency contacts: $e');
       rethrow;
     }
   }
@@ -206,14 +189,9 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => EmergencyContact.fromJson({
-                'id': doc.id,
-                'name': doc.data()['name'],
-                'phoneNumber': doc.data()['phoneNumber'],
-              }))
+          .map((doc) => EmergencyContact.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      log('Error getting contacts: $e');
       return [];
     }
   }
@@ -228,38 +206,30 @@ class FirebaseService {
           .collection('users')
           .doc(userId)
           .collection('emergency-contact')
-          .doc(contact.id)
+          .doc(contact.emergencyContactId)
           .update({
-        ...contact.toJson(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      log("Emergency contact updated successfully");
+            ...contact.toMap(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
       return true;
     } catch (e) {
-      log('Error updating emergency contact: $e');
       rethrow;
     }
   }
 
   /// Delete emergency contact (soft delete)
-  Future<bool> deleteEmergencyContact(
-    String userId,
-    String contactId,
-  ) async {
+  Future<bool> deleteEmergencyContact(String userId, String contactId) async {
     try {
       await _firestore
           .collection('users')
           .doc(userId)
           .collection('emergency-contact')
           .doc(contactId)
-          .update({
-        'active': false,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      log("Contact soft-deleted successfully");
+          .update({'active': false, 'updatedAt': FieldValue.serverTimestamp()});
+
       return true;
     } catch (e) {
-      log('Error deleting contact: $e');
       rethrow;
     }
   }
@@ -273,9 +243,7 @@ class FirebaseService {
           .collection('locations')
           .doc('current')
           .delete();
-      log('Location sharing stopped');
     } catch (e) {
-      log('Error stopping sharing: $e');
       rethrow;
     }
   }
@@ -290,8 +258,8 @@ class FirebaseService {
         .limit(20)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => doc.data()).toList();
-    });
+          return snapshot.docs.map((doc) => doc.data()).toList();
+        });
   }
 
   /// Get emergency history
@@ -304,25 +272,23 @@ class FirebaseService {
         .limit(10)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => doc.data()).toList();
-    });
+          return snapshot.docs.map((doc) => doc.data()).toList();
+        });
   }
 
   /// Mark notification as read
-  Future<void> markNotificationAsRead(String userId, String notificationId) async {
+  Future<void> markNotificationAsRead(
+    String userId,
+    String notificationId,
+  ) async {
     try {
       await _firestore
           .collection('users')
           .doc(userId)
           .collection('notifications')
           .doc(notificationId)
-          .update({
-        'read': true,
-        'readAt': FieldValue.serverTimestamp(),
-      });
-      log('Notification marked as read');
+          .update({'read': true, 'readAt': FieldValue.serverTimestamp()});
     } catch (e) {
-      log('Error marking notification as read: $e');
       rethrow;
     }
   }

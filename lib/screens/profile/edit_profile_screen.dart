@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -7,6 +10,7 @@ import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/common_header_with_back.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -19,6 +23,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  String? _profileImageUrl;
+  File? _selectedImage;
+  bool _isUploading = false;
+
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -32,6 +41,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _nameController.text = userState.userName;
       _emailController.text = userState.email;
       _phoneController.text = userState.phone;
+      _profileImageUrl = userState.profileImageUrl;
     }
   }
 
@@ -41,6 +51,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+    }
+  }
+
+  Future<String?> _uploadImage(String uid) async {
+    if (_selectedImage == null) return _profileImageUrl;
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_images')
+          .child('$uid.jpg');
+
+      await storageRef.putFile(_selectedImage!);
+      final downloadUrl = await storageRef.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Image upload failed: $e")));
+      return null;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -60,7 +109,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ).showSnackBar(SnackBar(content: Text(state.message)));
               }
             },
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Column(
                 children: [
@@ -68,7 +117,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   CommonHeaderWithBack(
                     onMainLogoTap: () => Navigator.pop(context),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Column(
@@ -83,7 +132,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
                         ),
                         const SizedBox(width: 10.0),
-
                         Text(
                           "Manage your profile information",
                           style: TextStyle(
@@ -95,7 +143,72 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 30),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: context.appColors.primary.withOpacity(0.1),
+                            border: Border.all(
+                              color: context.appColors.primary,
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: _selectedImage != null
+                                ? Image.file(
+                                    _selectedImage!,
+                                    fit: BoxFit.cover,
+                                    width: 100,
+                                    height: 100,
+                                  )
+                                : (_profileImageUrl != null
+                                      ? ShimmerImage(
+                                          imageUrl: _profileImageUrl!,
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            _nameController.text.isNotEmpty
+                                                ? _nameController.text[0]
+                                                      .toUpperCase()
+                                                : "?",
+                                            style: TextStyle(
+                                              fontSize: 40,
+                                              fontWeight: FontWeight.bold,
+                                              color: context.appColors.primary,
+                                            ),
+                                          ),
+                                        )),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: context.appColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 30),
                   AppTextField(
                     label: "Name",
                     hintText: "Enter your name",
@@ -118,20 +231,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 50),
                   BlocBuilder<UserBloc, UserState>(
                     builder: (context, state) {
                       return AppButton(
                         text: "Update",
-                        isLoading: state is UserUpdateLoadingState,
+                        isLoading:
+                            state is UserUpdateLoadingState || _isUploading,
                         backgroundColor: context.appColors.primary,
-                        onPressed: () {
-                          context.read<UserBloc>().add(
-                            UpdateUserProfileEvent(
-                              name: _nameController.text,
-                              phone: _phoneController.text,
-                            ),
-                          );
+                        onPressed: () async {
+                          final userState = context.read<UserBloc>().state;
+                          if (userState is UserLoadedState) {
+                            final imageUrl = await _uploadImage(
+                              userState.userId,
+                            );
+                            if (imageUrl != null || _selectedImage == null) {
+                              context.read<UserBloc>().add(
+                                UpdateUserProfileEvent(
+                                  name: _nameController.text,
+                                  phone: _phoneController.text,
+                                  profileImageUrl: imageUrl,
+                                ),
+                              );
+                            }
+                          }
                         },
                       );
                     },

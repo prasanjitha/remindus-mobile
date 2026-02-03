@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/notification_model.dart';
 
@@ -40,7 +39,6 @@ class NotificationService {
         userId,
       ).doc(notificationId).update({'isRead': true});
     } catch (e) {
-      print('Error marking notification as read: $e');
       rethrow;
     }
   }
@@ -58,7 +56,6 @@ class NotificationService {
       }
       await batch.commit();
     } catch (e) {
-      print('Error marking all notifications as read: $e');
       rethrow;
     }
   }
@@ -88,7 +85,6 @@ class NotificationService {
 
       await _notificationRef(userId).add(notification.toMap());
     } catch (e) {
-      print('Error creating reminder notification: $e');
       rethrow;
     }
   }
@@ -123,7 +119,6 @@ class NotificationService {
 
       await _notificationRef(userId).add(notification.toMap());
     } catch (e) {
-      print('Error creating low stock notification: $e');
       rethrow;
     }
   }
@@ -153,7 +148,6 @@ class NotificationService {
 
       await _notificationRef(guardianUserId).add(notification.toMap());
     } catch (e) {
-      print('Error creating guardian notification: $e');
       rethrow;
     }
   }
@@ -180,13 +174,9 @@ class NotificationService {
       );
 
       await _notificationRef(userId).add(notification.toMap());
-      log(
-        "Creating new medicine notification for user: $userId, item: $medicineName",
-      );
+
       await _notificationRef(userId).add(notification.toMap());
-      log("Notification created successfully in Firestore");
     } catch (e) {
-      log('Error creating new medicine notification: $e');
       rethrow;
     }
   }
@@ -196,7 +186,6 @@ class NotificationService {
     try {
       await _notificationRef(userId).doc(notificationId).delete();
     } catch (e) {
-      print('Error deleting notification: $e');
       rethrow;
     }
   }

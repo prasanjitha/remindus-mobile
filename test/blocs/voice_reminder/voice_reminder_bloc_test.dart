@@ -7,7 +7,6 @@ import 'package:remindus/blocs/voice_reminder/voice_reminder_state.dart';
 import 'package:remindus/repositories/reminder/reminder_repository.dart';
 import 'package:remindus/services/openai_service.dart';
 import 'package:remindus/models/base_reminder_model.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MockOpenAIService extends Mock implements OpenAIService {}
 

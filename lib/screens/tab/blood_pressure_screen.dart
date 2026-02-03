@@ -6,13 +6,14 @@ import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/helpers/snackbar_helper.dart';
 import 'package:remindus/models/base_reminder_model.dart';
-import 'package:remindus/models/reminder_model.dart';
 import 'package:remindus/repositories/reminder/reminder_repository.dart';
-import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/utils/health_utils.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
+import 'package:remindus/widgets/custom_button.dart'; // This seems to be AppButton if used in HR
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/widgets/common_header_with_back.dart';
+import 'package:remindus/widgets/health_status_indicator.dart';
 
 class BloodPressureScreen extends StatefulWidget {
   const BloodPressureScreen({super.key});
@@ -28,8 +29,8 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
       TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final FocusNode _bpFocusNode = FocusNode();
-  bool _isFocused = false;
   bool _isLoading = false;
+  bool _isInitialDataLoaded = false;
 
   String selectedFrequency = 'Every two weeks';
 
@@ -44,15 +45,11 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
   @override
   void initState() {
     super.initState();
-    _bpFocusNode.addListener(() {
-      setState(() {
-        _isFocused = _bpFocusNode.hasFocus;
-      });
-    });
   }
 
   @override
   void dispose() {
+    _bloodPressureController.dispose();
     _bpFocusNode.dispose();
     super.dispose();
   }
@@ -117,221 +114,271 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
       final state = bloc.state;
       return (state is UserLoadedState) ? state.activeFamilyId : null;
     });
+
+    if (activeFamilyId != null && !_isInitialDataLoaded) {
+      _isInitialDataLoaded = true;
+
+      // Fetch health status for current reading
+      _reminderRepository.getHealthStatusStream(activeFamilyId).first.then((
+        snapshot,
+      ) {
+        if (snapshot.exists) {
+          final data = snapshot.data() as Map<String, dynamic>?;
+          final bloodPressure = data?['bloodPressure'] as String?;
+          if (bloodPressure != null && bloodPressure.isNotEmpty) {
+            setState(() {
+              _bloodPressureController.text = bloodPressure.replaceAll(
+                ' mmHg',
+                '',
+              );
+            });
+          }
+        }
+      });
+
+      // Fetch latest reminder for frequency and time
+      _reminderRepository
+          .getLatestReminderByType(
+            familyId: activeFamilyId,
+            type: "Blood Pressure",
+          )
+          .then((reminder) {
+            if (reminder != null) {
+              setState(() {
+                if (reminder.frequency != null) {
+                  selectedFrequency = reminder.frequency!;
+                }
+                if (reminder.time != null) {
+                  try {
+                    final parts = reminder.time!.split(' ');
+                    final timeParts = parts[0].split(':');
+                    int hour = int.parse(timeParts[0]);
+                    int minute = int.parse(timeParts[1]);
+
+                    if (parts.length > 1) {
+                      final amPm = parts[1].toUpperCase();
+                      if (amPm == 'PM' && hour < 12) hour += 12;
+                      if (amPm == 'AM' && hour == 12) hour = 0;
+                    }
+                    selectedTime = TimeOfDay(hour: hour, minute: minute);
+                  } catch (e) {}
+                }
+              });
+            }
+          });
+    }
+
+    final userName = context.select<UserBloc, String?>((bloc) {
+      final state = bloc.state;
+      return (state is UserLoadedState) ? state.userName : "User";
+    });
+
+    final hasExistingData = _bloodPressureController.text.isNotEmpty;
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: appColors.bgColor,
-        body: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Image.asset(
-                  Assets.bgColorMap,
-                  fit: BoxFit.cover,
-                  opacity: const AlwaysStoppedAnimation(0.6),
-                ),
-              ),
-              Form(
-                key: _formKey,
-                child: SafeArea(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CommonHeaderWithBack(
-                          onMainLogoTap: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                        const SizedBox(height: 20),
+      child: AppGradientBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: Form(
+              key: _formKey,
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CommonHeaderWithBack(
+                        onMainLogoTap: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      const SizedBox(height: 20),
 
-                        Wrap(
-                          alignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          children: [
-                            Text(
-                              "Blood Pressure Tracking",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                color: appColors.textPrimary,
-                                fontSize: 28.0,
+                      Wrap(
+                        alignment: WrapAlignment.start,
+                        crossAxisAlignment: WrapCrossAlignment.start,
+                        children: [
+                          Text(
+                            "Blood Pressure Readings",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              color: appColors.textPrimary,
+                              fontSize: 28.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8.0),
+                      Wrap(
+                        alignment: WrapAlignment.start,
+                        crossAxisAlignment: WrapCrossAlignment.start,
+                        children: [
+                          Text(
+                            "Log and monitor your blood pressure readings",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              color: appColors.textSecondary,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40.0),
+                      Stack(
+                        children: [
+                          AppTextField(
+                            focusNode: _bpFocusNode,
+                            controller: _bloodPressureController,
+                            label: "Blood Pressure",
+                            hintText: "Add blood pressure",
+                            prefixIconPath: Assets.bloodPressureIcon,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your blood pressure';
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              setState(() {});
+                            },
+                          ),
+                          if (_bloodPressureController.text.isNotEmpty)
+                            Positioned(
+                              right: 20,
+                              top: 46,
+                              child: HealthStatusIndicator(
+                                status: HealthUtils.getBloodPressureStatus(
+                                  _bloodPressureController.text,
+                                ),
+                                compact: true,
                               ),
                             ),
-                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 20.0),
+
+                      Text(
+                        'Frequency',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: appColors.textPrimary,
                         ),
-                        const SizedBox(height: 8.0),
-                        Wrap(
-                          alignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          children: [
-                            Text(
-                              "Log and monitor your blood pressure readings",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                color: appColors.textSecondary,
-                                fontSize: 16.0,
-                              ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 3.5,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
                             ),
-                          ],
+                        itemCount: frequencies.length,
+                        itemBuilder: (context, index) {
+                          return _buildFrequencyOption(
+                            frequencies[index],
+                            context,
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 20.0),
+                      Text(
+                        'Reminder time',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: appColors.textPrimary,
                         ),
-                        const SizedBox(height: 40.0),
-                        Stack(
+                      ),
+                      const SizedBox(height: 8.0),
+
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: appColors.bgColor,
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Row(
                           children: [
-                            AppTextField(
-                              focusNode: _bpFocusNode,
-                              controller: _bloodPressureController,
-                              label: "Blood Pressure",
-                              hintText: "Add blood pressure",
-                              prefixIconPath: Assets.bloodPressureIcon,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your blood pressure';
-                                }
-                                return null;
-                              },
-                            ),
-                            if (_isFocused)
-                              Positioned(
-                                right: 20,
-                                top: 46,
-                                child: Container(
-                                  height: 24.0,
-                                  decoration: BoxDecoration(
-                                    color: appColors.primaryLightBlue,
-                                    borderRadius: BorderRadius.circular(6.0),
-                                  ),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0,
-                                      ),
-                                      child: Text(
-                                        'mmHg',
-                                        style: TextStyle(
-                                          color: appColors.textPrimary,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 14.0,
-                                        ),
-                                      ),
+                            Expanded(
+                              child: InkWell(
+                                onTap: _selectTime,
+                                child: Row(
+                                  children: [
+                                    Image.asset(
+                                      Assets.alarmClockIcon,
+                                      width: 20.0,
+                                      height: 20.0,
                                     ),
-                                  ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      selectedTime == null
+                                          ? 'Select Time'
+                                          : selectedTime!.format(context),
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
                                 ),
                               ),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildAmPmButton('AM', context),
+                            const SizedBox(width: 8),
+                            _buildAmPmButton('PM', context),
                           ],
                         ),
-                        const SizedBox(height: 20.0),
-
-                        Text(
-                          'Frequency',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: appColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 3.5,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                              ),
-                          itemCount: frequencies.length,
-                          itemBuilder: (context, index) {
-                            return _buildFrequencyOption(
-                              frequencies[index],
-                              context,
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 20.0),
-                        Text(
-                          'Reminder time',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: appColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: appColors.bgColor,
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: InkWell(
-                                  onTap: _selectTime,
-                                  child: Row(
-                                    children: [
-                                      Image.asset(
-                                        Assets.alarmClockIcon,
-                                        width: 20.0,
-                                        height: 20.0,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        selectedTime == null
-                                            ? '08:00'
-                                            : selectedTime!.format(context),
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildAmPmButton('AM', context),
-                              const SizedBox(width: 8),
-                              _buildAmPmButton('PM', context),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // AppButton(
-                //   text: 'Done',
-                //   onPressed: () {
-                //     _validateAndSubmit();
-                //   },
-                //   backgroundColor: context.appColors.primaryLightBlue,
-                // ),
-                const SizedBox(height: 12.0),
-                AppButton(
-                  isLoading: _isLoading,
-                  text: 'Set Up Reminder',
-                  onPressed: () async {
-                    // _validateAndSubmit(activeFamilyId!);
-                    _handleHealthUpdate(activeFamilyId!);
-                  },
-                  backgroundColor: context.appColors.primary,
-                ),
-              ],
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12.0),
+                  AppButton(
+                    isLoading: _isLoading,
+                    text: hasExistingData
+                        ? 'Update Reminder'
+                        : 'Set Up Reminder',
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        if (selectedTime == null) {
+                          SnackbarHelper.showError(
+                            context,
+                            'Please select a reminder time',
+                          );
+                          return;
+                        }
+
+                        if (activeFamilyId != null) {
+                          _handleReminderCreation(activeFamilyId, userName);
+                        } else {
+                          SnackbarHelper.showError(
+                            context,
+                            'No active family member found',
+                          );
+                        }
+                      }
+                    },
+                    backgroundColor: context.appColors.primary,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -339,130 +386,85 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
     );
   }
 
-  Future<void> _handleHealthUpdate(String activeFamilyId) async {
+  Future<void> _handleReminderCreation(
+    String activeFamilyId,
+    String? userName,
+  ) async {
     setState(() => _isLoading = true);
     try {
-      bool success = await _reminderRepository.updateFamilyHealthData(
-        familyId: activeFamilyId,
-        bloodPressure: _bloodPressureController.text.trim(),
+      final now = DateTime.now();
+      DateTime scheduledDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        selectedTime!.hour,
+        selectedTime!.minute,
       );
 
-      if (success) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const HealthCheckupScreen()),
+      // Check for existing Blood Pressure reminder
+      final existingReminder = await _reminderRepository
+          .getLatestReminderByType(
+            familyId: activeFamilyId,
+            type: "Blood Pressure",
+          );
+
+      bool success = false;
+
+      if (existingReminder != null) {
+        // Update existing reminder
+        final updatedReminder = existingReminder.copyWith(
+          title: "Hey, ${userName ?? 'User'} time to checkup blood",
+          bloodPressure: _bloodPressureController.text.trim(),
+          frequency: selectedFrequency,
+          time: selectedTime!.format(context),
+          scheduledAt: Timestamp.fromDate(scheduledDateTime),
+          updatedAt: Timestamp.now(),
+        );
+
+        success = await _reminderRepository.updateReminder(
+          reminder: updatedReminder,
+          reminderId: existingReminder.reminderId!,
+          activeFamilyId: activeFamilyId,
         );
       } else {
-        throw Exception('Update failed');
+        // Create new reminder
+        final reminder = ReminderModel(
+          title: "Hey, ${userName ?? 'User'} time to checkup blood",
+          type: "Blood Pressure",
+          bloodPressure: _bloodPressureController.text.trim(),
+          frequency: selectedFrequency,
+          time: selectedTime!.format(context),
+          scheduledAt: Timestamp.fromDate(scheduledDateTime),
+          isRead: false,
+          createdAt: Timestamp.now(),
+          schedule: [],
+        );
+
+        success = await _reminderRepository.addReminder(
+          reminder: reminder,
+          activeFamilyId: activeFamilyId,
+        );
+      }
+
+      if (success) {
+        await _reminderRepository.updateFamilyHealthData(
+          familyId: activeFamilyId,
+          bloodPressure: _bloodPressureController.text.trim(),
+        );
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } else {
+        throw Exception('Failed to save reminder');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      if (mounted) {
+        SnackbarHelper.showError(context, 'Error: ${e.toString()}');
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
-    }
-  }
-
-  Future<void> _validateAndSubmit(String activeFamilyId) async {
-    try {
-      ReminderRepository _reminderRepository = ReminderRepository();
-      bool isFormValid = _formKey.currentState!.validate();
-      if (selectedFrequency.isEmpty) {
-        SnackbarHelper.showError(context, "Please select a frequency");
-        return;
-      }
-
-      // 3. Validate Time Selection
-      if (selectedTime == null) {
-        SnackbarHelper.showError(context, "Please select a reminder time");
-        return;
-      }
-
-      if (isFormValid) {
-        setState(() {
-          _isLoading = true;
-        });
-        DateTime now = DateTime.now();
-        DateTime firstReminderDateTime = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          selectedTime!.hour,
-          selectedTime!.minute,
-        );
-
-        if (firstReminderDateTime.isBefore(now)) {
-          firstReminderDateTime = firstReminderDateTime.add(
-            const Duration(days: 1),
-          );
-        }
-        int loopCount = 0;
-        Duration interval = const Duration(days: 1);
-
-        // --- Frequency Logic ---
-        switch (selectedFrequency) {
-          case 'Every day':
-            loopCount = 7;
-            interval = const Duration(days: 1);
-            break;
-          case 'Every two weeks':
-            loopCount = 2;
-            interval = const Duration(days: 14);
-            break;
-          case 'Once a week':
-            loopCount = 4;
-            interval = const Duration(days: 7);
-            break;
-          case 'Once a month':
-            loopCount = 2;
-            interval = const Duration(days: 30);
-            break;
-        }
-        bool allSuccess = true;
-        for (int i = 0; i < loopCount; i++) {
-          DateTime scheduledDate = firstReminderDateTime.add(interval * i);
-
-          final newReminder = ReminderModel(
-            type: "Blood Pressure",
-            title: "Blood Pressure Check",
-            bloodPressure: _bloodPressureController.text.trim(),
-            time: "${selectedTime!.format(context)}",
-            isRead: false,
-            duration: selectedFrequency,
-            createdAt: FieldValue.serverTimestamp(),
-            scheduledAt: Timestamp.fromDate(scheduledDate),
-            date: Timestamp.fromDate(scheduledDate),
-          );
-          bool result = await _reminderRepository.addReminder(
-            reminder: newReminder,
-            activeFamilyId: activeFamilyId!,
-          );
-          if (!result) allSuccess = false;
-        }
-
-        if (allSuccess) {
-          setState(() {
-            _isLoading = false;
-          });
-          SnackbarHelper.showSuccess(
-            context,
-            "$loopCount Reminders set up successfully!",
-          );
-          Navigator.pop(context);
-        } else {
-          setState(() {
-            _isLoading = false;
-          });
-          SnackbarHelper.showError(context, "Some reminders failed to save.");
-        }
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      SnackbarHelper.showError(context, "An error occurred: $e");
     }
   }
 

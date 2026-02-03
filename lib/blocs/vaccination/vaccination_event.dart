@@ -37,9 +37,14 @@ class UpdateVaccinationEvent extends VaccinationEvent {
 class DeleteVaccinationEvent extends VaccinationEvent {
   final String recordId;
   final String activeFamilyId;
+  final String? reminderId;
 
-  const DeleteVaccinationEvent(this.recordId, this.activeFamilyId);
+  const DeleteVaccinationEvent({
+    required this.recordId,
+    required this.activeFamilyId,
+    this.reminderId,
+  });
 
   @override
-  List<Object?> get props => [recordId, activeFamilyId];
+  List<Object?> get props => [recordId, activeFamilyId, reminderId];
 }

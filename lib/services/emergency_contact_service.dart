@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/emergency_contact_model.dart';
 
@@ -26,10 +25,8 @@ class EmergencyContactService {
 
       await docRef.set(emergencyContactModel.toMap());
 
-      log("Emergency contact added successfully with ID: ${docRef.id}");
       return true;
     } catch (e) {
-      log('Error adding emergency contact: $e');
       rethrow;
     }
   }
@@ -39,20 +36,31 @@ class EmergencyContactService {
       if (activeFamilyId.isEmpty) {
         throw Exception("Family ID is required. User might not be logged in.");
       }
-      return _firestore
+
+      final collection = _firestore
           .collection('users')
           .doc(activeFamilyId)
-          .collection('emergency-contact')
-          .where('active', isEqualTo: true)
-          .orderBy('createdAt', descending: true)
-          .snapshots()
-          .map((snapshot) {
-            return snapshot.docs
-                .map((doc) => EmergencyContact.fromMap(doc.data(), doc.id))
-                .toList();
+          .collection('emergency-contact');
+
+      // Create a stream that starts with a 'get' to ensure data arrives immediately
+      return Stream.fromFuture(collection.get()).asyncExpand((_) {
+        return collection.snapshots().map((snapshot) {
+          final List<EmergencyContact> contacts = snapshot.docs
+              .map((doc) => EmergencyContact.fromMap(doc.data(), doc.id))
+              .where((c) => c.active == true)
+              .toList();
+
+          // Sort by createdAt descending
+          contacts.sort((a, b) {
+            final dateA = a.createdAt ?? DateTime(2000);
+            final dateB = b.createdAt ?? DateTime(2000);
+            return dateB.compareTo(dateA);
           });
+
+          return contacts;
+        });
+      }).asBroadcastStream();
     } catch (e) {
-      log('Error fetching emergency contacts: $e');
       rethrow;
     }
   }
@@ -70,7 +78,6 @@ class EmergencyContactService {
           .update(contact.toMap());
       return true;
     } catch (e) {
-      log('Error updating emergency contact: $e');
       rethrow;
     }
   }
@@ -86,10 +93,9 @@ class EmergencyContactService {
           .collection('emergency-contact')
           .doc(contactId)
           .update({'active': false, 'updatedAt': FieldValue.serverTimestamp()});
-      log("Contact soft-deleted successfully");
+
       return true;
     } catch (e) {
-      log('Error deleting contact: $e');
       rethrow;
     }
   }

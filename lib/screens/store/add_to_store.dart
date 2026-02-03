@@ -1,11 +1,13 @@
 import 'dart:io';
-import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -31,6 +33,7 @@ class AddMedicineToStoreScreen extends StatefulWidget {
 
 class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
   File? _selectedImage;
+  bool _isUploading = false;
   final _picker = ImagePicker();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _qtyController = TextEditingController();
@@ -41,6 +44,26 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
       setState(() {
         _selectedImage = File(pickedFile.path);
       });
+    }
+  }
+
+  Future<String?> _uploadImage(String userId) async {
+    if (_selectedImage == null) return null;
+
+    try {
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${_nameController.text.trim().toLowerCase().replaceAll(' ', '')}.jpg';
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('medicine_images')
+          .child(userId)
+          .child(fileName);
+
+      final uploadTask = await storageRef.putFile(_selectedImage!);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      return null;
     }
   }
 
@@ -292,20 +315,27 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                     child:
                         (_selectedImage == null &&
                             (_imageUrl == null || _imageUrl!.isEmpty))
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                Assets.storeAddPhotoIcon,
-                                width: 40.0,
-                                height: 40.0,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                "Add Photo",
-                                style: TextStyle(color: appColors.textPrimary),
-                              ),
-                            ],
+                        ? GestureDetector(
+                            onTap: () {
+                              _pickImage(ImageSource.gallery);
+                            },
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  Assets.storeAddPhotoIcon,
+                                  width: 40.0,
+                                  height: 40.0,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  "Add Photo",
+                                  style: TextStyle(
+                                    color: appColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           )
                         : Stack(
                             children: [
@@ -321,8 +351,8 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                                             _selectedImage!,
                                             fit: BoxFit.cover,
                                           )
-                                        : Image.network(
-                                            _imageUrl!,
+                                        : ShimmerImage(
+                                            imageUrl: _imageUrl!,
                                             fit: BoxFit.cover,
                                           ),
                                   ),
@@ -380,21 +410,10 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
 
                   const SizedBox(height: 40),
 
-                  isLoading
-                      ? Container(
-                          height: 56,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: appColors.primary,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        )
-                      : widget.isEditMode
+                  widget.isEditMode
                       ? AppButton(
                           text: "Update Medicine",
+                          isLoading: _isUploading || isLoading,
                           onPressed: () async {
                             FocusScope.of(context).unfocus();
 
@@ -415,6 +434,15 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                               return;
                             }
 
+                            setState(() {
+                              _isUploading = true;
+                            });
+
+                            String? uploadedUrl;
+                            if (_selectedImage != null) {
+                              uploadedUrl = await _uploadImage(activeFamiltId!);
+                            }
+
                             int qtyValue =
                                 int.tryParse(_qtyController.text.trim()) ?? 0;
                             String finalStatus;
@@ -428,8 +456,6 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                                 break;
                               default:
                                 finalStatus = 'wellStocked';
-
-                                log("Final Status: $finalStatus");
                             }
                             final medicine = MedicineStoreModel(
                               medicineStoreId: widget.isEditMode
@@ -440,7 +466,7 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                                   .toLowerCase()
                                   .replaceAll(' ', ''),
                               quantity: _qtyController.text.trim(),
-                              imageUrl: _imageUrl,
+                              imageUrl: uploadedUrl ?? _imageUrl,
                               status: finalStatus,
                             );
 
@@ -452,6 +478,10 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                                 ),
                               );
                             }
+
+                            setState(() {
+                              _isUploading = false;
+                            });
 
                             Navigator.push(
                               context,
@@ -467,21 +497,8 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                         )
                       : AppButton(
                           text: "Save Medicine",
+                          isLoading: _isUploading || isLoading,
                           onPressed: () async {
-                            int qtyValue =
-                                int.tryParse(_qtyController.text.trim()) ?? 0;
-                            String finalStatus;
-
-                            switch (qtyValue) {
-                              case int n when n <= 0:
-                                finalStatus = 'refill';
-                                break;
-                              case int n when n > 0 && n < 10:
-                                finalStatus = 'lowRemaining';
-                                break;
-                              default:
-                                finalStatus = 'wellStocked';
-                            }
                             FocusScope.of(context).unfocus();
                             if (_nameController.text.isNotEmpty &&
                                     _qtyController.text.isEmpty ||
@@ -498,14 +515,38 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                               );
                               return;
                             }
+
+                            setState(() {
+                              _isUploading = true;
+                            });
+
+                            String? uploadedUrl;
+                            if (_selectedImage != null) {
+                              uploadedUrl = await _uploadImage(activeFamiltId!);
+                            }
+
+                            int qtyValue =
+                                int.tryParse(_qtyController.text.trim()) ?? 0;
+                            String finalStatus;
+
+                            switch (qtyValue) {
+                              case int n when n <= 0:
+                                finalStatus = 'refill';
+                                break;
+                              case int n when n > 0 && n < 10:
+                                finalStatus = 'lowRemaining';
+                                break;
+                              default:
+                                finalStatus = 'wellStocked';
+                            }
+
                             final medicine = MedicineStoreModel(
                               name: _nameController.text
                                   .trim()
                                   .toLowerCase()
                                   .replaceAll(' ', ''),
                               quantity: _qtyController.text.trim(),
-                              imageUrl:
-                                  "https://cdn.pixabay.com/photo/2013/10/02/23/03/dog-190056_1280.jpg",
+                              imageUrl: uploadedUrl ?? "",
                               status: finalStatus,
                             );
                             context.read<MedicalStoreBloc>().add(
@@ -514,6 +555,10 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                                 activeFamiltId: activeFamiltId!,
                               ),
                             );
+
+                            setState(() {
+                              _isUploading = false;
+                            });
 
                             Navigator.push(
                               context,
@@ -525,7 +570,6 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
                               ),
                             );
                           },
-
                           backgroundColor: appColors.primary,
                         ),
                 ],

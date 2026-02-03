@@ -1,29 +1,60 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import 'package:remindus/blocs/user/user_bloc.dart';
-import 'package:remindus/screens/splash/splash_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:remindus/repositories/authentication/authentication_repository.dart';
 import 'package:remindus/screens/authentication/siginin_screen.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  final AuthRepository _authRepository = AuthRepository();
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        // Show loading while checking auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SplashScreen();
-        }
-        if (snapshot.hasData) {
-          context.read<UserBloc>().add(LoadUserEvent());
-          // return const MainTabScreen();
-          return LoginScreen();
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
 
-        return const SplashScreen();
+        // User is authenticated
+        if (snapshot.hasData && snapshot.data != null) {
+          return FutureBuilder<bool>(
+            future: _authRepository.getLocalRememberMe(),
+            builder: (context, rememberMeSnapshot) {
+              // Show loading while checking remember me status
+              if (rememberMeSnapshot.connectionState ==
+                  ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              // Check remember me status
+              final rememberMe = rememberMeSnapshot.data ?? false;
+
+              if (rememberMe) {
+                // User has remember me enabled, go to MainTabScreen
+                return const MainTabScreen();
+              } else {
+                // User doesn't have remember me enabled, go to SignIn screen
+                return LoginScreen();
+              }
+            },
+          );
+        }
+
+        // User is not authenticated, show SignIn screen
+        return LoginScreen();
       },
     );
   }

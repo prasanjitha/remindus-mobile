@@ -8,17 +8,19 @@ class AppGradientBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF97D5E2).withOpacity(0.15),
-            const Color(0xFF9E5EDC).withOpacity(0.15),
-            const Color(0xFF88B1DB).withOpacity(0.15),
-            const Color(0xFFFD9B6C).withOpacity(0.15),
+            Color(0xFFE8F6F8), // Softened #97D5E2
+            Color(0xFFF1E9F9), // Softened #9E5EDC
+            Color(0xFFE9F1F8), // Softened #88B1DB
+            Color(0xFFFFF2EC), // Softened #FD9B6C
           ],
-          stops: const [0.0, 0.3, 0.6, 1.0],
+          stops: [0.0, 0.4, 0.7, 1.0],
         ),
       ),
       child: child,

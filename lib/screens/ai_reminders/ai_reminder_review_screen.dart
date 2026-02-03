@@ -286,19 +286,39 @@ class AiReminderReviewScreen extends StatelessWidget {
                 _buildCheckbox(
                   context,
                   "Morning",
-                  reminder.morning ?? false,
-                  (val) => context.read<AiReminderBloc>().add(
-                    UpdateCurrentReminder(reminder.copyWith(morning: val)),
-                  ),
+                  reminder.whenToTake?.contains("Morning") ?? false,
+                  (val) {
+                    List<String> current = List.from(reminder.whenToTake ?? []);
+                    if (val == true) {
+                      if (!current.contains("Morning")) current.add("Morning");
+                    } else {
+                      current.remove("Morning");
+                    }
+                    context.read<AiReminderBloc>().add(
+                      UpdateCurrentReminder(
+                        reminder.copyWith(whenToTake: current),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 12),
                 _buildCheckbox(
                   context,
                   "Night",
-                  reminder.night ?? false,
-                  (val) => context.read<AiReminderBloc>().add(
-                    UpdateCurrentReminder(reminder.copyWith(night: val)),
-                  ),
+                  reminder.whenToTake?.contains("Night") ?? false,
+                  (val) {
+                    List<String> current = List.from(reminder.whenToTake ?? []);
+                    if (val == true) {
+                      if (!current.contains("Night")) current.add("Night");
+                    } else {
+                      current.remove("Night");
+                    }
+                    context.read<AiReminderBloc>().add(
+                      UpdateCurrentReminder(
+                        reminder.copyWith(whenToTake: current),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -308,19 +328,40 @@ class AiReminderReviewScreen extends StatelessWidget {
                 _buildCheckbox(
                   context,
                   "Afternoon",
-                  reminder.afternoon ?? false,
-                  (val) => context.read<AiReminderBloc>().add(
-                    UpdateCurrentReminder(reminder.copyWith(afternoon: val)),
-                  ),
+                  reminder.whenToTake?.contains("Afternoon") ?? false,
+                  (val) {
+                    List<String> current = List.from(reminder.whenToTake ?? []);
+                    if (val == true) {
+                      if (!current.contains("Afternoon"))
+                        current.add("Afternoon");
+                    } else {
+                      current.remove("Afternoon");
+                    }
+                    context.read<AiReminderBloc>().add(
+                      UpdateCurrentReminder(
+                        reminder.copyWith(whenToTake: current),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 2),
                 _buildCheckbox(
                   context,
                   "Evening",
-                  reminder.evening ?? false,
-                  (val) => context.read<AiReminderBloc>().add(
-                    UpdateCurrentReminder(reminder.copyWith(evening: val)),
-                  ),
+                  reminder.whenToTake?.contains("Evening") ?? false,
+                  (val) {
+                    List<String> current = List.from(reminder.whenToTake ?? []);
+                    if (val == true) {
+                      if (!current.contains("Evening")) current.add("Evening");
+                    } else {
+                      current.remove("Evening");
+                    }
+                    context.read<AiReminderBloc>().add(
+                      UpdateCurrentReminder(
+                        reminder.copyWith(whenToTake: current),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

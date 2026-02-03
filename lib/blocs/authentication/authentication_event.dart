@@ -10,15 +10,18 @@ abstract class AuthenticationEvent extends Equatable {
 class SignInWithEmailAndPasswordEvent extends AuthenticationEvent {
   final String email;
   final String password;
+  final bool rememberMe;
+  final bool justLoggedIn;
 
   const SignInWithEmailAndPasswordEvent({
     required this.email,
     required this.password,
+    this.rememberMe = false,
+    this.justLoggedIn = false,
   });
 }
 
 class SignInWithGoogleEvent extends AuthenticationEvent {}
-
 
 class SignUpWithEmailAndPasswordEvent extends AuthenticationEvent {
   final String name;

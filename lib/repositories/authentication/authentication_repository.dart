@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:remindus/globals.dart';
 import 'package:remindus/screens/profile/add_guardian_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'base_authentication.dart';
 
@@ -33,15 +34,14 @@ class AuthRepository extends BaseAuthRepositories {
         'familyName': "$name's Family",
         'activeFamilyId': uid,
         'joinedFamilies': FieldValue.arrayUnion([
-          {'id': uid, 'name': "My Account"},
+          {'id': uid, 'name': name},
         ]),
         'permissions': AccessLevel.fullControl.name,
         'accessLevel': 'owner',
       });
-    } on FirebaseAuthException catch (error) {
-      log('SignUp Error: ${error.message}');
+      // Map Firebase errors to your CustomException
     } catch (e) {
-      log("Error: $e");
+      // General error handling
     }
     return null;
   }
@@ -85,29 +85,23 @@ class AuthRepository extends BaseAuthRepositories {
     required Function(String) onCodeSent,
     required Function(FirebaseAuthException) onFailed,
   }) async {
-    log("Code sent to $phoneNumber");
-    String cleanPhoneNumber = phoneNumber.replaceAll(' ', '');
-    if (cleanPhoneNumber == "+94765567654") {
-      String simulatedVerificationId = "simulated_verification_id";
-      onCodeSent(simulatedVerificationId);
-    } else {
-      return Future.error(
-        "Phone authentication is not set up for this number.",
-      );
+    String formattedPhoneNumber = phoneNumber;
+    if (phoneNumber.trim().startsWith('0') && phoneNumber.trim().length == 10) {
+      formattedPhoneNumber = "+94${phoneNumber.trim().substring(1)}";
     }
-    // await FirebaseAuth.instance.verifyPhoneNumber(
-    //   phoneNumber: phoneNumber,
-    //
-    //   verificationCompleted: (PhoneAuthCredential credential) async {
-    //     await FirebaseAuth.instance.signInWithCredential(credential);
-    //   },
-    //   verificationFailed: onFailed,
-    //   codeSent: (String verificationId, int? resendToken) {
-    //     log("Code sent to $phoneNumber, verificationId: $verificationId");
-    //     onCodeSent(verificationId);
-    //   },
-    //   codeAutoRetrievalTimeout: (String verificationId) {},
-    // );
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: formattedPhoneNumber,
+
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await FirebaseAuth.instance.signInWithCredential(credential);
+      },
+      verificationFailed: onFailed,
+      codeSent: (String verificationId, int? resendToken) {
+        onCodeSent(verificationId);
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
   }
 
   @override
@@ -239,16 +233,26 @@ class AuthRepository extends BaseAuthRepositories {
   Future<void> handleAuthentication() async {}
 
   @override
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getUserDataStream(String uid) {
+    return FirebaseFirestore.instance.collection('users').doc(uid).snapshots();
+  }
+
+  @override
   Future<void> updateProfile({
     required String uid,
     required String name,
     required String phone,
+    String? profileImageUrl,
   }) async {
     try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'name': name,
-        'phone': phone,
-      });
+      final Map<String, dynamic> updateData = {'name': name, 'phone': phone};
+      if (profileImageUrl != null) {
+        updateData['profileImageUrl'] = profileImageUrl;
+      }
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .update(updateData);
     } catch (e) {
       throw CustomException(message: e.toString());
     }
@@ -276,5 +280,29 @@ class AuthRepository extends BaseAuthRepositories {
     } catch (e) {
       throw CustomException(message: e.toString());
     }
+  }
+
+  @override
+  Future<void> updateRememberMeStatus({
+    required String uid,
+    required bool rememberMe,
+  }) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'rememberMe': rememberMe,
+      });
+    } catch (e) {
+      throw CustomException(message: e.toString());
+    }
+  }
+
+  Future<void> setLocalRememberMe(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', value);
+  }
+
+  Future<bool> getLocalRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('remember_me') ?? false;
   }
 }

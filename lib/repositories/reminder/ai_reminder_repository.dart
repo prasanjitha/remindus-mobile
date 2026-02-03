@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:intl/intl.dart';
@@ -11,7 +9,6 @@ class AiReminderRepository {
     List<ReminderModel> reminders,
     String activeFamilyId,
   ) async {
-    log("reminders $reminders");
     WriteBatch batch = _firestore.batch();
     CollectionReference collection = _firestore
         .collection('users')
@@ -132,7 +129,6 @@ class AiReminderRepository {
         dateTime.minute,
       );
     } catch (e) {
-      log("Error parsing time: $timeStr, error: $e");
       // Fallback to 9 AM if parsing fails
       return DateTime(date.year, date.month, date.day, 9, 0);
     }

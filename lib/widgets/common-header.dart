@@ -7,6 +7,7 @@ import 'package:remindus/widgets/notification_badge.dart';
 import 'package:remindus/screens/notifications/notification_screen.dart';
 import '../../models/user_model.dart';
 import '../../services/reminder_service.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
 
 class CommonHeader extends StatelessWidget {
   final VoidCallback? onProfileTap;
@@ -72,12 +73,33 @@ class CommonHeader extends StatelessWidget {
                         ? user.name![0].toUpperCase()
                         : 'U';
 
-                    return Text(
-                      initial,
-                      style: TextStyle(
-                        color: appColors.bgColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                    if (user?.profileImageUrl != null) {
+                      return ShimmerImage(
+                        imageUrl: user!.profileImageUrl!,
+                        width: 32,
+                        height: 32,
+                        borderRadius: BorderRadius.circular(16),
+                        errorWidget: Center(
+                          child: Text(
+                            initial,
+                            style: TextStyle(
+                              color: appColors.bgColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Center(
+                      child: Text(
+                        initial,
+                        style: TextStyle(
+                          color: appColors.bgColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                       ),
                     );
                   },

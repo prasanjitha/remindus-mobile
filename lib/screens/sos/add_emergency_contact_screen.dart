@@ -6,6 +6,7 @@ import 'package:remindus/helpers/delete_dialog_helper.dart';
 import 'package:remindus/models/emergency_contact_model.dart';
 import 'package:remindus/services/emergency_contact_service.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
@@ -21,12 +22,13 @@ class AddEmergencyContactScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<AddEmergencyContactScreen> createState() => _AddEmergencyContactScreenState();
+  State<AddEmergencyContactScreen> createState() =>
+      _AddEmergencyContactScreenState();
 }
 
 class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers
   late final TextEditingController _fullNameController;
   late final TextEditingController _phoneController;
@@ -37,7 +39,13 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
   String? _selectedRelationship;
 
   final List<String> _relationships = [
-    'Parent', 'Sibling', 'Spouse', 'Child', 'Friend', 'Guardian', 'Other',
+    'Parent',
+    'Sibling',
+    'Spouse',
+    'Child',
+    'Friend',
+    'Guardian',
+    'Other',
   ];
 
   @override
@@ -92,7 +100,8 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
     DialogHelper.showDeleteConfirmation(
       context: context,
       title: "Delete Contact Details?",
-      subtitle: "This will permanently remove your contact details.\nThis action is permanent.",
+      subtitle:
+          "This will permanently remove your contact details.\nThis action is permanent.",
       onDelete: () async {
         await _service.deleteEmergencyContact(
           activeFamilyId,
@@ -100,7 +109,8 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
         );
       },
       dismissDialogTitle: "Contact Details Removed",
-      dismissDialogSubTitle: "The contact details has been successfully removed.",
+      dismissDialogSubTitle:
+          "The contact details has been successfully removed.",
       dismissButtonText: "  Back to SOS ",
       onDeleteSuccess: () {
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -118,52 +128,43 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
       return (state is UserLoadedState) ? state.activeFamilyId : null;
     });
 
-    return Scaffold(
-      backgroundColor: appColors.bgColor,
-      resizeToAvoidBottomInset: false,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Stack(
-          children: [
-            _buildBackground(),
-            SafeArea(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 30),
-                            const MainHeaderAppBar(),
-                            const SizedBox(height: 20),
-                            _buildTitle(appColors),
-                            const SizedBox(height: 40),
-                            _buildFormFields(appColors),
-                          ],
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: false,
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 30),
+                              const MainHeaderAppBar(),
+                              const SizedBox(height: 20),
+                              _buildTitle(appColors),
+                              const SizedBox(height: 40),
+                              _buildFormFields(appColors),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  _buildActionButtons(appColors, activeFamilyId ?? ''),
-                ],
+                    _buildActionButtons(appColors, activeFamilyId ?? ''),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBackground() {
-    return Positioned.fill(
-      child: Image.asset(
-        Assets.bgColorMap,
-        fit: BoxFit.cover,
-        opacity: const AlwaysStoppedAnimation(0.6),
       ),
     );
   }
@@ -174,12 +175,20 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
       children: [
         Text(
           widget.isEditFlow ? "Update Contact" : "Add Emergency Contact",
-          style: TextStyle(fontWeight: FontWeight.w400, color: appColors.textPrimary, fontSize: 28),
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            color: appColors.textPrimary,
+            fontSize: 28,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
           "Add someone who can help in emergency",
-          style: TextStyle(fontWeight: FontWeight.w400, color: appColors.textPrimary, fontSize: 16),
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            color: appColors.textPrimary,
+            fontSize: 16,
+          ),
         ),
       ],
     );
@@ -194,10 +203,14 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
           label: "Full Name",
           hintText: "Please enter full name",
           prefixIconPath: Assets.profileIcon,
-          validator: (v) => (v == null || v.isEmpty) ? 'Please enter name' : null,
+          validator: (v) =>
+              (v == null || v.isEmpty) ? 'Please enter name' : null,
         ),
         const SizedBox(height: 20),
-        const Text('Relationship to you', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        const Text(
+          'Relationship to you',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 8),
         _buildRelationshipDropdown(),
         const SizedBox(height: 20),
@@ -207,7 +220,8 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
           hintText: 'Add phone number',
           prefixIconPath: Assets.phoneIcon,
           keyboardType: TextInputType.phone,
-          validator: (v) => (v == null || v.isEmpty) ? 'Enter phone number' : null,
+          validator: (v) =>
+              (v == null || v.isEmpty) ? 'Enter phone number' : null,
         ),
         const SizedBox(height: 20),
         AppTextField(
@@ -218,7 +232,8 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
           keyboardType: TextInputType.emailAddress,
           validator: (v) {
             if (v == null || v.isEmpty) return 'Enter email';
-            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return 'Invalid email';
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v))
+              return 'Invalid email';
             return null;
           },
         ),
@@ -235,9 +250,14 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
         prefixIcon: const Icon(Icons.people_outline),
         filled: true,
         fillColor: Colors.grey[50],
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
       ),
-      items: _relationships.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+      items: _relationships
+          .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+          .toList(),
       onChanged: (val) => setState(() => _selectedRelationship = val),
       validator: (val) => (val == null) ? 'Select relationship' : null,
     );
@@ -246,27 +266,27 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
   Widget _buildActionButtons(AppColors appColors, String familyId) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppButton(
-                  text: widget.isEditFlow ? 'Update Contact' : 'Save Contact',
-                  onPressed: () => _onSavePressed(familyId),
-                  backgroundColor: appColors.primary,
-                ),
-                if (widget.isEditFlow) ...[
-                  const SizedBox(height: 12),
-                  AppButton(
-                    text: 'Remove Contact',
-                    onPressed: () => _onRemovePressed(familyId),
-                    backgroundColor: const Color(0xFFFFE0E1),
-                    textColor: appColors.textPrimary,
-                  ),
-                ],
-              ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppButton(
+            isLoading: _isLoading,
+            text: widget.isEditFlow ? 'Update Contact' : 'Save Contact',
+            onPressed: () => _onSavePressed(familyId),
+            backgroundColor: appColors.primary,
+          ),
+          if (widget.isEditFlow) ...[
+            const SizedBox(height: 12),
+            AppButton(
+              isLoading: _isLoading,
+              text: 'Remove Contact',
+              onPressed: () => _onRemovePressed(familyId),
+              backgroundColor: const Color(0xFFFFE0E1),
+              textColor: appColors.textPrimary,
             ),
+          ],
+        ],
+      ),
     );
   }
 }

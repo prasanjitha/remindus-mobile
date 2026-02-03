@@ -14,7 +14,7 @@ class LocationService {
   Future<bool> checkAndRequestPermissions() async {
     // Check location permission
     PermissionStatus locationStatus = await Permission.location.status;
-    
+
     if (locationStatus.isDenied) {
       locationStatus = await Permission.location.request();
     }
@@ -44,7 +44,6 @@ class LocationService {
       );
       return position;
     } catch (e) {
-      print('Error getting current location: $e');
       return null;
     }
   }
@@ -81,23 +80,34 @@ class LocationService {
   }
 
   /// Get address from coordinates using geocoding
-  Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
+  Future<String?> getAddressFromCoordinates(
+    double latitude,
+    double longitude,
+  ) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
         return '${place.street}, ${place.locality}, ${place.administrativeArea}';
       }
       return null;
     } catch (e) {
-      print('Error getting address: $e');
       return null;
     }
   }
 
   /// Convert Position to LocationData with address
-  Future<LocationData> positionToLocationDataWithAddress(Position position, String userId) async {
-    String? address = await getAddressFromCoordinates(position.latitude, position.longitude);
+  Future<LocationData> positionToLocationDataWithAddress(
+    Position position,
+    String userId,
+  ) async {
+    String? address = await getAddressFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
     return LocationData(
       userId: userId,
       latitude: position.latitude,

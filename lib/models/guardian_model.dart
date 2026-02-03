@@ -6,6 +6,7 @@ class GuardianModel extends Equatable {
   final String? email;
   final String? relationship;
   final String? accessLevel;
+  final String? profileImageUrl;
 
   const GuardianModel({
     this.id,
@@ -13,6 +14,7 @@ class GuardianModel extends Equatable {
     this.email,
     this.relationship,
     this.accessLevel,
+    this.profileImageUrl,
   });
 
   // Create a copy of the model with updated fields
@@ -30,6 +32,7 @@ class GuardianModel extends Equatable {
       email: email ?? this.email,
       relationship: relationship ?? this.relationship,
       accessLevel: accessLevel ?? this.accessLevel,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
     );
   }
 
@@ -41,6 +44,7 @@ class GuardianModel extends Equatable {
       'email': email,
       'relationship': relationship,
       'accessLevel': accessLevel,
+      'profileImageUrl': profileImageUrl,
     };
   }
 
@@ -52,9 +56,17 @@ class GuardianModel extends Equatable {
       email: map['email'] as String?,
       relationship: map['relationship'] as String?,
       accessLevel: map['accessLevel'] as String?,
+      profileImageUrl: map['profileImageUrl'] as String?,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, email, relationship, accessLevel];
+  List<Object?> get props => [
+    id,
+    name,
+    email,
+    relationship,
+    accessLevel,
+    profileImageUrl,
+  ];
 }

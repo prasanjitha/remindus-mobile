@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:remindus/models/base_reminder_model.dart';
@@ -53,7 +51,6 @@ class ReminderRepository extends BaseReminderRepositories {
 
       return true;
     } catch (e) {
-      log("Error adding reminder: $e");
       return false;
     }
   }
@@ -98,7 +95,6 @@ class ReminderRepository extends BaseReminderRepositories {
 
       return true;
     } catch (e) {
-      log("Error updating health records: $e");
       return false;
     }
   }
@@ -111,14 +107,8 @@ class ReminderRepository extends BaseReminderRepositories {
     required String activeFamilyId,
   }) async {
     try {
-      log(
-        "Starting update for reminder ID: $reminderId activeFamilyId $activeFamilyId",
-      );
-      // final String? userId = _auth.currentUser?.uid;
-      log("user not logged in 5");
-
       if (activeFamilyId == null) throw Exception("User not logged in");
-      log("Updating reminder with ID: $reminderId for user: $activeFamilyId");
+
       final docRef = _firestore
           .collection('users')
           .doc(activeFamilyId)
@@ -130,9 +120,26 @@ class ReminderRepository extends BaseReminderRepositories {
       data['reminderId'] = docRef.id;
 
       await docRef.set(data);
+
+      // Create/Update notification for the reminder
+      if (reminder.scheduledAt != null && reminder.time != null) {
+        final notificationService = notif.NotificationService();
+        final date = DateFormat(
+          'yyyy/MM/dd',
+        ).format(reminder.scheduledAt!.toDate());
+        await notificationService.createReminderNotification(
+          userId: activeFamilyId,
+          reminderId: docRef.id,
+          reminderTitle:
+              reminder.title ??
+              (reminder.type == "Medicine" ? "Medicine" : "Meeting"),
+          date: date,
+          time: reminder.time!,
+        );
+      }
+
       return true;
     } catch (e) {
-      log("Error adding reminder: $e");
       return false;
     }
   }
@@ -158,8 +165,40 @@ class ReminderRepository extends BaseReminderRepositories {
       );
       return true;
     } catch (e) {
-      log("General Error in addMeetingsReminder: $e");
       return false;
+    }
+  }
+
+  Future<ReminderModel?> getLatestReminderByType({
+    required String familyId,
+    required String type,
+  }) async {
+    try {
+      // We remove .orderBy to avoid requiring a composite index.
+      // For health reminders, the number of records is usually small enough
+      // to filter and sort in memory if needed, or we can just fetch all by type.
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(familyId)
+          .collection('reminders')
+          .where('type', isEqualTo: type)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        // Sort in memory instead of Firestore
+        final docs = snapshot.docs.toList();
+        docs.sort((a, b) {
+          final aTime =
+              (a.data()['createdAt'] as Timestamp?) ?? Timestamp(0, 0);
+          final bTime =
+              (b.data()['createdAt'] as Timestamp?) ?? Timestamp(0, 0);
+          return bTime.compareTo(aTime); // Descending
+        });
+        return ReminderModel.fromMap(docs.first.data());
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 }

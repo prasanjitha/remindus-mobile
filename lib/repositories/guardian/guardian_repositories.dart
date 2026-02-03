@@ -21,7 +21,6 @@ class GuardianRepository extends BaseGuardianRepository {
     String relationship,
     String activeFamilyId,
   ) async {
-    log("888888888888888888888888888888888888");
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId == null || currentUserId.isEmpty) {
       throw "User session expired. Please log in again.";
@@ -108,8 +107,6 @@ class GuardianRepository extends BaseGuardianRepository {
         throw "You cannot add yourself as a guardian";
       }
 
-      log("guarrrrrrrrrrrrrrrrrrrrrrrrrrr userId $userId");
-
       final guardianCollection = FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -170,6 +167,8 @@ class GuardianRepository extends BaseGuardianRepository {
   Future<void> sendInviteEmail(
     String receiverEmail,
     String activeFamilyId,
+    String curentUserName,
+    String guardianName,
   ) async {
     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
     try {
@@ -183,7 +182,8 @@ class GuardianRepository extends BaseGuardianRepository {
           'accessToken': dotenv.env['EMAILJS_ACCESS_TOKEN'],
           'template_params': {
             'to_email': receiverEmail,
-            'family_id': activeFamilyId,
+            'from_name': curentUserName,
+            'to_name': guardianName,
           },
         }),
       );
@@ -232,7 +232,6 @@ class GuardianRepository extends BaseGuardianRepository {
 
       return true;
     } catch (e) {
-      log("Error updating guardian data & permissions: $e");
       return false;
     }
   }
@@ -253,7 +252,6 @@ class GuardianRepository extends BaseGuardianRepository {
 
       return true;
     } catch (e) {
-      print("Error deleting guardian: $e");
       return false;
     }
   }

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
@@ -8,6 +8,7 @@ import 'package:remindus/models/emergency_contact_model.dart';
 import 'package:remindus/screens/sos/add_emergency_contact_screen.dart';
 import 'package:remindus/services/emergency_contact_service.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/contact_title.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,6 +30,9 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
   // Stream එක variable එකකට ගැනීමෙන් අනවශ්‍ය rebuilds වළකී (Best Practice)
   Stream<List<EmergencyContact>>? _contactsStream;
 
+  // Cache contacts data to fix broadcast stream timing issue
+  List<EmergencyContact> _cachedContacts = [];
+
   @override
   void initState() {
     super.initState();
@@ -42,18 +46,9 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
         _initiateEmergencyCall();
       }
     });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userState = context.read<UserBloc>().state;
-      if (userState is UserLoadedState) {
-        setState(() {
-          _contactsStream = _emergencyContactService.getEmergencyContacts(
-            userState.activeFamilyId,
-          );
-        });
-      }
-    });
   }
+
+  String? _lastFamilyId;
 
   @override
   void dispose() {
@@ -79,68 +74,68 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
     try {
       if (await canLaunchUrl(launchUri)) {
         await launchUrl(launchUri);
-      } else {
-        log("Could not launch $phoneNumber");
-      }
-    } catch (e) {
-      log("Error launching call: $e");
-    }
+      } else {}
+    } catch (e) {}
   }
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final canEdit = context.select<UserBloc, bool>((bloc) {
-      final state = bloc.state;
-      return state is UserLoadedState ? state.isAdmin : false;
-    });
-    return Scaffold(
-      backgroundColor: appColors.bgColor,
-      body: Stack(
-        children: [
-          // 1. Background Layer
-          Positioned.fill(
-            child: Image.asset(
-              Assets.bgColorMap,
-              fit: BoxFit.cover,
-              opacity: const AlwaysStoppedAnimation(0.6),
-            ),
-          ),
+    final userState = context.watch<UserBloc>().state;
+    if (userState is UserLoadedState) {
+      if (_lastFamilyId != userState.activeFamilyId ||
+          _contactsStream == null) {
+        _lastFamilyId = userState.activeFamilyId;
+        _contactsStream = _emergencyContactService.getEmergencyContacts(
+          _lastFamilyId!,
+        );
+      }
+    } else {}
 
-          // 2. Main UI Layer
-          SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 20.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const MainHeaderAppBar(),
-                        const SizedBox(height: 20),
-                        _buildHeader(appColors),
-                        if (canEdit) ...[
-                          const SizedBox(height: 60),
-                          Center(child: _buildSOSButton(appColors)),
+    final canEdit = userState is UserLoadedState ? userState.isAdmin : false;
+
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: [
+            SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 20.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          MainHeaderAppBar(
+                            onClose: () {
+                              Navigator.pop(context);
+                            },
+                          ),
                           const SizedBox(height: 20),
-                          _buildInstructions(appColors),
+                          _buildHeader(appColors),
+                          if (canEdit) ...[
+                            const SizedBox(height: 60),
+                            Center(child: _buildSOSButton(appColors)),
+                            const SizedBox(height: 20),
+                            _buildInstructions(appColors),
+                          ],
+                          _buildContactsSection(appColors),
                         ],
-                        const SizedBox(height: 50),
-                        _buildContactsSection(appColors),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                if (canEdit) _buildBottomAddButton(appColors),
-              ],
+                  if (canEdit) _buildBottomAddButton(appColors),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -218,6 +213,12 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
                   ),
                 );
               }
+
+              // Cache the contacts for the SOS button to use
+              if (snapshot.hasData) {
+                _cachedContacts = snapshot.data!;
+              }
+
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return _buildEmptyState(appColors);
               }
@@ -247,7 +248,7 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
       decoration: BoxDecoration(
         color: appColors.bgColor.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: appColors.textSecondary!.withOpacity(0.2)),
+        border: Border.all(color: appColors.textSecondary.withOpacity(0.2)),
       ),
       child: const Center(child: Text("No emergency contacts added yet.")),
     );
@@ -298,45 +299,76 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
   // --- SOS Button Logic ---
   Widget _buildSOSButton(AppColors appColors) {
     if (_showLocationSharing) {
+      // Use cached contacts instead of StreamBuilder to avoid broadcast stream timing issue
+      final contacts = _cachedContacts;
+
+      final String displayPhone = contacts.isNotEmpty
+          ? (contacts.first.phone ?? "999")
+          : "999";
       return Column(
         children: [
-          SizedBox(
-            width: 250,
-            height: 140,
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                _buildCircularIcon(
-                  appColors.errorRed!,
-                  Assets.healthAmbulanceIcon,
-                  appColors.bgColor!,
+          // Ambulance Icon
+          _buildCircularIcon(
+            appColors.errorRed!,
+            Assets.healthAmbulanceIcon,
+            appColors.bgColor,
+          ),
+          const SizedBox(height: 24),
+          // Action buttons row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Call button with phone number
+              GestureDetector(
+                onTap: () => _makePhoneCall(displayPhone),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFE0E1),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.phone, color: appColors.errorRed, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        displayPhone,
+                        style: TextStyle(
+                          color: appColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Positioned(
-                  right: 0,
-                  child: _buildSmallActionButton(
+              ),
+              const SizedBox(width: 16),
+              // Cancel button
+              GestureDetector(
+                onTap: _resetButton,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFE0E1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
                     Icons.close,
-                    const Color(0xFFFFE0E1),
-                    appColors.textPrimary!,
-                    _resetButton,
+                    color: appColors.textPrimary,
+                    size: 24,
                   ),
                 ),
-                Positioned(
-                  left: -20,
-                  child: _buildSmallActionButton(
-                    null,
-                    const Color(0xFFFFE0E1),
-                    appColors.textPrimary!,
-                    () => _makePhoneCall("999"),
-                    label: "999",
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Text(
-            'To stop sharing your location with listed\naccounts, click the \'x\' button on the right.',
+            'Tap the phone number to call.\nTap X to cancel.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -372,7 +404,7 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
                     ? Colors.red.withOpacity(0.7)
                     : Colors.red,
                 Assets.healthAmbulanceIcon,
-                appColors.bgColor!,
+                appColors.bgColor,
               ),
             ],
           );
@@ -388,32 +420,6 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
       decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
       child: Center(
         child: Image.asset(iconPath, width: 60, height: 60, color: iconColor),
-      ),
-    );
-  }
-
-  Widget _buildSmallActionButton(
-    IconData? icon,
-    Color bgColor,
-    Color contentColor,
-    VoidCallback onTap, {
-    String? label,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-        child: icon != null
-            ? Icon(icon, color: contentColor, size: 24)
-            : Text(
-                label!,
-                style: TextStyle(
-                  color: contentColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
       ),
     );
   }

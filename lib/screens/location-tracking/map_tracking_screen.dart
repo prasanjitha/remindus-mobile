@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,7 +75,6 @@ class _MapTrackingScreenState extends State<MapTrackingScreen> {
       }
       _checkPermissionsAndGetLocation();
     } catch (e) {
-      log("Error loading initial location: $e");
       _checkPermissionsAndGetLocation();
     }
   }
@@ -93,9 +92,7 @@ class _MapTrackingScreenState extends State<MapTrackingScreen> {
             _currentPosition = LatLng(position.latitude, position.longitude);
           });
         }
-      } catch (e) {
-        log("Error getting location: $e");
-      }
+      } catch (e) {}
     }
   }
 
@@ -123,12 +120,7 @@ class _MapTrackingScreenState extends State<MapTrackingScreen> {
       });
 
       await batch.commit();
-      log(
-        "Existing History Record Updated for familyId: ${widget.activeFamilyId}",
-      );
-    } catch (e) {
-      log("Error: $e");
-    }
+    } catch (e) {}
   }
 
   void _toggleLocationSharing() {
@@ -277,7 +269,6 @@ class _MapTrackingScreenState extends State<MapTrackingScreen> {
 
                 final userData = snapshot.data?.data() as Map<String, dynamic>?;
                 bool hasLocationData = userData?['lastLocation'] != null;
-                log("Has Location Data: $hasLocationData");
 
                 if (!hasLocationData) {
                   return Center(
@@ -459,6 +450,7 @@ class _MapTrackingScreenState extends State<MapTrackingScreen> {
       ],
     );
   }
+
   Widget _buildShareCard(AppColors appColors, double screenWidth) {
     return Container(
       width: (screenWidth / 2) - 24,

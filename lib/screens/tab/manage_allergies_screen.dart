@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:remindus/generated/assets.dart';
 import 'package:remindus/screens/tab/allergy_summary_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/manage_allergies_screen.dart';
 
@@ -59,64 +59,55 @@ class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Scaffold(
-      backgroundColor: appColors.bgColor,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              Assets.bgColorMap,
-              fit: BoxFit.cover,
-              opacity: const AlwaysStoppedAnimation(0.6),
-            ),
-          ),
-          SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ManageAllergiesHeader(
-                          title: "Manage Allergies",
-                          subtitle: "Keep track of what you're allergic to",
-                          onBackTap: () => Navigator.of(context).pop(),
-                          onCloseTap: () => Navigator.of(context).pop(),
-                        ),
-                        const SizedBox(height: 20.0),
-                        _buildTabSwitcher(appColors),
-                        const SizedBox(height: 20.0),
-                        _buildAllergyList(appColors),
-                      ],
-                    ),
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ManageAllergiesHeader(
+                        title: "Manage Allergies",
+                        subtitle: "Keep track of what you're allergic to",
+                        onBackTap: () => Navigator.of(context).pop(),
+                        onCloseTap: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(height: 20.0),
+                      _buildTabSwitcher(appColors),
+                      const SizedBox(height: 20.0),
+                      _buildAllergyList(appColors),
+                    ],
                   ),
                 ),
+              ),
 
-                // 2. Pinned Bottom Button
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: AppButton(
-                    text: 'Save',
-                    onPressed: () {
-                      // Logic to show summary or navigate
-                      print("Final Selections: $_selectedAllergies");
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => AllergySummaryScreen(
-                            selectedData: _selectedAllergies,
-                          ),
+              // 2. Pinned Bottom Button
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: AppButton(
+                  text: 'Save',
+                  onPressed: () {
+                    // Logic to show summary or navigate
+
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => AllergySummaryScreen(
+                          selectedData: _selectedAllergies,
                         ),
-                      );
-                    },
-                    backgroundColor: appColors.primary,
-                  ),
+                      ),
+                    );
+                  },
+                  backgroundColor: appColors.primary,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
