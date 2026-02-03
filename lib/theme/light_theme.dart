@@ -3,15 +3,15 @@ import 'package:remindus/theme/app_colors.dart';
 
 ThemeData lightMode = ThemeData(
   brightness: Brightness.light,
-  scaffoldBackgroundColor: const Color(0xFFE0EDFF), 
-extensions: const [
+  scaffoldBackgroundColor: const Color(0xFFE0EDFF),
+  extensions: const [
     AppColors(
       textPrimary: Color(0xFF212121),
       textSecondary: Color(0xFF242424),
       primaryLight: Color(0xFFE0EDFF),
       primary: Color(0xFF0168FF),
       bgColor: Color(0xFFFFFFFF),
-        surfceSecondary: Color(0xFFF0F0F0),
+      surfceSecondary: Color(0xFFF0F0F0),
       placeholder: Color(0xFF525252),
       primaryDark: Color(0xFF005DE5),
       darkRed: Color(0xFFF06B6D),
@@ -19,6 +19,9 @@ extensions: const [
       primaryRed: Color(0xFFE8171B),
       errorRed: Color(0xFFE8171B),
       primaryLightBlue: Color(0xFFADCEFF),
+      inputFieldBackground: Color(0xFFFFFFFF),
+      selectionCard: Color(0xFFE0EDFF),
+      textMainBtn: Color(0xFF212121),
     ),
   ],
   textTheme: const TextTheme(

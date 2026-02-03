@@ -318,6 +318,7 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
                                       Assets.alarmClockIcon,
                                       width: 20.0,
                                       height: 20.0,
+                                      color: appColors.placeholder,
                                     ),
                                     const SizedBox(width: 12),
                                     Text(

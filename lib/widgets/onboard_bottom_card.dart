@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:remindus/theme/app_colors.dart'; 
+import 'package:remindus/theme/app_colors.dart';
 
 class OnboardBottomCard extends StatelessWidget {
   final String title;
@@ -49,22 +49,17 @@ class OnboardBottomCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Logo/Icon
-          Image.asset(
-            imagePath,
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
-          ),
+          Image.asset(imagePath, width: 40, height: 40, fit: BoxFit.cover),
           const SizedBox(height: 20),
 
           // Heading
           Text(
             title,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w400,
-                  color: appColors.textPrimary,
-                  fontSize: 28.0,
-                ),
+              fontWeight: FontWeight.w400,
+              color: appColors.textPrimary,
+              fontSize: 28.0,
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -109,7 +104,7 @@ class OnboardBottomCard extends StatelessWidget {
                   child: Text(
                     skipBtnText,
                     style: TextStyle(
-                      color: appColors.textSecondary,
+                      color: appColors.textMainBtn,
                       fontSize: 16.0,
                       fontWeight: FontWeight.w400,
                     ),

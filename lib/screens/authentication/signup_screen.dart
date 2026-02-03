@@ -370,7 +370,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           "Login with Google",
                                           style: theme.textTheme.labelLarge
                                               ?.copyWith(
-                                                color: appColors.textPrimary,
+                                                color: appColors.textMainBtn,
                                                 fontWeight: FontWeight.w400,
                                                 fontSize: 16.0,
                                               ),

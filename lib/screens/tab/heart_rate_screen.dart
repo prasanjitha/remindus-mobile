@@ -311,6 +311,7 @@ class _HeartRateAddSceenState extends State<HeartRateAddSceen> {
                                       Assets.alarmClockIcon,
                                       width: 20.0,
                                       height: 20.0,
+                                      color: appColors.placeholder,
                                     ),
                                     const SizedBox(width: 12),
                                     Text(

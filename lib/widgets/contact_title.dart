@@ -5,10 +5,10 @@ import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/emergency_contact_model.dart';
 
 class ContactTile extends StatelessWidget {
-   final EmergencyContact contact;
-   final AppColors appColors;
-   final VoidCallback onEdit;
-   final VoidCallback onCall;
+  final EmergencyContact contact;
+  final AppColors appColors;
+  final VoidCallback onEdit;
+  final VoidCallback onCall;
 
   const ContactTile({
     required this.contact,
@@ -26,7 +26,11 @@ class ContactTile extends StatelessWidget {
         color: appColors.bgColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
@@ -36,7 +40,10 @@ class ContactTile extends StatelessWidget {
             radius: 20,
             child: Text(
               (contact.fullName ?? "U")[0].toUpperCase(),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -46,21 +53,36 @@ class ContactTile extends StatelessWidget {
               children: [
                 Text(
                   contact.fullName ?? 'Unknown',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: appColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: appColors.textPrimary,
+                  ),
                 ),
                 Text(
                   '${contact.phone ?? ''} • ${contact.relationship ?? ''}',
-                  style: TextStyle(fontSize: 13, color: appColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: appColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: Image.asset(Assets.pencilEditIcon, width: 22),
+            icon: Image.asset(
+              Assets.pencilEditIcon,
+              width: 22,
+              color: appColors.textPrimary,
+            ),
             onPressed: onEdit,
           ),
           IconButton(
-            icon: Image.asset(Assets.phoneButtonIcon, width: 22),
+            icon: Image.asset(
+              Assets.phoneButtonIcon,
+              width: 22,
+              color: appColors.textPrimary,
+            ),
             onPressed: onCall,
           ),
         ],

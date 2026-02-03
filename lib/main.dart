@@ -15,6 +15,8 @@ import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/repositories/guardian/guardian_repositories.dart';
 import 'package:remindus/theme/dark_theme.dart';
 import 'package:remindus/theme/light_theme.dart';
+import 'package:remindus/blocs/theme/theme_cubit.dart';
+import 'package:remindus/blocs/theme/theme_state.dart';
 import 'package:remindus/blocs/reminders/reminders_bloc.dart';
 import 'package:remindus/services/local_notification_service.dart';
 import 'package:remindus/screens/authentication/siginin_screen.dart';
@@ -115,18 +117,22 @@ class MyApp extends StatelessWidget {
             create: (context) =>
                 VaccinationBloc(repository: vaccinationRepository),
           ),
+          BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
         ],
-        child: MaterialApp(
-          useInheritedMediaQuery: true,
-          locale: DevicePreview.locale(context),
-          builder: DevicePreview.appBuilder,
-          debugShowCheckedModeBanner: false,
-          theme: lightMode,
-          darkTheme: darkMode,
-          themeMode: ThemeMode.system,
-          // home: const MainTabScreen(),
-          home: const AuthWrapper(),
-          routes: AppRoutes.routes,
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, themeState) {
+            return MaterialApp(
+              useInheritedMediaQuery: true,
+              locale: DevicePreview.locale(context),
+              builder: DevicePreview.appBuilder,
+              debugShowCheckedModeBanner: false,
+              theme: lightMode,
+              darkTheme: darkMode,
+              themeMode: themeState.themeMode,
+              home: const AuthWrapper(),
+              routes: AppRoutes.routes,
+            );
+          },
         ),
       ),
     );

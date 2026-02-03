@@ -338,7 +338,7 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
                       Text(
                         displayPhone,
                         style: TextStyle(
-                          color: appColors.textPrimary,
+                          color: appColors.textMainBtn,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -359,7 +359,7 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
                   ),
                   child: Icon(
                     Icons.close,
-                    color: appColors.textPrimary,
+                    color: appColors.textMainBtn,
                     size: 24,
                   ),
                 ),

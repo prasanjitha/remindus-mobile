@@ -4,6 +4,8 @@ import 'package:remindus/repositories/authentication/authentication_repository.d
 import 'package:remindus/screens/authentication/siginin_screen.dart';
 import 'package:remindus/screens/tab/main_tab_screen.dart';
 
+import '../screens/onboarding/get_started_screen.dart';
+
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 
@@ -54,7 +56,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
 
         // User is not authenticated, show SignIn screen
-        return LoginScreen();
+        return GetStartedScreen();
       },
     );
   }

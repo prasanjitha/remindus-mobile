@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:remindus/theme/app_colors.dart';
 
 class AppGradientBackground extends StatelessWidget {
   final Widget child;
@@ -7,21 +8,38 @@ class AppGradientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColors>()!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE8F6F8), // Softened #97D5E2
-            Color(0xFFF1E9F9), // Softened #9E5EDC
-            Color(0xFFE9F1F8), // Softened #88B1DB
-            Color(0xFFFFF2EC), // Softened #FD9B6C
-          ],
-          stops: [0.0, 0.4, 0.7, 1.0],
-        ),
+      decoration: BoxDecoration(
+        // Use solid background color for dark mode, gradient for light mode
+        gradient: isDark
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF1A2B3A), // Dark blue-grey
+                  Color(0xFF2A1F3D), // Dark purple
+                  Color(0xFF1F2D3D), // Dark blue
+                  Color(0xFF3D2A1F), // Dark brown/orange
+                ],
+                stops: [0.0, 0.4, 0.7, 1.0],
+              )
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFE8F6F8), // Softened #97D5E2
+                  Color(0xFFF1E9F9), // Softened #9E5EDC
+                  Color(0xFFE9F1F8), // Softened #88B1DB
+                  Color(0xFFFFF2EC), // Softened #FD9B6C
+                ],
+                stops: [0.0, 0.4, 0.7, 1.0],
+              ),
+        color: isDark ? appColors.bgColor : null,
       ),
       child: child,
     );

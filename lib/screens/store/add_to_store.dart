@@ -7,6 +7,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/shimmer_image.dart';
 
 import 'package:remindus/generated/assets.dart';
@@ -127,452 +128,458 @@ class _AddMedicineToStoreScreenState extends State<AddMedicineToStoreScreen> {
           onTap: () {
             FocusScope.of(context).unfocus();
           },
-          child: Scaffold(
-            backgroundColor: appColors.bgColor,
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 50,
-                bottom: 20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Image.asset(Assets.logoIcon, width: 28.0, height: 28.0),
+          child: AppGradientBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 50,
+                  bottom: 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset(Assets.logoIcon, width: 28.0, height: 28.0),
 
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.close, size: 24.0),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    "Add to Store",
-                    style: TextStyle(
-                      color: appColors.textPrimary,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    "Track a new medication",
-                    style: TextStyle(
-                      color: appColors.textPrimary,
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 40.0),
-
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Medicine name",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          color: appColors.textPrimary,
-                          fontSize: 16,
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(Icons.close, size: 24.0),
                         ),
+                      ],
+                    ),
+                    Text(
+                      "Add to Store",
+                      style: TextStyle(
+                        color: appColors.textPrimary,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w400,
                       ),
-                      const SizedBox(height: 8),
-                      Autocomplete<String>(
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text == '') {
-                            return const Iterable<String>.empty();
-                          }
-                          return MedicineHelper.getSortedSuggestions().where((
-                            String option,
-                          ) {
-                            return option.toLowerCase().contains(
-                              textEditingValue.text.toLowerCase(),
-                            );
-                          });
-                        },
-                        onSelected: (String selection) {
-                          _nameController.text = selection;
-                        },
+                    ),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      "Track a new medication",
+                      style: TextStyle(
+                        color: appColors.textPrimary,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 40.0),
 
-                        fieldViewBuilder:
-                            (
-                              context,
-                              textEditingController,
-                              focusNode,
-                              onFieldSubmitted,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Medicine name",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            color: appColors.textPrimary,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text == '') {
+                              return const Iterable<String>.empty();
+                            }
+                            return MedicineHelper.getSortedSuggestions().where((
+                              String option,
                             ) {
-                              if (_nameController.text.isNotEmpty &&
-                                  textEditingController.text.isEmpty) {
-                                textEditingController.text =
-                                    _nameController.text;
-                              }
-                              textEditingController.addListener(() {
-                                _nameController.text =
-                                    textEditingController.text;
-                              });
-
-                              return TextField(
-                                controller: textEditingController,
-                                focusNode: focusNode,
-                                decoration: InputDecoration(
-                                  hintText: 'Enter Medicine name',
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Image.asset(
-                                      Assets.pillsTabletIcon,
-                                      width: 20,
-                                      height: 20,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 15,
-                                    horizontal: 15,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: appColors.textSecondary
-                                          .withOpacity(0.1),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: appColors.primary,
-                                    ),
-                                  ),
-                                ),
+                              return option.toLowerCase().contains(
+                                textEditingValue.text.toLowerCase(),
                               );
-                            },
-                        optionsViewBuilder: (context, onSelected, options) {
-                          return Align(
-                            alignment: Alignment.topLeft,
-                            child: Material(
-                              elevation: 4.0,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                width: MediaQuery.of(context).size.width - 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  shrinkWrap: true,
-                                  itemCount: options.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                        final String option = options.elementAt(
-                                          index,
-                                        );
-                                        return ListTile(
-                                          title: Text(option),
-                                          onTap: () => onSelected(option),
-                                        );
-                                      },
+                            });
+                          },
+                          onSelected: (String selection) {
+                            _nameController.text = selection;
+                          },
+
+                          fieldViewBuilder:
+                              (
+                                context,
+                                textEditingController,
+                                focusNode,
+                                onFieldSubmitted,
+                              ) {
+                                if (_nameController.text.isNotEmpty &&
+                                    textEditingController.text.isEmpty) {
+                                  textEditingController.text =
+                                      _nameController.text;
+                                }
+                                textEditingController.addListener(() {
+                                  _nameController.text =
+                                      textEditingController.text;
+                                });
+
+                                return TextField(
+                                  controller: textEditingController,
+                                  focusNode: focusNode,
+                                  decoration: InputDecoration(
+                                    hintText: 'Enter Medicine name',
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Image.asset(
+                                        Assets.pillsTabletIcon,
+                                        width: 20,
+                                        height: 20,
+                                        color: appColors.placeholder,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: appColors.bgColor,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 15,
+                                      horizontal: 15,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: appColors.textSecondary
+                                            .withOpacity(0.1),
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: appColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                          optionsViewBuilder: (context, onSelected, options) {
+                            return Align(
+                              alignment: Alignment.topLeft,
+                              child: Material(
+                                elevation: 4.0,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width - 40,
+                                  decoration: BoxDecoration(
+                                    color: appColors.bgColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    itemCount: options.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                          final String option = options
+                                              .elementAt(index);
+                                          return ListTile(
+                                            title: Text(option),
+                                            onTap: () => onSelected(option),
+                                          );
+                                        },
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  AppTextField(
-                    controller: _qtyController,
-                    hintText: 'Number of Tablets',
-                    prefixIconPath: Assets.listNumberIcon,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter number of tablets';
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.number,
-                    isPassword: false,
-                    label: "Quantity",
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: appColors.bgColor,
-                      border: Border.all(
-                        color: appColors.textSecondary.withOpacity(0.1),
-                      ),
-                      borderRadius: BorderRadius.circular(12.0),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                    child:
-                        (_selectedImage == null &&
-                            (_imageUrl == null || _imageUrl!.isEmpty))
-                        ? GestureDetector(
-                            onTap: () {
-                              _pickImage(ImageSource.gallery);
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                    const SizedBox(height: 20),
+                    AppTextField(
+                      controller: _qtyController,
+                      hintText: 'Number of Tablets',
+                      prefixIconPath: Assets.listNumberIcon,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter number of tablets';
+                        }
+                        return null;
+                      },
+                      keyboardType: TextInputType.number,
+                      isPassword: false,
+                      label: "Quantity",
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: appColors.bgColor,
+                        border: Border.all(
+                          color: appColors.textSecondary.withOpacity(0.1),
+                        ),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child:
+                          (_selectedImage == null &&
+                              (_imageUrl == null || _imageUrl!.isEmpty))
+                          ? GestureDetector(
+                              onTap: () {
+                                _pickImage(ImageSource.gallery);
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    Assets.storeAddPhotoIcon,
+                                    width: 40.0,
+                                    height: 40.0,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    "Add Photo",
+                                    style: TextStyle(
+                                      color: appColors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Stack(
                               children: [
-                                Image.asset(
-                                  Assets.storeAddPhotoIcon,
-                                  width: 40.0,
-                                  height: 40.0,
+                                GestureDetector(
+                                  onTap: _showZoomedImage,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      child: _selectedImage != null
+                                          ? Image.file(
+                                              _selectedImage!,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : ShimmerImage(
+                                              imageUrl: _imageUrl!,
+                                              fit: BoxFit.cover,
+                                            ),
+                                    ),
+                                  ),
                                 ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  "Add Photo",
-                                  style: TextStyle(
-                                    color: appColors.textPrimary,
+
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: _removeImage,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.redAccent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                        : Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: _showZoomedImage,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    child: _selectedImage != null
-                                        ? Image.file(
-                                            _selectedImage!,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : ShimmerImage(
-                                            imageUrl: _imageUrl!,
-                                            fit: BoxFit.cover,
-                                          ),
-                                  ),
-                                ),
-                              ),
+                    ),
+                    const SizedBox(height: 15),
 
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: GestureDetector(
-                                  onTap: _removeImage,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.redAccent,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                    // Selection Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            text: "Capture",
+                            onPressed: () => _pickImage(ImageSource.camera),
+                            backgroundColor: appColors.primary.withOpacity(0.2),
+                            textColor: appColors.textPrimary,
                           ),
-                  ),
-                  const SizedBox(height: 15),
-
-                  // Selection Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppButton(
-                          text: "Capture",
-                          onPressed: () => _pickImage(ImageSource.camera),
-                          backgroundColor: appColors.primary.withOpacity(0.2),
-                          textColor: appColors.textPrimary,
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: AppButton(
-                          text: "Choose from Photos",
-                          onPressed: () => _pickImage(ImageSource.gallery),
-                          backgroundColor: appColors.primary.withOpacity(0.2),
-                          textColor: appColors.textPrimary,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: AppButton(
+                            text: "Choose from Photos",
+                            onPressed: () => _pickImage(ImageSource.gallery),
+                            backgroundColor: appColors.primary.withOpacity(0.2),
+                            textColor: appColors.textPrimary,
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(width: 10),
-                    ],
-                  ),
+                        const SizedBox(width: 10),
+                      ],
+                    ),
 
-                  const SizedBox(height: 40),
+                    const SizedBox(height: 40),
 
-                  widget.isEditMode
-                      ? AppButton(
-                          text: "Update Medicine",
-                          isLoading: _isUploading || isLoading,
-                          onPressed: () async {
-                            FocusScope.of(context).unfocus();
+                    widget.isEditMode
+                        ? AppButton(
+                            text: "Update Medicine",
+                            isLoading: _isUploading || isLoading,
+                            onPressed: () async {
+                              FocusScope.of(context).unfocus();
 
-                            // Validation
-                            if (_nameController.text.isNotEmpty &&
-                                    _qtyController.text.isEmpty ||
-                                _nameController.text.isEmpty &&
-                                    _qtyController.text.isNotEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Please fill ${_nameController.text.isEmpty ? "Medicine Name" : "Quantity"} field",
+                              // Validation
+                              if (_nameController.text.isNotEmpty &&
+                                      _qtyController.text.isEmpty ||
+                                  _nameController.text.isEmpty &&
+                                      _qtyController.text.isNotEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Please fill ${_nameController.text.isEmpty ? "Medicine Name" : "Quantity"} field",
+                                    ),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
                                   ),
-                                  backgroundColor: Colors.redAccent,
-                                  behavior: SnackBarBehavior.floating,
+                                );
+                                return;
+                              }
+
+                              setState(() {
+                                _isUploading = true;
+                              });
+
+                              String? uploadedUrl;
+                              if (_selectedImage != null) {
+                                uploadedUrl = await _uploadImage(
+                                  activeFamiltId!,
+                                );
+                              }
+
+                              int qtyValue =
+                                  int.tryParse(_qtyController.text.trim()) ?? 0;
+                              String finalStatus;
+
+                              switch (qtyValue) {
+                                case int n when n <= 0:
+                                  finalStatus = 'refill';
+                                  break;
+                                case int n when n > 0 && n < 10:
+                                  finalStatus = 'lowRemaining';
+                                  break;
+                                default:
+                                  finalStatus = 'wellStocked';
+                              }
+                              final medicine = MedicineStoreModel(
+                                medicineStoreId: widget.isEditMode
+                                    ? widget.medicineStrore?.medicineStoreId
+                                    : null,
+                                name: _nameController.text
+                                    .trim()
+                                    .toLowerCase()
+                                    .replaceAll(' ', ''),
+                                quantity: _qtyController.text.trim(),
+                                imageUrl: uploadedUrl ?? _imageUrl,
+                                status: finalStatus,
+                              );
+
+                              if (widget.isEditMode) {
+                                context.read<MedicalStoreBloc>().add(
+                                  UpdateMedicalStoreEvent(
+                                    medicine: medicine,
+                                    activeFamiltId: activeFamiltId!,
+                                  ),
+                                );
+                              }
+
+                              setState(() {
+                                _isUploading = false;
+                              });
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      MedicineAddedSuccessScreen(
+                                        medicine: medicine,
+                                      ),
                                 ),
                               );
-                              return;
-                            }
+                            },
+                            backgroundColor: appColors.primary,
+                          )
+                        : AppButton(
+                            text: "Save Medicine",
+                            isLoading: _isUploading || isLoading,
+                            onPressed: () async {
+                              FocusScope.of(context).unfocus();
+                              if (_nameController.text.isNotEmpty &&
+                                      _qtyController.text.isEmpty ||
+                                  _nameController.text.isEmpty &&
+                                      _qtyController.text.isNotEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Please fill ${_nameController.text.isEmpty ? "Medicine Name" : "Quantity"} field",
+                                    ),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
 
-                            setState(() {
-                              _isUploading = true;
-                            });
+                              setState(() {
+                                _isUploading = true;
+                              });
 
-                            String? uploadedUrl;
-                            if (_selectedImage != null) {
-                              uploadedUrl = await _uploadImage(activeFamiltId!);
-                            }
+                              String? uploadedUrl;
+                              if (_selectedImage != null) {
+                                uploadedUrl = await _uploadImage(
+                                  activeFamiltId!,
+                                );
+                              }
 
-                            int qtyValue =
-                                int.tryParse(_qtyController.text.trim()) ?? 0;
-                            String finalStatus;
+                              int qtyValue =
+                                  int.tryParse(_qtyController.text.trim()) ?? 0;
+                              String finalStatus;
 
-                            switch (qtyValue) {
-                              case int n when n <= 0:
-                                finalStatus = 'refill';
-                                break;
-                              case int n when n > 0 && n < 10:
-                                finalStatus = 'lowRemaining';
-                                break;
-                              default:
-                                finalStatus = 'wellStocked';
-                            }
-                            final medicine = MedicineStoreModel(
-                              medicineStoreId: widget.isEditMode
-                                  ? widget.medicineStrore?.medicineStoreId
-                                  : null,
-                              name: _nameController.text
-                                  .trim()
-                                  .toLowerCase()
-                                  .replaceAll(' ', ''),
-                              quantity: _qtyController.text.trim(),
-                              imageUrl: uploadedUrl ?? _imageUrl,
-                              status: finalStatus,
-                            );
+                              switch (qtyValue) {
+                                case int n when n <= 0:
+                                  finalStatus = 'refill';
+                                  break;
+                                case int n when n > 0 && n < 10:
+                                  finalStatus = 'lowRemaining';
+                                  break;
+                                default:
+                                  finalStatus = 'wellStocked';
+                              }
 
-                            if (widget.isEditMode) {
+                              final medicine = MedicineStoreModel(
+                                name: _nameController.text
+                                    .trim()
+                                    .toLowerCase()
+                                    .replaceAll(' ', ''),
+                                quantity: _qtyController.text.trim(),
+                                imageUrl: uploadedUrl ?? "",
+                                status: finalStatus,
+                              );
                               context.read<MedicalStoreBloc>().add(
-                                UpdateMedicalStoreEvent(
-                                  medicine: medicine,
+                                AddMedicalStoreEvent(
+                                  medicineStoreModel: medicine,
                                   activeFamiltId: activeFamiltId!,
                                 ),
                               );
-                            }
 
-                            setState(() {
-                              _isUploading = false;
-                            });
+                              setState(() {
+                                _isUploading = false;
+                              });
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    MedicineAddedSuccessScreen(
-                                      medicine: medicine,
-                                    ),
-                              ),
-                            );
-                          },
-                          backgroundColor: appColors.primary,
-                        )
-                      : AppButton(
-                          text: "Save Medicine",
-                          isLoading: _isUploading || isLoading,
-                          onPressed: () async {
-                            FocusScope.of(context).unfocus();
-                            if (_nameController.text.isNotEmpty &&
-                                    _qtyController.text.isEmpty ||
-                                _nameController.text.isEmpty &&
-                                    _qtyController.text.isNotEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Please fill ${_nameController.text.isEmpty ? "Medicine Name" : "Quantity"} field",
-                                  ),
-                                  backgroundColor: Colors.redAccent,
-                                  behavior: SnackBarBehavior.floating,
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      MedicineAddedSuccessScreen(
+                                        medicine: medicine,
+                                      ),
                                 ),
                               );
-                              return;
-                            }
-
-                            setState(() {
-                              _isUploading = true;
-                            });
-
-                            String? uploadedUrl;
-                            if (_selectedImage != null) {
-                              uploadedUrl = await _uploadImage(activeFamiltId!);
-                            }
-
-                            int qtyValue =
-                                int.tryParse(_qtyController.text.trim()) ?? 0;
-                            String finalStatus;
-
-                            switch (qtyValue) {
-                              case int n when n <= 0:
-                                finalStatus = 'refill';
-                                break;
-                              case int n when n > 0 && n < 10:
-                                finalStatus = 'lowRemaining';
-                                break;
-                              default:
-                                finalStatus = 'wellStocked';
-                            }
-
-                            final medicine = MedicineStoreModel(
-                              name: _nameController.text
-                                  .trim()
-                                  .toLowerCase()
-                                  .replaceAll(' ', ''),
-                              quantity: _qtyController.text.trim(),
-                              imageUrl: uploadedUrl ?? "",
-                              status: finalStatus,
-                            );
-                            context.read<MedicalStoreBloc>().add(
-                              AddMedicalStoreEvent(
-                                medicineStoreModel: medicine,
-                                activeFamiltId: activeFamiltId!,
-                              ),
-                            );
-
-                            setState(() {
-                              _isUploading = false;
-                            });
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    MedicineAddedSuccessScreen(
-                                      medicine: medicine,
-                                    ),
-                              ),
-                            );
-                          },
-                          backgroundColor: appColors.primary,
-                        ),
-                ],
+                            },
+                            backgroundColor: appColors.primary,
+                          ),
+                  ],
+                ),
               ),
             ),
           ),

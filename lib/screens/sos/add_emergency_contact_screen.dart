@@ -212,7 +212,7 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-        _buildRelationshipDropdown(),
+        _buildRelationshipDropdown(appColors),
         const SizedBox(height: 20),
         AppTextField(
           controller: _phoneController,
@@ -242,14 +242,14 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
     );
   }
 
-  Widget _buildRelationshipDropdown() {
+  Widget _buildRelationshipDropdown(AppColors appColors) {
     return DropdownButtonFormField<String>(
       value: _selectedRelationship,
       decoration: InputDecoration(
         hintText: 'Select Relationship',
         prefixIcon: const Icon(Icons.people_outline),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: appColors.bgColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
@@ -282,7 +282,7 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
               text: 'Remove Contact',
               onPressed: () => _onRemovePressed(familyId),
               backgroundColor: const Color(0xFFFFE0E1),
-              textColor: appColors.textPrimary,
+              textColor: appColors.textMainBtn,
             ),
           ],
         ],

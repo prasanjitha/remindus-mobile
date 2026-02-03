@@ -250,12 +250,15 @@ class ReminderAddedScreen extends StatelessWidget {
                 ),
 
               const SizedBox(height: 20.0),
-              AppButton(
-                text: 'Done',
-                backgroundColor: appColors.primary,
-                onPressed: () => _goToHome(context, reminder, activeFamilyId),
-              ),
             ],
+          ),
+        ),
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: AppButton(
+            text: 'Done',
+            backgroundColor: appColors.primary,
+            onPressed: () => _goToHome(context, reminder, activeFamilyId),
           ),
         ),
       ),

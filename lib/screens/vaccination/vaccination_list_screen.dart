@@ -208,7 +208,7 @@ class _VaccinationListScreenState extends State<VaccinationListScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors.bgColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(

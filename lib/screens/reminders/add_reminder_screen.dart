@@ -419,10 +419,12 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                                     Assets.pillsTabletIcon,
                                                     width: 20,
                                                     height: 20,
+                                                    color:
+                                                        appColors.placeholder,
                                                   ),
                                                 ),
                                                 filled: true,
-                                                fillColor: Colors.white,
+                                                fillColor: appColors.bgColor,
                                                 contentPadding:
                                                     const EdgeInsets.symmetric(
                                                       vertical: 15,
@@ -469,7 +471,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                                       ).size.width -
                                                       40,
                                                   decoration: BoxDecoration(
-                                                    color: Colors.white,
+                                                    color: appColors.bgColor,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                           12,
@@ -693,6 +695,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                                                 Assets.alarmClockIcon,
                                                 width: 20.0,
                                                 height: 20.0,
+                                                color: appColors.placeholder,
                                               ),
                                               const SizedBox(width: 12),
                                               Text(
@@ -1016,7 +1019,11 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                 ),
               ),
               child: value
-                  ? Icon(Icons.check, size: 16, color: Colors.white)
+                  ? Icon(
+                      Icons.check,
+                      size: 16,
+                      color: context.appColors.bgColor,
+                    )
                   : null,
             ),
           ),

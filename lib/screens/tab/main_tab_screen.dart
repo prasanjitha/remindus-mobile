@@ -153,7 +153,7 @@ class BottomNavBar extends StatelessWidget {
               width: 24,
               height: 24,
               fit: BoxFit.cover,
-              color: isActive ? activeColor : Colors.black87,
+              color: isActive ? activeColor : context.appColors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),

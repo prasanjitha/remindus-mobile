@@ -88,7 +88,12 @@ class _AddReminderMeetingState extends State<AddReminderMeeting> {
               ),
               child: Row(
                 children: [
-                  Image.asset(Assets.calenderAddIcon, width: 20, height: 20),
+                  Image.asset(
+                    Assets.calenderAddIcon,
+                    width: 20,
+                    height: 20,
+                    color: appColors.placeholder,
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     widget.selectedDate != null
@@ -133,6 +138,7 @@ class _AddReminderMeetingState extends State<AddReminderMeeting> {
                           Assets.alarmClockIcon,
                           width: 20.0,
                           height: 20.0,
+                          color: appColors.placeholder,
                         ),
                         const SizedBox(width: 12),
                         Text(

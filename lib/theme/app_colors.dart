@@ -13,8 +13,11 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color? darkRed;
   final Color? lightRed;
   final Color? primaryRed;
-  final Color?  errorRed;
+  final Color? errorRed;
   final Color? primaryLightBlue;
+  final Color? inputFieldBackground;
+  final Color? selectionCard;
+  final Color? textMainBtn;
 
   const AppColors({
     required this.textPrimary,
@@ -30,6 +33,9 @@ class AppColors extends ThemeExtension<AppColors> {
     this.primaryRed,
     this.errorRed,
     this.primaryLightBlue,
+    this.inputFieldBackground,
+    this.selectionCard,
+    this.textMainBtn,
   });
 
   @override
@@ -47,6 +53,9 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? primaryRed,
     Color? errorRed,
     Color? primaryLightBlue,
+    Color? inputFieldBackground,
+    Color? selectionCard,
+    Color? textMainBtn,
   }) {
     return AppColors(
       textPrimary: textPrimary ?? this.textPrimary,
@@ -62,6 +71,9 @@ class AppColors extends ThemeExtension<AppColors> {
       primaryRed: primaryRed ?? this.primaryRed,
       errorRed: errorRed ?? this.errorRed,
       primaryLightBlue: primaryLightBlue ?? this.primaryLightBlue,
+      inputFieldBackground: inputFieldBackground ?? this.inputFieldBackground,
+      selectionCard: selectionCard ?? this.selectionCard,
+      textMainBtn: textMainBtn ?? this.textMainBtn,
     );
   }
 
@@ -82,6 +94,13 @@ class AppColors extends ThemeExtension<AppColors> {
       primaryRed: Color.lerp(primaryRed, other.primaryRed, t),
       errorRed: Color.lerp(errorRed, other.errorRed, t),
       primaryLightBlue: Color.lerp(primaryLightBlue, other.primaryLightBlue, t),
+      inputFieldBackground: Color.lerp(
+        inputFieldBackground,
+        other.inputFieldBackground,
+        t,
+      ),
+      selectionCard: Color.lerp(selectionCard, other.selectionCard, t),
+      textMainBtn: Color.lerp(textMainBtn, other.textMainBtn, t),
     );
   }
 }

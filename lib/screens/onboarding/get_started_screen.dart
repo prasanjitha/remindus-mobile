@@ -10,6 +10,7 @@ class GetStartedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Scaffold(
       body: Stack(
         children: [
@@ -36,7 +37,7 @@ class GetStartedScreen extends StatelessWidget {
                       vertical: 28,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: appColors.bgColor,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -51,16 +52,14 @@ class GetStartedScreen extends StatelessWidget {
                         Text(
                           "A simple and secure way to stay in touch, set reminders, and keep track of health together.",
                           style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                color: context.appColors.textSecondary,
-                              ),
+                              ?.copyWith(color: context.appColors.textPrimary),
                         ),
                         const SizedBox(height: 40),
 
                         AppButton(
                           text: "Create Account",
-                          backgroundColor: context.appColors.primaryLight,
-                          textColor: context.appColors.textPrimary,
+                          backgroundColor: appColors.primaryLight,
+                          textColor: appColors.textMainBtn,
                           onPressed: () async {
                             final prefs = await SharedPreferences.getInstance();
                             await prefs.setBool('is_first_time', false);
