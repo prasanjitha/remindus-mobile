@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
@@ -62,18 +63,26 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
   }
 
   void _initiateEmergencyCall() {
+    final String phoneNumber = _cachedContacts.isNotEmpty
+        ? (_cachedContacts.first.phone ?? "999")
+        : "999";
+    _makePhoneCall(phoneNumber);
     setState(() {
       _showLocationSharing = true;
     });
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
     try {
+      await FlutterPhoneDirectCaller.callNumber(phoneNumber);
+    } catch (e) {
+      debugPrint("Error making direct call: $e");
+      // Fallback to url_launcher if direct call fails
+      final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
       if (await canLaunchUrl(launchUri)) {
         await launchUrl(launchUri);
-      } else {}
-    } catch (e) {}
+      }
+    }
   }
 
   @override
