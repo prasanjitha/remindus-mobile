@@ -5,6 +5,16 @@ import 'package:remindus/theme/app_colors.dart';
 ThemeData darkMode = ThemeData(
   brightness: Brightness.dark,
   scaffoldBackgroundColor: const Color(0xFF242424),
+  colorScheme: const ColorScheme.dark(
+    primary: Color(0xFF005DE5),
+    onPrimary: Colors.white,
+    secondary: Color(0xFFADCEFF),
+    onSecondary: Color(0xFF212121),
+    surface: Color(0xFF1E1E1E),
+    onSurface: Color(0xFFFAFAFA),
+    error: Color(0xFFE8171B),
+    onError: Colors.white,
+  ),
   extensions: const [
     AppColors(
       textPrimary: Color(0xFFFAFAFA),

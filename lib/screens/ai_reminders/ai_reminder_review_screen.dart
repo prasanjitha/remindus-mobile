@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:remindus/generated/assets.dart';
+import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/widgets/app_text_field.dart';
+import 'package:remindus/widgets/main_header_appbar.dart';
+import 'package:remindus/services/permission_service.dart';
+import 'package:remindus/services/ai_reminder_service.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/blocs/ai_reminder/ai_reminder_bloc.dart';
 import 'package:remindus/blocs/ai_reminder/ai_reminder_event.dart';
 import 'package:remindus/blocs/ai_reminder/ai_reminder_state.dart';
-import 'package:remindus/generated/assets.dart';
-import 'package:remindus/screens/ai_reminders/scan_prescription_screen.dart';
-import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/app_gradient_background.dart';
-import 'package:remindus/widgets/app_text_field.dart';
-import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/repositories/reminder/ai_reminder_repository.dart';
-import 'package:remindus/services/ai_reminder_service.dart';
-import 'package:remindus/widgets/main_header_appbar.dart';
-import 'package:remindus/screens/ai_reminders/reminder_confirmation_screen.dart';
-import 'package:remindus/services/permission_service.dart';
+import 'package:remindus/screens/ai_reminders/scan_prescription_screen.dart';
 import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
+import 'package:remindus/screens/ai_reminders/reminder_confirmation_screen.dart';
 
 class AiReminderReviewScreen extends StatelessWidget {
   final String activeFamilyId;
@@ -57,17 +58,25 @@ class AiReminderReviewScreen extends StatelessWidget {
               }
             },
             builder: (context, state) {
-              if (state is AiReminderLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is AiReminderLoaded) {
-                return _buildReviewForm(
-                  context,
-                  state,
-                  appColors,
-                  activeFamilyId,
-                );
-              }
-              return const SizedBox.shrink();
+              return Stack(
+                children: [
+                  if (state is AiReminderLoaded)
+                    _buildReviewForm(context, state, appColors, activeFamilyId)
+                  else
+                    const SizedBox.shrink(),
+
+                  // Loading overlay
+                  if (state is AiReminderLoading)
+                    Container(
+                      color: context.appColors.bgColor.withOpacity(0.1),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: context.appColors.primary,
+                        ),
+                      ),
+                    ),
+                ],
+              );
             },
           ),
         ),
@@ -109,18 +118,7 @@ class AiReminderReviewScreen extends StatelessWidget {
     final reminder = state.currentItem;
     final isLastItem = state.currentIndex == state.reminders.length - 1;
 
-    // Controllers initialized with current item data
-    // Note: In a real app we might want to keep these in the state or use a hook to avoid recreating them on every rebuild
-    // if the state updates essentially. But since we are rebuilding with NEW content for the NEXT item,
-    // we actually WANT to recreate them or update them.
-    // However, `AppTextField` takes a controller. If we create new controllers here,
-    // typing might be issues if this widget rebuilds on every keystroke.
-    // But we are only dispatching UpdateCurrentReminder on change, so it WILL rebuild.
-    // Ideally we should use a stronger form handling approach, but for now:
-
-    // We will use Keyed subtree or just keys for fields to ensure they update when index changes.
     final keySuffix = state.currentIndex.toString();
-
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
       child: Column(
@@ -202,7 +200,7 @@ class AiReminderReviewScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          if (reminder.type == 'medicine') ...[
+          if (reminder.type == 'Medicine') ...[
             AppTextField(
               key: ValueKey('medName_$keySuffix'),
               label: "Medicine Name",
@@ -461,7 +459,7 @@ class AiReminderReviewScreen extends StatelessWidget {
             ],
           ],
 
-          if (reminder.type == 'meeting') ...[
+          if (reminder.type == 'Meeting') ...[
             AppTextField(
               key: ValueKey('meetingDate_$keySuffix'),
               label: "Date",

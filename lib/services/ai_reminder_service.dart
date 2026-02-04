@@ -106,8 +106,10 @@ Return ONLY a JSON list of objects. Every object MUST have the "type" field.
 
   ReminderModel _mapJsonToReminder(Map<String, dynamic> json) {
     String type = json['type'] ?? 'other';
+    // Capitalize first letter, lowercase rest for consistency
+    type = _capitalizeType(type);
 
-    if (type == 'medicine') {
+    if (type == 'Medicine') {
       DateTime? startDate;
       if (json['start_date'] != null) {
         try {
@@ -148,12 +150,17 @@ Return ONLY a JSON list of objects. Every object MUST have the "type" field.
 
       return ReminderModel(
         title:
-            json['title'] ?? (type == 'meeting' ? 'Meeting' : 'New Reminder'),
+            json['title'] ?? (type == 'Meeting' ? 'Meeting' : 'New Reminder'),
         type: type,
         time: json['Time'] ?? '09:00 AM',
         date: meetingDate != null ? Timestamp.fromDate(meetingDate) : null,
         isRead: false,
       );
     }
+  }
+
+  String _capitalizeType(String type) {
+    if (type.isEmpty) return type;
+    return type[0].toUpperCase() + type.substring(1).toLowerCase();
   }
 }

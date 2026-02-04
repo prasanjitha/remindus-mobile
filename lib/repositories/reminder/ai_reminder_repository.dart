@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:remindus/models/base_reminder_model.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:remindus/models/base_reminder_model.dart';
 
 class AiReminderRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -18,17 +19,20 @@ class AiReminderRepository {
     List<ReminderModel> allSavedReminders = [];
 
     for (var reminder in reminders) {
-      if (reminder.type == 'medicine' &&
+      if (reminder.type == 'Medicine' &&
           reminder.duration != null &&
           reminder.schedule != null) {
         // Expansion Logic
         List<ReminderModel> expandedReminders = _expandMedicineReminder(
           reminder,
         );
-        allSavedReminders.addAll(expandedReminders);
         for (var expanded in expandedReminders) {
           DocumentReference docRef = collection.doc(); // Auto-ID
-          batch.set(docRef, expanded.toMap());
+          ReminderModel finalExpanded = expanded.copyWith(
+            reminderId: docRef.id,
+          );
+          allSavedReminders.add(finalExpanded);
+          batch.set(docRef, finalExpanded.toMap());
         }
       } else {
         // Save as single document
@@ -36,12 +40,14 @@ class AiReminderRepository {
         String timeStr = reminder.time ?? '09:00 AM';
         DateTime scheduledDateTime = _combineDateAndTime(date, timeStr);
 
+        DocumentReference docRef = collection.doc();
+
         ReminderModel finalReminder = reminder.copyWith(
+          reminderId: docRef.id,
           scheduledAt: Timestamp.fromDate(scheduledDateTime),
         );
-
         allSavedReminders.add(finalReminder);
-        DocumentReference docRef = collection.doc();
+
         batch.set(docRef, finalReminder.toMap());
       }
     }

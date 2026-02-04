@@ -400,29 +400,22 @@ class ReminderCard extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          Row(
+          Wrap(
+            crossAxisAlignment:
+                WrapCrossAlignment.center, // Vertically center align wenna
             children: [
-              Wrap(
-                children: [
-                  Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.8,
-                    ), // Limits width so it forces a wrap
-                    child: Text(
-                      reminder.title ??
-                          (reminder.type == "Medicine"
-                              ? "Medicine"
-                              : "Meeting"),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        color: appColors.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                reminder.title ??
+                    (reminder.type?.toLowerCase() == "medicine"
+                        ? "Medicine"
+                        : "Meeting"),
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: appColors.textPrimary,
+                  fontSize: 16,
+                ),
               ),
-              if (reminder.type == "Medicine" &&
+              if (reminder.type?.toLowerCase() == "medicine" &&
                   reminder.medicineName != null) ...[
                 Text(
                   " - ",

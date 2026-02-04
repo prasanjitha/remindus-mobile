@@ -1,12 +1,12 @@
 import 'package:intl/intl.dart';
-
 import 'package:flutter/material.dart';
-import 'package:remindus/generated/assets.dart';
-import 'package:remindus/models/base_reminder_model.dart';
+
 import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/app_gradient_background.dart';
+import 'package:remindus/generated/assets.dart';
 import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 
 class ReminderConfirmationScreen extends StatelessWidget {
   final List<ReminderModel> reminders;
@@ -18,7 +18,7 @@ class ReminderConfirmationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
     final isMedical =
-        reminders.isNotEmpty && (reminders.first.type == 'medicine');
+        reminders.isNotEmpty && (reminders.first.type == 'Medicine');
 
     return Scaffold(
       backgroundColor: appColors.bgColor,
@@ -43,30 +43,28 @@ class ReminderConfirmationScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildHeader(appColors),
                     const SizedBox(height: 30),
-                    Expanded(
-                      child: isMedical
-                          ? _buildMedicalList(context, reminders)
-                          : _buildMeetingCard(
-                              context,
-                              reminders.isNotEmpty ? reminders.first : null,
-                            ),
-                    ),
-                    const SizedBox(height: 20),
-                    AppButton(
-                      text: "Done",
-                      onPressed: () {
-                        Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst);
-                      },
-                      backgroundColor: appColors.primary,
-                    ),
-                    const SizedBox(height: 30),
+                    if (isMedical)
+                      Expanded(child: _buildMedicalList(context, reminders))
+                    else
+                      _buildMeetingCard(
+                        context,
+                        reminders.isNotEmpty ? reminders.first : null,
+                      ),
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: AppButton(
+          text: "Done",
+          onPressed: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          },
+          backgroundColor: appColors.primary,
         ),
       ),
     );
@@ -197,8 +195,8 @@ class ReminderConfirmationScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        color: appColors.bgColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -208,18 +206,18 @@ class ReminderConfirmationScreen extends StatelessWidget {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: appColors.primaryLight,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Image.asset(
               Assets.calendar2Icon,
-              width: 32,
-              height: 32,
+              width: 24,
+              height: 24,
               color: appColors.primary,
             ),
           ),
@@ -232,6 +230,9 @@ class ReminderConfirmationScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
+            softWrap: true, // Text eka pallehata wrap wenna kiyanawa
+            overflow:
+                TextOverflow.visible, // Overflow wenne nathiwa okkoma pennanna
           ),
           const SizedBox(height: 8),
           Text(
@@ -246,9 +247,9 @@ class ReminderConfirmationScreen extends StatelessWidget {
           const SizedBox(height: 8),
           if (item.date != null)
             Text(
-              // Assuming date is compatible timestamp print
               item.date!.toDate().toString().split(' ')[0],
               style: TextStyle(color: appColors.textSecondary, fontSize: 14),
+              textAlign: TextAlign.center,
             ),
         ],
       ),

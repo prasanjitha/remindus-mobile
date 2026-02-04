@@ -67,11 +67,6 @@ class _ScanPrescriptionScreenState extends State<ScanPrescriptionScreen> {
 
   void _onDone() {
     if (_scannedImage != null) {
-      // Navigate to Review Screen
-      // We need to pass the image path to it.
-      // But Review Screen loads BLoC internally.
-      // We should pass the imagePath to ReviewScreen constructor so it can pass it to BLoC.
-
       Navigator.push(
         context,
         MaterialPageRoute(
