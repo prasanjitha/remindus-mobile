@@ -1,12 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:remindus/generated/assets.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:remindus/widgets/app_gradient_background.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../blocs/authentication/authentication_bloc.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,7 +28,6 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 4),
     )..repeat(reverse: true);
     _loadVersion();
-    // _navigateToNext();
   }
 
   Future<void> _loadVersion() async {
@@ -40,14 +37,6 @@ class _SplashScreenState extends State<SplashScreen>
         _version = packageInfo.version;
       });
     }
-  }
-
-  void _navigateToNext() {
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/get-started');
-      }
-    });
   }
 
   @override

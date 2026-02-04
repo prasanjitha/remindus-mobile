@@ -79,7 +79,10 @@ class _AddReminderMeetingState extends State<AddReminderMeeting> {
           const SizedBox(height: 8),
 
           GestureDetector(
-            onTap: widget.onSelectDate,
+            onTap: () {
+              FocusScope.of(context).unfocus();
+              widget.onSelectDate();
+            },
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(

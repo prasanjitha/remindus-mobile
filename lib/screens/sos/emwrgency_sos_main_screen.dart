@@ -1,17 +1,17 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/models/emergency_contact_model.dart';
-import 'package:remindus/screens/sos/add_emergency_contact_screen.dart';
-import 'package:remindus/services/emergency_contact_service.dart';
 import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/app_gradient_background.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/widgets/contact_title.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:remindus/models/emergency_contact_model.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
+import 'package:remindus/services/emergency_contact_service.dart';
+import 'package:remindus/screens/sos/add_emergency_contact_screen.dart';
 
 class EmergencySOSScreen extends StatefulWidget {
   const EmergencySOSScreen({Key? key}) : super(key: key);
@@ -27,10 +27,8 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
   final EmergencyContactService _emergencyContactService =
       EmergencyContactService();
 
-  // Stream එක variable එකකට ගැනීමෙන් අනවශ්‍ය rebuilds වළකී (Best Practice)
   Stream<List<EmergencyContact>>? _contactsStream;
 
-  // Cache contacts data to fix broadcast stream timing issue
   List<EmergencyContact> _cachedContacts = [];
 
   @override

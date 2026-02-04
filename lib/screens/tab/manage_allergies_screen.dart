@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:remindus/repositories/reminder/reminder_repository.dart';
 import 'package:remindus/screens/tab/allergy_summary_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
@@ -13,7 +16,9 @@ class ManageAllergiesScreen extends StatefulWidget {
 }
 
 class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
-  // Data Structure to hold all selections
+  bool _isLoading = true;
+  final ReminderRepository _reminderRepository = ReminderRepository();
+
   final Map<String, List<String>> _sections = {
     "Meds": [
       "Ketoprofen",
@@ -22,6 +27,7 @@ class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
       "Erythromycins",
       "Doxycycline",
       "Azithromycin",
+      "Other",
     ],
     "Food": [
       "Shellfish",
@@ -30,9 +36,17 @@ class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
       "Lentils",
       "Chickpeas",
       "Lupins",
+      "Other",
     ],
-    "Insect": ["Stinging Insects", "Biting Insects", "Pests", "Nuts", "Dairy"],
-    "External": ["Dogs", "Rabbits", "Birds", "Horses", "Ragweed"],
+    "Insect": [
+      "Stinging Insects",
+      "Biting Insects",
+      "Pests",
+      "Nuts",
+      "Dairy",
+      "Other",
+    ],
+    "External": ["Dogs", "Rabbits", "Birds", "Horses", "Ragweed", "Other"],
   };
 
   // Set to track user selections
@@ -44,6 +58,49 @@ class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
   };
 
   String _activeTab = "Meds";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchExistingAllergies();
+  }
+
+  Future<void> _fetchExistingAllergies() async {
+    final activeFamilyId = context.read<UserBloc>().state is UserLoadedState
+        ? (context.read<UserBloc>().state as UserLoadedState).activeFamilyId
+        : null;
+
+    if (activeFamilyId != null) {
+      try {
+        final snapshot = await _reminderRepository
+            .getHealthStatusStream(activeFamilyId)
+            .first;
+        if (snapshot.exists && snapshot.data() != null) {
+          final data = snapshot.data() as Map<String, dynamic>;
+          if (data.containsKey('allergies')) {
+            final allergiesData = data['allergies'] as Map<String, dynamic>;
+            setState(() {
+              allergiesData.forEach((key, value) {
+                if (_selectedAllergies.containsKey(key)) {
+                  _selectedAllergies[key] = (value as List)
+                      .map((e) => e.toString())
+                      .toSet();
+                }
+              });
+            });
+          }
+        }
+      } catch (e) {
+        debugPrint("Error fetching allergies: $e");
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   void _toggleSelection(String section, String item) {
     setState(() {
@@ -80,7 +137,10 @@ class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
                       const SizedBox(height: 20.0),
                       _buildTabSwitcher(appColors),
                       const SizedBox(height: 20.0),
-                      _buildAllergyList(appColors),
+                      if (_isLoading)
+                        const Center(child: CircularProgressIndicator())
+                      else
+                        _buildAllergyList(appColors),
                     ],
                   ),
                 ),
@@ -92,8 +152,6 @@ class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
                 child: AppButton(
                   text: 'Save',
                   onPressed: () {
-                    // Logic to show summary or navigate
-
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => AllergySummaryScreen(

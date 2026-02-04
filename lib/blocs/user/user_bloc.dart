@@ -280,17 +280,10 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     await emit.forEach<UserLoadedState>(
       userStream.asyncMap((userDoc) async {
         final userData = userDoc.data() ?? {};
-        final activeFamilyId = userData['activeFamilyId'] ?? user.uid;
+        String activeId = userData['activeFamilyId'] ?? '';
         final rawJoinedFamilies =
             userData['joinedFamilies'] as List<dynamic>? ?? [];
         final permissions = userData['permissions'] ?? {};
-
-        // Active family details fetch kirima
-        final familyDoc = await _firestore
-            .collection('users')
-            .doc(activeFamilyId)
-            .get();
-        final familyData = familyDoc.data() ?? {};
 
         final List<Map<String, dynamic>> joinedFamilies = [];
         for (final item in rawJoinedFamilies) {
@@ -320,18 +313,30 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           });
         }
 
+        // If activeId is empty, default to the user's uid (app owner)
+        if (activeId.isEmpty) {
+          activeId = user.uid;
+        }
+
+        // Active family details fetch kirima
+        final familyDoc = await _firestore
+            .collection('users')
+            .doc(activeId)
+            .get();
+        final familyData = familyDoc.data() ?? {};
+
         String role;
-        if (activeFamilyId == user.uid) {
+        if (activeId == user.uid) {
           role = AccessLevel.fullControl.name;
         } else {
           final perms = Map<String, dynamic>.from(permissions);
-          role = perms[activeFamilyId] ?? AccessLevel.viewOnly.name;
+          role = perms[activeId] ?? AccessLevel.viewOnly.name;
         }
 
         // Methana State eka return karanawa asyncMap eka athule
         return UserLoadedState(
           userId: user.uid,
-          activeFamilyId: activeFamilyId,
+          activeFamilyId: activeId,
           joinedFamilies: joinedFamilies,
           currentUserRole: role,
           userName: familyData['name'] ?? 'No Name',

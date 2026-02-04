@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/DummyHome.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/home_page.dart';
-import 'package:remindus/screens/home/health_care_home_screen.dart';
-import 'package:remindus/screens/other-features/other_feature_main_screen.dart';
-import 'package:remindus/screens/profile/add_guardian_screen.dart';
-import 'package:remindus/screens/profile/add_guardient_success_screen.dart';
-import 'package:remindus/screens/profile/my_profile_screen.dart';
-import 'package:remindus/screens/reminders/reminder_tab_screen.dart';
-import 'package:remindus/screens/store/main_store.dart';
-import 'package:remindus/screens/tab/watch_connected_screen.dart';
-import 'package:remindus/services/reminder_notification_sync.dart';
-import 'package:remindus/services/battery_service.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/screens/store/main_store.dart';
+import 'package:remindus/services/battery_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:remindus/screens/profile/my_profile_screen.dart';
+import 'package:remindus/services/reminder_notification_sync.dart';
+import 'package:remindus/screens/home/health_care_home_screen.dart';
+import 'package:remindus/screens/reminders/reminder_tab_screen.dart';
+import 'package:remindus/screens/other-features/other_feature_main_screen.dart';
 
 class MainTabScreen extends StatefulWidget {
   final int? initialIndex;
@@ -61,7 +56,6 @@ class _MainTabScreenState extends State<MainTabScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
-      // HealthCheckupScreen(),
       HealthcareHomeScreen(onProfileTap: _goToProfile),
       ReminderTabScreen(onProfileTap: _goToProfile),
       MainStoreScreen(onProfileTap: _goToProfile),

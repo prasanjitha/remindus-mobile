@@ -19,7 +19,7 @@ class OpenAIService {
           'Authorization': 'Bearer $apiKey',
         },
         body: jsonEncode({
-          'model': 'gpt-3.5-turbo', // Or gpt-4 if available/preferred
+          'model': 'gpt-3.5-turbo',
           'messages': [
             {
               'role': 'system',
@@ -80,13 +80,9 @@ Return ONLY the JSON object, nothing else.
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final content = data['choices'][0]['message']['content'];
-        // Parse the content as JSON
-        // expected content is a JSON string
         try {
           return jsonDecode(content);
         } catch (e) {
-          // Fallback if GPT adds extra text (though system prompt says JSON ONLY)
-          // Try to find JSON structure in the string
           final startIndex = content.indexOf('{');
           final endIndex = content.lastIndexOf('}');
           if (startIndex != -1 && endIndex != -1) {

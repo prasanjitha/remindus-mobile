@@ -1,11 +1,10 @@
-import 'dart:developer';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:intl/intl.dart';
+import 'elevenlabs_service.dart';
 
 class NotificationService {
   // Initialize with listeners
@@ -54,7 +53,6 @@ class NotificationService {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     final String isAppOwnerStr = payload['isAppOwner'] ?? 'false';
     final String isAppOwner = isAppOwnerStr;
-
     if (isAppOwner == 'true') {
       Future.delayed(const Duration(seconds: 30), () async {
         if (medicineName.isNotEmpty) {
@@ -93,10 +91,17 @@ class NotificationService {
   static Future<void> yourCustomFunction(
     ReceivedNotification notification,
   ) async {
-    FlutterTts flutterTts = FlutterTts();
-    await flutterTts.speak(
-      notification.payload?['message'] ?? "You have a new notification",
-    );
+    final String message =
+        notification.payload?['message'] ?? "You have a new notification";
+
+    // Try ElevenLabs first
+    try {
+      await ElevenLabsService.speakText(message);
+    } catch (e) {
+      // Fallback to basic FlutterTts if ElevenLabs fails
+      FlutterTts flutterTts = FlutterTts();
+      await flutterTts.speak(message);
+    }
   }
 
   static Future<void> markReminderAsRead({

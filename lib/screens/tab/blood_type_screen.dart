@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/helpers/snackbar_helper.dart';
 import 'package:remindus/repositories/reminder/reminder_repository.dart';
-import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/common_header_with_back.dart';
@@ -17,7 +16,6 @@ class BloodTypeScreen extends StatefulWidget {
 }
 
 class _BloodTypeScreenState extends State<BloodTypeScreen> {
-  // Initially null so no option is selected
   String? selectedBloodType;
   final ReminderRepository _reminderRepository = ReminderRepository();
 

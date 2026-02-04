@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart'; // Ensure this path is correct for your project
 
 class ManageAllergiesHeader extends StatelessWidget {
@@ -25,13 +26,10 @@ class ManageAllergiesHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            GestureDetector(
-              onTap: onBackTap ?? () => Navigator.of(context).pop(),
-              child: Icon(Icons.arrow_back, color: appColors.textPrimary),
-            ),
+            Image.asset(Assets.logoIcon, height: 40, width: 40),
             GestureDetector(
               onTap: onCloseTap ?? () => Navigator.of(context).pop(),
-              child: Icon(Icons.close, color: appColors.textPrimary),
+              child: Icon(Icons.close, size: 24, color: appColors.textPrimary),
             ),
           ],
         ),

@@ -9,7 +9,6 @@ import 'package:remindus/screens/tab/blood_pressure_screen.dart';
 import 'package:remindus/screens/tab/blood_type_screen.dart';
 import 'package:remindus/screens/tab/heart_rate_screen.dart';
 import 'package:remindus/screens/tab/manage_allergies_screen.dart';
-import 'package:remindus/screens/tab/watch_connected_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/utils/health_utils.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
@@ -158,6 +157,10 @@ class _WatchConnceNowScreenState extends State<WatchConnceNowScreen> {
 
   Widget _buildDeviceCard(BuildContext context) {
     // Only enable for iOS devices as requested
+    final isAppOwner = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAppowner : false;
+    });
     if (!Platform.isIOS) {
       return const SizedBox.shrink();
     }
@@ -233,31 +236,32 @@ class _WatchConnceNowScreenState extends State<WatchConnceNowScreen> {
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _heartRate = 48;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: appColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    "+ Add Now",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: appColors.primary,
-                      fontSize: 14,
+              if (isAppOwner)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _heartRate = 48;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: appColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "+ Add Now",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: appColors.primary,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
@@ -380,6 +384,10 @@ class VitalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAppOwner = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAppowner : false;
+    });
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -448,17 +456,18 @@ class VitalCard extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 8.0),
-          GestureDetector(
-            onTap: onTap,
-            child: Text(
-              "+ Add Now",
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                color: context.appColors.primary,
-                fontSize: 14,
+          if (isAppOwner)
+            GestureDetector(
+              onTap: onTap,
+              child: Text(
+                "+ Add Now",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: context.appColors.primary,
+                  fontSize: 14,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

@@ -1,16 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/screens/store/add_to_store.dart';
 import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/common-header.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/medicine_card.dart';
+import 'package:remindus/screens/store/add_to_store.dart';
 import 'package:remindus/models/medicine_store_model.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 
 class MainStoreScreen extends StatefulWidget {
   final VoidCallback onProfileTap;

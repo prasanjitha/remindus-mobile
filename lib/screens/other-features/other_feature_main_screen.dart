@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/blocs/user/user_bloc.dart';
+
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/screens/food-tacker/food_tracker_home_screen.dart';
-import 'package:remindus/screens/location-tracking/map_tracking_screen.dart';
-import 'package:remindus/screens/sos/emwrgency_sos_main_screen.dart';
-import 'package:remindus/screens/tab/watch_connect_now_screen.dart';
-import 'package:remindus/screens/tab/watch_connected_screen.dart';
-import 'package:remindus/screens/vaccination/vaccination_list_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:remindus/widgets/common-header.dart';
 import 'package:remindus/blocs/theme/theme_cubit.dart';
 import 'package:remindus/blocs/theme/theme_state.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
-import 'package:remindus/widgets/common-header.dart';
+import 'package:remindus/screens/appInfo/about_us_screen.dart';
 import 'package:remindus/widgets/feature_quick_action_card.dart';
+import 'package:remindus/screens/tab/watch_connect_now_screen.dart';
+import 'package:remindus/screens/appInfo/privacy_policy_screen.dart';
+import 'package:remindus/screens/sos/emwrgency_sos_main_screen.dart';
+import 'package:remindus/screens/appInfo/terms_and_conditions_screen.dart';
+import 'package:remindus/screens/vaccination/vaccination_list_screen.dart';
+import 'package:remindus/screens/food-tacker/food_tracker_home_screen.dart';
+import 'package:remindus/screens/location-tracking/map_tracking_screen.dart';
 
 class OtherFeatureMainScreen extends StatelessWidget {
   final VoidCallback onProfileTap;
@@ -257,6 +260,69 @@ class OtherFeatureMainScreen extends StatelessWidget {
                             ),
                           );
                         },
+                      ),
+
+                      const SizedBox(height: 40.0),
+
+                      // App Information Section
+                      Text(
+                        'App Information',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: appColors.textPrimary,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: QuickActionCard(
+                              title: "About Us",
+                              iconPath: Assets.appInfoAboutIcon,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AboutUsScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: QuickActionCard(
+                              title: "Privacy",
+                              iconPath: Assets.appInfoPrivacyIcon,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PrivacyPolicyScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: QuickActionCard(
+                              title: "Terms",
+                              iconPath: Assets.appInfoTermsIcon,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const TermsAndConditionsScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 40.0),

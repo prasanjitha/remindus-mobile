@@ -35,6 +35,7 @@ class VaccinationRecord {
 
   Map<String, dynamic> toFirestore() {
     return {
+      if (id != null) 'id': id,
       if (vaccineName != null) 'vaccineName': vaccineName,
       if (dateReceived != null)
         'dateReceived': Timestamp.fromDate(dateReceived!),

@@ -7,12 +7,14 @@ import 'package:remindus/generated/assets.dart';
 import 'package:remindus/helpers/snackbar_helper.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/repositories/reminder/reminder_repository.dart';
+import 'package:remindus/services/permission_service.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/utils/health_utils.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
-import 'package:remindus/widgets/custom_button.dart'; // This seems to be AppButton if used in HR
+import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/widgets/common_header_with_back.dart';
+import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
 import 'package:remindus/widgets/health_status_indicator.dart';
 
 class BloodPressureScreen extends StatefulWidget {
@@ -367,7 +369,23 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
                         }
 
                         if (activeFamilyId != null) {
-                          _handleReminderCreation(activeFamilyId, userName);
+                          bool allowed = await PermissionService()
+                              .checkNotificationPermission();
+                          if (allowed) {
+                            _handleReminderCreation(activeFamilyId, userName);
+                          } else {
+                            if (mounted) {
+                              NotificationPermissionDialog.show(
+                                context,
+                                onAllowed: () {
+                                  _handleReminderCreation(
+                                    activeFamilyId,
+                                    userName,
+                                  );
+                                },
+                              );
+                            }
+                          }
                         } else {
                           SnackbarHelper.showError(
                             context,
@@ -401,6 +419,24 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
         selectedTime!.hour,
         selectedTime!.minute,
       );
+
+      if (scheduledDateTime.isBefore(now)) {
+        if (selectedFrequency == 'Every day') {
+          scheduledDateTime = scheduledDateTime.add(const Duration(days: 1));
+        } else if (selectedFrequency == 'Every two weeks') {
+          scheduledDateTime = scheduledDateTime.add(const Duration(days: 14));
+        } else if (selectedFrequency == 'Once a week') {
+          scheduledDateTime = scheduledDateTime.add(const Duration(days: 7));
+        } else if (selectedFrequency == 'Once a month') {
+          scheduledDateTime = DateTime(
+            scheduledDateTime.year,
+            scheduledDateTime.month + 1,
+            scheduledDateTime.day,
+            scheduledDateTime.hour,
+            scheduledDateTime.minute,
+          );
+        }
+      }
 
       // Check for existing Blood Pressure reminder
       final existingReminder = await _reminderRepository

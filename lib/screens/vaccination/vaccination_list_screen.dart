@@ -10,6 +10,8 @@ import 'package:remindus/screens/vaccination/add_edit_vaccination_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/helpers/custom_dialog_helpers.dart';
+import 'package:remindus/services/permission_service.dart';
+import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
@@ -162,13 +164,35 @@ class _VaccinationListScreenState extends State<VaccinationListScreen> {
             child: AppButton(
               text: "Add New Vaccination Record",
               onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddEditVaccinationScreen(),
-                  ),
-                );
-                if (context.mounted) _loadVaccinations();
+                bool allowed = await PermissionService()
+                    .checkNotificationPermission();
+                if (allowed) {
+                  if (context.mounted) {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddEditVaccinationScreen(),
+                      ),
+                    );
+                    if (context.mounted) _loadVaccinations();
+                  }
+                } else {
+                  if (context.mounted) {
+                    NotificationPermissionDialog.show(
+                      context,
+                      onAllowed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AddEditVaccinationScreen(),
+                          ),
+                        );
+                        if (context.mounted) _loadVaccinations();
+                      },
+                    );
+                  }
+                }
               },
               backgroundColor: appColors.primary,
             ),

@@ -12,7 +12,8 @@ import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/health_status_indicator.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
 import 'package:remindus/widgets/app_text_field.dart';
-
+import 'package:remindus/services/permission_service.dart';
+import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:remindus/models/base_reminder_model.dart';
 
@@ -360,7 +361,23 @@ class _HeartRateAddSceenState extends State<HeartRateAddSceen> {
                         }
 
                         if (activeFamilyId != null) {
-                          _handleReminderCreation(activeFamilyId, userName);
+                          bool allowed = await PermissionService()
+                              .checkNotificationPermission();
+                          if (allowed) {
+                            _handleReminderCreation(activeFamilyId, userName);
+                          } else {
+                            if (mounted) {
+                              NotificationPermissionDialog.show(
+                                context,
+                                onAllowed: () {
+                                  _handleReminderCreation(
+                                    activeFamilyId,
+                                    userName,
+                                  );
+                                },
+                              );
+                            }
+                          }
                         } else {
                           SnackbarHelper.showError(
                             context,
@@ -394,6 +411,24 @@ class _HeartRateAddSceenState extends State<HeartRateAddSceen> {
         selectedTime!.hour,
         selectedTime!.minute,
       );
+
+      if (scheduledDateTime.isBefore(now)) {
+        if (selectedFrequency == 'Every day') {
+          scheduledDateTime = scheduledDateTime.add(const Duration(days: 1));
+        } else if (selectedFrequency == 'Every two weeks') {
+          scheduledDateTime = scheduledDateTime.add(const Duration(days: 14));
+        } else if (selectedFrequency == 'Once a week') {
+          scheduledDateTime = scheduledDateTime.add(const Duration(days: 7));
+        } else if (selectedFrequency == 'Once a month') {
+          scheduledDateTime = DateTime(
+            scheduledDateTime.year,
+            scheduledDateTime.month + 1,
+            scheduledDateTime.day,
+            scheduledDateTime.hour,
+            scheduledDateTime.minute,
+          );
+        }
+      }
 
       // Check for existing Heart Rate reminder
       final existingReminder = await _reminderRepository

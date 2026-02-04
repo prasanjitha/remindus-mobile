@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/blocs/user/user_bloc.dart';
+
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/models/guardian_model.dart';
 import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/models/guardian_model.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
 import 'package:remindus/widgets/profile/guardian_tile.dart';
 
 class AddGuardientSuccessScreen extends StatelessWidget {
-  final GuardianModel ? guardianModel;
-  const AddGuardientSuccessScreen({
-    super.key,
-    this.guardianModel,
-  });
+  final GuardianModel? guardianModel;
+  const AddGuardientSuccessScreen({super.key, this.guardianModel});
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +65,6 @@ class AddGuardientSuccessScreen extends StatelessWidget {
                     accessLevel: guardianModel?.accessLevel,
                   ),
                   checkStatus: "Pending",
-                  
                 ),
               ],
             ),

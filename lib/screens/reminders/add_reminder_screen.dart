@@ -1,22 +1,24 @@
+import 'dart:developer';
+
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:remindus/blocs/reminders/reminders_bloc.dart';
-import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/widgets/app_text_field.dart';
 import 'package:remindus/helpers/medicine_helper.dart';
 import 'package:remindus/models/base_reminder_model.dart';
-import 'package:remindus/models/voice_notification_model.dart';
-import 'package:remindus/screens/reminders/meeting/add_reminder_meeting.dart';
-import 'package:remindus/screens/reminders/reminder_added_screen.dart';
-import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/app_gradient_background.dart';
-import 'package:remindus/widgets/app_text_field.dart';
-import 'package:remindus/widgets/custom_button.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
+import 'package:remindus/blocs/reminders/reminders_bloc.dart';
+import 'package:remindus/models/voice_notification_model.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
+import 'package:remindus/screens/reminders/reminder_added_screen.dart';
+import 'package:remindus/screens/reminders/meeting/add_reminder_meeting.dart';
 
 class AddReminderScreen extends StatefulWidget {
   final ReminderModel? existingReminder;
@@ -200,15 +202,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         backgroundColor: Colors.transparent,
         body: BlocConsumer<ReminderBloc, ReminderState>(
           listener: (context, state) {
-            if (state is ReminderAddedSuccessState) {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) =>
-              //         ConfirmReminderScreen(reminderData: reminderData),
-              //   ),
-              // );
-            }
             if (state is ReminderUpdatedSuccessState) {
               Navigator.pop(context);
             }
@@ -812,10 +805,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           "${DateFormat.yMMMd().format(dateRange!.start)} - ${DateFormat.yMMMd().format(dateRange!.end)}";
       String firstDoseTimeStr = selectedTime!.format(context);
 
-      // List<Map<String, dynamic>> scheduleList = _generateMedicineSchedule(
-      //   firstDoseTimeStr,
-      // );
-
       DateTime scheduledDateTime = DateTime(
         dateRange!.start.year,
         dateRange!.start.month,
@@ -1146,13 +1135,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         updatedAt: FieldValue.serverTimestamp(),
       );
 
-      context.read<ReminderBloc>().add(
-        AddMeetingsReminderEvent(
-          reminderMeetingsModel: reminderMeetingsModel,
-          activeFamilyId: activeFamilyId,
-        ),
-      );
-
       // Voice notification
       String message =
           'Hello! Your meeting "${reminderMeetingsModel.title}" is starting now. Please be ready.';
@@ -1170,8 +1152,14 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           isAppOwner: isAppOwner,
         ),
       );
-
-      Navigator.pop(context);
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ReminderAddedScreen(
+            reminder: reminderMeetingsModel,
+            activeFamilyId: activeFamilyId,
+          ),
+        ),
+      );
     } else {
       // Medicine Validation
       if (!_formKey.currentState!.validate()) return;
@@ -1236,19 +1224,12 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           String slot = whenToTake[i];
           int currentSlotIdx = allSlots.indexOf(slot);
           int relativeIndex = currentSlotIdx - firstSlotIdx;
-          if (relativeIndex < 0)
-            relativeIndex +=
-                (allSlots.length); // Should not happen if correctly ordered
+          if (relativeIndex < 0) relativeIndex += (allSlots.length);
 
-          // Use the specific gaps requested by user
-          // Morning to Night in BD is 12h? (User said BD is 12h)
-          // Morning to Afternoon in TDS is 6h.
           int hoursOffset = 0;
           if (whenToTake.length == 2) {
-            // BD: 12h gap
             hoursOffset = i * 12;
           } else {
-            // TDS/QDS: 6h gap
             hoursOffset = i * 6;
           }
 
@@ -1259,8 +1240,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       } else {
         possibleTimes.add(scheduledDateTime);
       }
-
-      // Check if any of today's possible times are in the future
       bool foundFuture = false;
       for (DateTime time in possibleTimes) {
         if (time.isAfter(now)) {
@@ -1269,8 +1248,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           break;
         }
       }
-
-      // If no slot is in the future today, move to the first slot of the next day
       if (!foundFuture) {
         scheduledDateTime = possibleTimes.first.add(const Duration(days: 1));
       }

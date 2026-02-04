@@ -1,11 +1,12 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/blocs/user/user_bloc.dart';
-import 'package:remindus/models/base_reminder_model.dart';
-import 'package:remindus/services/reminder_service.dart';
+
 import 'package:remindus/theme/app_colors.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:remindus/services/reminder_service.dart';
+import 'package:remindus/models/base_reminder_model.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});

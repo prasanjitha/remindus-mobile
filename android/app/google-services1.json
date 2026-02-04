@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "49743809709",
+    "project_id": "remindus-de228",
+    "storage_bucket": "remindus-de228.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49743809709:android:487b64ed7f0074e44e4a24",
+        "android_client_info": {
+          "package_name": "com.viralmove.remindus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49743809709-31i6a8icrvpc8fp9fijgi8ejcash9qd0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.viralmove.remindus",
+            "certificate_hash": "57c3878d51ced38e2c2a826661f5e3ff59658035"
+          }
+        },
+        {
+          "client_id": "49743809709-3g5l1o0jufrtdk9pifq6rk5bsn5ngmaf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBLsKtyp4RmLy1cGp82pqWVBmm31Ejpo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49743809709-3g5l1o0jufrtdk9pifq6rk5bsn5ngmaf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49743809709-koa2isl5q9lnvcoq3hl9q9t4ukq93siq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.remindus"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

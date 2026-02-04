@@ -1,17 +1,17 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/models/base_reminder_model.dart';
-import 'package:remindus/models/vaccination_record.dart';
 import 'package:remindus/screens/reminders/add_reminder_screen.dart';
 import 'package:remindus/screens/reminders/calendar_screen.dart';
+import 'package:remindus/screens/reminders/meeting/vaccine/edit_vaccination_reminders_screen.dart';
 import 'package:remindus/screens/tab/blood_pressure_screen.dart';
 import 'package:remindus/screens/tab/heart_rate_screen.dart';
-import 'package:remindus/screens/vaccination/add_edit_vaccination_screen.dart';
+import 'package:remindus/services/permission_service.dart';
 import 'package:remindus/services/reminder_service.dart';
+import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
+
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/common-header.dart';
@@ -142,11 +142,35 @@ class _ReminderTabScreenState extends State<ReminderTabScreen> {
   Widget _buildAddButton(dynamic appColors) {
     return GestureDetector(
       onTap: () async {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const AddReminderScreen()),
-          (route) => true,
-        );
+        bool allowed = await PermissionService().checkNotificationPermission();
+        if (allowed) {
+          if (mounted) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddReminderScreen(),
+              ),
+              (route) => true,
+            );
+          }
+        } else {
+          if (mounted) {
+            NotificationPermissionDialog.show(
+              context,
+              onAllowed: () {
+                if (mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddReminderScreen(),
+                    ),
+                    (route) => true,
+                  );
+                }
+              },
+            );
+          }
+        }
       },
       child: Container(
         height: 48.0,
@@ -298,10 +322,15 @@ class ReminderCard extends StatelessWidget {
               // Icon Row
               Row(
                 children: [
-                  Image.asset(Assets.pillIcon, width: 18.0, height: 18.0),
+                  Image.asset(
+                    Assets.pillIcon,
+                    width: 18.0,
+                    height: 18.0,
+                    color: context.appColors.textPrimary,
+                  ),
 
                   if (reminder.isRead == false) ...[
-                    if (isAdmin && reminder.type != "Vaccination") ...[
+                    if (isAdmin) ...[
                       const SizedBox(width: 12.0),
                       GestureDetector(
                         onTap: () {
@@ -316,6 +345,15 @@ class ReminderCard extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) =>
                                     const BloodPressureScreen(),
+                              ),
+                            );
+                          } else if (reminder.type == "Vaccination") {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditVaccinationReminderScreen(
+                                      record: reminder,
+                                    ),
                               ),
                             );
                           } else {
@@ -334,11 +372,12 @@ class ReminderCard extends StatelessWidget {
                           Assets.pencilEditIcon,
                           width: 18.0,
                           height: 18.0,
+                          color: context.appColors.textPrimary,
                         ),
                       ),
                     ],
                   ],
-                  if (isAdmin && reminder.type != "Vaccination") ...[
+                  if (isAdmin) ...[
                     const SizedBox(width: 12.0),
                     GestureDetector(
                       onTap: () => _showDeleteConfirmation(
@@ -350,6 +389,7 @@ class ReminderCard extends StatelessWidget {
                         Assets.deleteIcon,
                         width: 18.0,
                         height: 18.0,
+                        color: context.appColors.textPrimary,
                       ),
                     ),
                   ],

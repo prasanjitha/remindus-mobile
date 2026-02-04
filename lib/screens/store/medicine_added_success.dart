@@ -76,12 +76,8 @@ class MedicineAddedSuccessScreen extends StatelessWidget {
                 detail: "Remaining: ${medicine.quantity ?? 0} Tablets",
                 status: MedicineStatus.wellStocked,
                 imageUrl: medicine.imageUrl,
-                onEdit: () {
-                  // Handle edit action
-                },
-                onDelete: () {
-                  // Handle delete action
-                },
+                onEdit: () {},
+                onDelete: () {},
               ),
               const Spacer(),
               AppButton(

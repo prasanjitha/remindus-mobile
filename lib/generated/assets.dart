@@ -117,4 +117,10 @@ class Assets {
       'assets/icons/vaccination/vaccine_1.png';
 
   static const String micIcon = 'assets/icons/mic-01.png';
+
+  // AppInfo
+  static const String appInfoPrivacyIcon = 'assets/icons/icons8-privacy.png';
+  static const String appInfoTermsIcon =
+      'assets/icons/icons8-terms-and-conditions.png';
+  static const String appInfoAboutIcon = 'assets/icons/icons8-users.png';
 }

@@ -47,6 +47,7 @@ class CommonHeader extends StatelessWidget {
                 Assets.notificationIcon,
                 width: 24.0,
                 height: 24.0,
+                color: appColors.textPrimary,
               ),
             ),
           ),

@@ -14,6 +14,8 @@ import 'package:remindus/repositories/reminder/ai_reminder_repository.dart';
 import 'package:remindus/services/ai_reminder_service.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
 import 'package:remindus/screens/ai_reminders/reminder_confirmation_screen.dart';
+import 'package:remindus/services/permission_service.dart';
+import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
 
 class AiReminderReviewScreen extends StatelessWidget {
   final String activeFamilyId;
@@ -536,10 +538,27 @@ class AiReminderReviewScreen extends StatelessWidget {
                   flex: 2,
                   child: AppButton(
                     text: "Confirm",
-                    onPressed: () {
-                      context.read<AiReminderBloc>().add(
-                        SaveAllReminders(activeFamilyId),
-                      );
+                    onPressed: () async {
+                      bool allowed = await PermissionService()
+                          .checkNotificationPermission();
+                      if (allowed) {
+                        if (context.mounted) {
+                          context.read<AiReminderBloc>().add(
+                            SaveAllReminders(activeFamilyId),
+                          );
+                        }
+                      } else {
+                        if (context.mounted) {
+                          NotificationPermissionDialog.show(
+                            context,
+                            onAllowed: () {
+                              context.read<AiReminderBloc>().add(
+                                SaveAllReminders(activeFamilyId),
+                              );
+                            },
+                          );
+                        }
+                      }
                     },
                     backgroundColor: context.appColors.primary,
                   ),

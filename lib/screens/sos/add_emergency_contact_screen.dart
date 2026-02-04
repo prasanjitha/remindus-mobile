@@ -118,8 +118,6 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
     );
   }
 
-  // --- UI Components ---
-
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;

@@ -15,6 +15,8 @@ import '../../blocs/voice_reminder/voice_reminder_event.dart';
 import '../../blocs/voice_reminder/voice_reminder_state.dart';
 import '../../repositories/reminder/reminder_repository.dart';
 import '../../services/openai_service.dart';
+import '../../services/permission_service.dart';
+import '../../widgets/dialog/notification_permission_dialog.dart';
 
 Widget _buildHeader(AppColors appColors) {
   return Column(
@@ -515,7 +517,7 @@ class _ConfirmationView extends StatelessWidget {
                         height: 55,
                         child: AppButton(
                           text: "Confirm",
-                          onPressed: () {
+                          onPressed: () async {
                             final familyId = activeFamilyId;
                             if (familyId == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -526,18 +528,44 @@ class _ConfirmationView extends StatelessWidget {
                               return;
                             }
 
-                            context.read<VoiceReminderBloc>().add(
-                              ConfirmReminder(
-                                title: state.title,
-                                date: state.date,
-                                time: state.time,
-                                activeFamilyId: familyId,
-                                type: state.type,
-                                medicineName: state.medicineName,
-                                dose: state.dose,
-                                duration: state.duration,
-                              ),
-                            );
+                            bool allowed = await PermissionService()
+                                .checkNotificationPermission();
+                            if (allowed) {
+                              if (context.mounted) {
+                                context.read<VoiceReminderBloc>().add(
+                                  ConfirmReminder(
+                                    title: state.title,
+                                    date: state.date,
+                                    time: state.time,
+                                    activeFamilyId: familyId,
+                                    type: state.type,
+                                    medicineName: state.medicineName,
+                                    dose: state.dose,
+                                    duration: state.duration,
+                                  ),
+                                );
+                              }
+                            } else {
+                              if (context.mounted) {
+                                NotificationPermissionDialog.show(
+                                  context,
+                                  onAllowed: () {
+                                    context.read<VoiceReminderBloc>().add(
+                                      ConfirmReminder(
+                                        title: state.title,
+                                        date: state.date,
+                                        time: state.time,
+                                        activeFamilyId: familyId,
+                                        type: state.type,
+                                        medicineName: state.medicineName,
+                                        dose: state.dose,
+                                        duration: state.duration,
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                            }
                           },
                           backgroundColor: appColors.primary,
                         ),

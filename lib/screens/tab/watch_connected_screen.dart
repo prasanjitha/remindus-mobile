@@ -330,6 +330,10 @@ class VitalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAppOwner = context.select<UserBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is UserLoadedState ? state.isAppowner : false;
+    });
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -388,17 +392,18 @@ class VitalCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8.0),
-          GestureDetector(
-            onTap: onTap,
-            child: Text(
-              "+ Add Now",
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                color: context.appColors.primary,
-                fontSize: 14,
+          if (isAppOwner)
+            GestureDetector(
+              onTap: onTap,
+              child: Text(
+                "+ Add Now",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: context.appColors.primary,
+                  fontSize: 14,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

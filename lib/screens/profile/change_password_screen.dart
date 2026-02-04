@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/blocs/user/user_bloc.dart';
+
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/app_gradient_background.dart';
-import 'package:remindus/widgets/app_text_field.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/widgets/app_text_field.dart';
+import 'package:remindus/widgets/app_gradient_background.dart';
 import 'package:remindus/widgets/common_header_with_back.dart';
 
 class ChangePasswordScreen extends StatefulWidget {

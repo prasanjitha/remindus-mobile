@@ -1,18 +1,18 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/helpers/delete_dialog_helper.dart';
-import 'package:remindus/helpers/snackbar_helper.dart';
-import 'package:remindus/models/guardian_model.dart';
-import 'package:remindus/screens/profile/add_guardient_success_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/models/guardian_model.dart';
 import 'package:remindus/widgets/app_text_field.dart';
+import 'package:remindus/helpers/snackbar_helper.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
+import 'package:remindus/helpers/delete_dialog_helper.dart';
 import 'package:remindus/helpers/relationship_helpers.dart';
+import 'package:remindus/screens/profile/add_guardient_success_screen.dart';
 
 enum AccessLevel { viewOnly, fullControl }
 
@@ -44,7 +44,6 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.isEditFlow == true && widget.guardianModel != null) {
       nameController.text = widget.guardianModel!.name ?? '';
@@ -53,219 +52,6 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
       selectedAccessLevel = widget.guardianModel!.accessLevel;
     }
   }
-
-  // Future<void> _addMember(String dependentUser, String depPermission) async {
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
-  //   String email = dependentUser;
-  //   if (email.isEmpty) return;
-
-  //   var query = await FirebaseFirestore.instance
-  //       .collection('users')
-  //       .where('email', isEqualTo: email)
-  //       .get();
-
-  //   final currentUserDoc = await FirebaseFirestore.instance
-  //       .collection('users')
-  //       .doc(user?.uid)
-  //       .get();
-
-  //   final currentFamilyName = currentUserDoc.data()?['familyName'] ?? 'Unknown';
-
-  //   if (query.docs.isNotEmpty) {
-  //     String depUid = query.docs.first.id;
-
-  //     if (activeFamilyId == null) {
-  //       final userState = context.read<UserBloc>().state;
-  //       if (userState is UserLoadedState) {
-  //         activeFamilyId = userState.activeFamilyId;
-  //       } else {
-
-  //         setState(() {
-  //           _isLoading = false;
-  //         });
-  //         return;
-  //       }
-  //     }
-
-  //     await FirebaseFirestore.instance.collection('users').doc(depUid).update({
-  //       'joinedFamilies': FieldValue.arrayUnion([
-  //         {'id': activeFamilyId, 'name': currentFamilyName},
-  //       ]),
-  //       'activeFamilyId': activeFamilyId,
-  //       'permissions.$activeFamilyId': depPermission,
-  //     });
-  //     await saveGuardian(
-  //       userId: user!.uid,
-  //       guardianName: nameController.text.trim(),
-  //       guardianEmail: emailController.text.trim(),
-  //       relationship: selectedRelationship!,
-  //       accessLevel: selectedAccessLevel!,
-  //     );
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-
-  //       // need to send email notification to the added member
-  //       // sendInviteEmail(email);
-  //     }
-  //   } else {
-  //     _showInviteDialog(email);
-  //   }
-  // }
-
-  // --- EmailJS Invite ---
-  // Future<void> sendInviteEmail(String receiverEmail) async {
-  //   final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-  //   try {
-  //     await http.post(
-  //       url,
-  //       headers: {'Content-Type': 'application/json'},
-  //       body: json.encode({
-  //         'service_id': dotenv.env['EMAILJS_SERVICE_ID'],
-  //         'template_id': dotenv.env['EMAILJS_TEMPLATE_ID'],
-  //         'user_id': dotenv.env['EMAILJS_USER_ID'],
-  //         'accessToken': dotenv.env['EMAILJS_ACCESS_TOKEN'],
-  //         'template_params': {
-  //           'to_email': receiverEmail,
-  //           'family_id': activeFamilyId,
-  //         },
-  //       }),
-  //     );
-  //   } catch (e) {
-
-  //   }
-  // }
-
-  // void _showInviteDialog(String email) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       backgroundColor: context.appColors.bgColor,
-  //       title: const Text("User Not Found"),
-  //       content: Text("$email is not on RemindUs. Send invitation?"),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () {
-  //             Navigator.pop(context);
-  //             setState(() {
-  //               _isLoading = false;
-  //             });
-  //           },
-  //           child: const Text("No"),
-  //         ),
-  //         ElevatedButton(
-  //           onPressed: () {
-  //             Navigator.pop(context);
-  //             sendInviteEmail(email);
-  //           },
-  //           child: const Text("Invite"),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // // save guardient data to firebase
-  // Future<void> saveGuardian({
-  //   required String userId,
-  //   required String guardianName,
-  //   required String guardianEmail,
-  //   required String relationship,
-  //   required String accessLevel,
-  // }) async {
-  //   try {
-  //     final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
-
-  //     if (currentUserEmail != null &&
-  //         guardianEmail.trim().toLowerCase() ==
-  //             currentUserEmail.trim().toLowerCase()) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(
-  //             "You cannot add yourself as a guardian",
-  //             style: TextStyle(color: Colors.white, fontSize: 14.0),
-  //           ),
-  //           backgroundColor: Colors.redAccent,
-  //           behavior: SnackBarBehavior.floating,
-  //         ),
-  //       );
-  //       return;
-  //     }
-
-  //     final guardianCollection = FirebaseFirestore.instance
-  //         .collection('users')
-  //         .doc(userId)
-  //         .collection('guardians');
-
-  //     final existingGuardian = await guardianCollection
-  //         .where('email', isEqualTo: guardianEmail.trim())
-  //         .limit(1)
-  //         .get();
-
-  //     if (existingGuardian.docs.isNotEmpty) {
-  //       final docId = existingGuardian.docs.first.id;
-  //       await guardianCollection.doc(docId).update({
-  //         'name': guardianName,
-  //         'relationship': relationship,
-  //         'accessLevel': accessLevel,
-  //         'updatedAt': FieldValue.serverTimestamp(),
-  //       });
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(
-  //             "Guardian updated successfully",
-  //             style: TextStyle(color: Colors.white, fontSize: 14.0),
-  //           ),
-  //           backgroundColor: Colors.green,
-  //           behavior: SnackBarBehavior.floating,
-  //         ),
-  //       );
-  //       Navigator.of(context).pushReplacement(
-  //         MaterialPageRoute(
-  //           builder: (context) => AddGuardientSuccessScreen(
-  //             guardianName: nameController.text.trim(),
-  //             accessLevel: selectedAccessLevel!,
-  //             relationship: selectedRelationship!,
-  //           ),
-  //         ),
-  //       );
-  //     } else {
-  //       final docRef = guardianCollection.doc();
-  //       await docRef.set({
-  //         'guardianId': docRef.id,
-  //         'name': guardianName,
-  //         'email': guardianEmail.trim(),
-  //         'relationship': relationship,
-  //         'accessLevel': accessLevel,
-  //         'createdAt': FieldValue.serverTimestamp(),
-  //       });
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(
-  //             "New guardian added successfully",
-  //             style: TextStyle(color: Colors.white, fontSize: 14.0),
-  //           ),
-  //           backgroundColor: Colors.green,
-  //           behavior: SnackBarBehavior.floating,
-  //         ),
-  //       );
-  //       Navigator.of(context).pushReplacement(
-  //         MaterialPageRoute(
-  //           builder: (context) => AddGuardientSuccessScreen(
-  //             guardianName: nameController.text.trim(),
-  //             accessLevel: selectedAccessLevel!,
-  //             relationship: selectedRelationship!,
-  //           ),
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     rethrow;
-  //   }
-  // }
 
   void _showInviteDialog(BuildContext context, String email) {
     showDialog(

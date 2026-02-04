@@ -42,11 +42,10 @@ class VaccineConfirmScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-
-      body: AppGradientBackground(
-        child: SafeArea(
+    return AppGradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -116,22 +115,22 @@ class VaccineConfirmScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: AppButton(
-          text: "Confirm",
-          onPressed: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const VaccinationListScreen(),
-              ),
-              (route) => false,
-            );
-          },
-          backgroundColor: appColors.primary,
-          textColor: appColors.bgColor,
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: AppButton(
+            text: "Confirm",
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const VaccinationListScreen(),
+                ),
+                (route) => false,
+              );
+            },
+            backgroundColor: appColors.primary,
+            textColor: appColors.bgColor,
+          ),
         ),
       ),
     );

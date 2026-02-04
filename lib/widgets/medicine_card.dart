@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:remindus/theme/app_colors.dart'; // Adjust path based on your project
 import 'package:remindus/generated/assets.dart'; // Adjust path
@@ -27,9 +29,8 @@ class MedicineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Accessing your custom appColors extension
+    // A"ccessing your custom appColors extension
     final appColors = context.appColors;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8.0),
       padding: const EdgeInsets.all(12),
@@ -40,19 +41,20 @@ class MedicineCard extends StatelessWidget {
       child: Row(
         children: [
           // Left Side: Icon
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: status.color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+          if (imageUrl != null && imageUrl != "")
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: status.color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Image.asset(
+                status.imagePath,
+                width: 24.0,
+                height: 24.0,
+                color: status.color,
+              ),
             ),
-            child: Image.asset(
-              status.imagePath,
-              width: 24.0,
-              height: 24.0,
-              color: status.color,
-            ),
-          ),
           const SizedBox(width: 16),
 
           // Middle: Text info
@@ -87,7 +89,7 @@ class MedicineCard extends StatelessWidget {
           ),
 
           // Right Side: Image (if success) or Action Buttons (if not success)
-          if (isSuccess && imageUrl != null)
+          if (isSuccess && imageUrl != null && imageUrl != "")
             Padding(
               padding: const EdgeInsets.only(left: 12.0),
               child: ShimmerImage(
@@ -101,7 +103,7 @@ class MedicineCard extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (imageUrl != null)
+                if (imageUrl != null && imageUrl != "")
                   Padding(
                     padding: const EdgeInsets.only(left: 12.0, right: 12.0),
                     child: ShimmerImage(

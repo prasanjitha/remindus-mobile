@@ -1,19 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:remindus/blocs/user/user_bloc.dart';
-import 'package:remindus/generated/assets.dart';
-import 'package:remindus/models/guardian_model.dart';
-import 'package:remindus/screens/profile/add_guardian_screen.dart';
-import 'package:remindus/theme/app_colors.dart';
-import 'package:remindus/widgets/common-header.dart';
-import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/widgets/shimmer_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:remindus/generated/assets.dart';
+import 'package:remindus/theme/app_colors.dart';
+import 'package:remindus/blocs/user/user_bloc.dart';
+import 'package:remindus/models/guardian_model.dart';
+import 'package:remindus/widgets/custom_button.dart';
+import 'package:remindus/widgets/common-header.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:remindus/widgets/profile/guardian_tile.dart';
 import 'package:remindus/widgets/profile/profile_footer.dart';
-import 'package:remindus/widgets/shimmer_image.dart';
+import 'package:remindus/screens/profile/add_guardian_screen.dart';
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -39,61 +38,6 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
       });
     }
   }
-
-  // Widget _buildFamilySwitcher(BuildContext context) {
-  //   return BlocBuilder<UserBloc, UserState>(
-  //     builder: (context, state) {
-
-  //       if (state is UserLoadingState) {
-
-  //         return const Center(child: CircularProgressIndicator());
-  //       }
-
-  //       if (state is UserErrorState) {
-  //         return Text("Error: ${state.message}");
-  //       }
-
-  //       if (state is UserLoadedState) {
-  //         return Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             const Text(
-  //               "Switch Family",
-  //               style: TextStyle(fontWeight: FontWeight.bold),
-  //             ),
-  //             const SizedBox(height: 8),
-  //             DropdownButton<String>(
-  //               // දැනට active වෙලා තියෙන ID එක තෝරන්න
-  //               value: state.activeFamilyId,
-  //               isExpanded: true,
-  //               items: state.joinedFamilies.map((familyMap) {
-  //                 // familyMap කියන්නේ {'id': '...', 'name': '...'}
-  //                 final String id = familyMap['id'];
-  //                 final String name = familyMap['name'];
-
-  //                 return DropdownMenuItem<String>(
-  //                   value: id,
-  //                   child: Text(id == state.userId ? "🏠 My Home" : "👥 $name"),
-  //                 );
-  //               }).toList(),
-  //               onChanged: (selectedId) {
-  //                 if (selectedId != null &&
-  //                     selectedId != state.activeFamilyId) {
-
-  //                   context.read<UserBloc>().add(
-  //                     SwitchActiveFamilyEvent(familyId: selectedId),
-  //                   );
-  //                 }
-  //               },
-  //             ),
-  //           ],
-  //         );
-  //       }
-
-  //       return const SizedBox();
-  //     },
-  //   );
-  // }
 
   Widget _buildFamilySwitcher(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
@@ -260,7 +204,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                                 runSpacing: 2,
                                 children: [
                                   Text(
-                                    'My Profile',
+                                    state.isAppowner
+                                        ? 'My Profile'
+                                        : "${state.userName}'s Profile",
                                     style: TextStyle(
                                       fontSize: 28.0,
                                       fontWeight: FontWeight.w400,
@@ -288,7 +234,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
                               const SizedBox(height: 40.0),
                               Text(
-                                'Guardian For',
+                                state.isAppowner ? 'My Family' : 'Guardian For',
                                 style: TextStyle(
                                   fontSize: 20.0,
                                   fontWeight: FontWeight.w400,

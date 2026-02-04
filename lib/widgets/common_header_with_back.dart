@@ -40,7 +40,12 @@ class CommonHeaderWithBack extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        Image.asset(Assets.notificationIcon, width: 24.0, height: 24.0),
+        Image.asset(
+          Assets.notificationIcon,
+          width: 24.0,
+          height: 24.0,
+          color: appColors.textPrimary,
+        ),
         const SizedBox(width: 10.0),
         GestureDetector(
           onTap: onProfileTap,
