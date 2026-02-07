@@ -52,13 +52,6 @@ class _SplashScreenState extends State<SplashScreen>
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                Assets.bgColorMap,
-                fit: BoxFit.cover,
-                opacity: const AlwaysStoppedAnimation(0.6),
-              ),
-            ),
             Center(child: Image.asset(Assets.logoIcon, width: 38, height: 38)),
             if (_version.isNotEmpty)
               Positioned(

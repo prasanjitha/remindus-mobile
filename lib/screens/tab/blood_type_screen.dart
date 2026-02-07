@@ -9,7 +9,8 @@ import 'package:remindus/widgets/common_header_with_back.dart';
 import 'package:remindus/widgets/custom_button.dart';
 
 class BloodTypeScreen extends StatefulWidget {
-  const BloodTypeScreen({super.key});
+  final String? initialBloodType;
+  const BloodTypeScreen({super.key, this.initialBloodType});
 
   @override
   State<BloodTypeScreen> createState() => _BloodTypeScreenState();
@@ -31,6 +32,12 @@ class _BloodTypeScreenState extends State<BloodTypeScreen> {
     'AB+',
     'AB-',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedBloodType = widget.initialBloodType;
+  }
 
   Future<void> _onDonePressed(String? activeFamilyId) async {
     try {

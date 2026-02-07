@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:remindus/theme/app_colors.dart';
 
@@ -14,6 +15,15 @@ ThemeData darkMode = ThemeData(
     onSurface: Color(0xFFFAFAFA),
     error: Color(0xFFE8171B),
     onError: Colors.white,
+  ),
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+    ),
   ),
   extensions: const [
     AppColors(

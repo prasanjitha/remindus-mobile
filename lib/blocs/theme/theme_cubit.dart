@@ -26,13 +26,15 @@ class ThemeCubit extends Cubit<ThemeState> {
 
   // Set theme mode and persist to storage
   Future<void> setThemeMode(ThemeMode mode) async {
+    // Emit state immediately for responsiveness
+    emit(ThemeState(themeMode: mode));
+
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_themeKey, mode.index);
-      emit(ThemeState(themeMode: mode));
     } catch (e) {
-      // If there's an error saving, at least update the UI
-      emit(ThemeState(themeMode: mode));
+      // Background save failure is not critical for immediate UI
+      debugPrint("Error saving theme preference: $e");
     }
   }
 

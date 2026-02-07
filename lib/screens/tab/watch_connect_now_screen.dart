@@ -339,7 +339,10 @@ class _WatchConnceNowScreenState extends State<WatchConnceNowScreen> {
           onTap: () {
             // Navigate to Blood Type Screen
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const BloodTypeScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    BloodTypeScreen(initialBloodType: bloodTypeValue),
+              ),
             );
           },
         ),

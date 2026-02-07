@@ -41,7 +41,6 @@ class _AddEditVaccinationScreenState extends State<AddEditVaccinationScreen> {
   String? _selectedFrequency;
   String? _selectedVaccine;
   VaccinationRecord? _lastSubmittedRecord;
-  bool _isLoading = false;
 
   // Vaccine dropdown options
   final List<String> _vaccineOptions = [
@@ -183,9 +182,6 @@ class _AddEditVaccinationScreenState extends State<AddEditVaccinationScreen> {
   }
 
   void _saveRecord() {
-    setState(() {
-      _isLoading = true;
-    });
     final userState = context.read<UserBloc>().state;
     if (userState is! UserLoadedState) {
       SnackbarHelper.showError(context, "User info not loaded");
@@ -528,9 +524,7 @@ class _AddEditVaccinationScreenState extends State<AddEditVaccinationScreen> {
 
             if (state is VaccinationOperationSuccess) {
               if (widget.record == null && _lastSubmittedRecord != null) {
-                setState(() {
-                  _isLoading = false;
-                });
+                // No manual _isLoading update needed
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) =>
@@ -801,12 +795,14 @@ class _AddEditVaccinationScreenState extends State<AddEditVaccinationScreen> {
                           const SizedBox(height: 20),
                           AppButton(
                             text: "Remove Vaccination Record",
-                            onPressed: _deleteRecord,
+                            onPressed: state is VaccinationLoading
+                                ? () {}
+                                : _deleteRecord,
                             backgroundColor:
                                 appColors.lightRed ??
                                 Colors.red.withOpacity(0.1),
                             textColor: appColors.errorRed ?? Colors.red,
-                            isLoading: _isLoading,
+                            isLoading: state is VaccinationDeletedLoading,
                           ),
                         ],
                       ],

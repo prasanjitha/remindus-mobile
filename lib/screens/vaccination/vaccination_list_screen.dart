@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
-import 'package:remindus/blocs/vaccination/vaccination_bloc.dart';
+
+import 'package:intl/intl.dart';
 import 'package:remindus/generated/assets.dart';
-import 'package:remindus/helpers/snackbar_helper.dart';
-import 'package:remindus/models/vaccination_record.dart';
-import 'package:remindus/screens/tab/main_tab_screen.dart';
-import 'package:remindus/screens/vaccination/add_edit_vaccination_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/custom_button.dart';
-import 'package:remindus/helpers/custom_dialog_helpers.dart';
-import 'package:remindus/services/permission_service.dart';
-import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
-import 'package:intl/intl.dart';
+import 'package:remindus/helpers/snackbar_helper.dart';
+import 'package:remindus/models/vaccination_record.dart';
 import 'package:remindus/widgets/main_header_appbar.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
+import 'package:remindus/services/permission_service.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
+import 'package:remindus/blocs/vaccination/vaccination_bloc.dart';
+import 'package:remindus/widgets/dialog/notification_permission_dialog.dart';
+import 'package:remindus/screens/vaccination/add_edit_vaccination_screen.dart';
 
 class VaccinationListScreen extends StatefulWidget {
   static const String routeName = '/vaccination-list';
@@ -26,6 +26,8 @@ class VaccinationListScreen extends StatefulWidget {
 }
 
 class _VaccinationListScreenState extends State<VaccinationListScreen> {
+  List<VaccinationRecord> _records = [];
+
   @override
   void initState() {
     super.initState();
@@ -114,34 +116,38 @@ class _VaccinationListScreenState extends State<VaccinationListScreen> {
                 Expanded(
                   child: BlocBuilder<VaccinationBloc, VaccinationState>(
                     builder: (context, state) {
-                      if (state is VaccinationLoading) {
+                      if (state is VaccinationLoaded) {
+                        _records = state.records;
+                      }
+
+                      if (state is VaccinationLoading && _records.isEmpty) {
                         return const Center(child: CircularProgressIndicator());
-                      } else if (state is VaccinationLoaded) {
-                        if (state.records.isEmpty) {
-                          return Center(
-                            child: Text(
-                              "No vaccination records found.",
-                              style: TextStyle(color: appColors.textSecondary),
-                            ),
-                          );
-                        }
-                        return ListView.separated(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: state.records.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final record = state.records[index];
-                            return _buildVaccinationCard(
-                              context,
-                              record,
-                              appColors,
-                              canEdit,
-                            );
-                          },
+                      }
+
+                      if (_records.isEmpty && state is! VaccinationLoading) {
+                        return Center(
+                          child: Text(
+                            "No vaccination records found.",
+                            style: TextStyle(color: appColors.textSecondary),
+                          ),
                         );
                       }
-                      return const SizedBox.shrink();
+
+                      return ListView.separated(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _records.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final record = _records[index];
+                          return _buildVaccinationCard(
+                            context,
+                            record,
+                            appColors,
+                            canEdit,
+                          );
+                        },
+                      );
                     },
                   ),
                 ),
@@ -174,7 +180,6 @@ class _VaccinationListScreenState extends State<VaccinationListScreen> {
                         builder: (context) => const AddEditVaccinationScreen(),
                       ),
                     );
-                    if (context.mounted) _loadVaccinations();
                   }
                 } else {
                   if (context.mounted) {
@@ -188,7 +193,6 @@ class _VaccinationListScreenState extends State<VaccinationListScreen> {
                                 const AddEditVaccinationScreen(),
                           ),
                         );
-                        if (context.mounted) _loadVaccinations();
                       },
                     );
                   }
@@ -226,7 +230,6 @@ class _VaccinationListScreenState extends State<VaccinationListScreen> {
                       AddEditVaccinationScreen(record: record),
                 ),
               );
-              if (context.mounted) _loadVaccinations();
             }
           : null,
       child: Container(

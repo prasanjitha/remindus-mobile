@@ -130,7 +130,9 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w500,
-                              color: isSelected ? Colors.blue : Colors.black87,
+                              color: isSelected
+                                  ? Colors.blue
+                                  : context.appColors.textPrimary,
                             ),
                           ),
                         ],

@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
 
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/generated/assets.dart';
@@ -30,7 +31,13 @@ class ReminderConfirmationScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: MainHeaderAppBar(
                 onClose: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MainTabScreen(initialIndex: 1),
+                    ),
+                    (route) => false,
+                  );
                 },
               ),
             ),
@@ -62,7 +69,13 @@ class ReminderConfirmationScreen extends StatelessWidget {
         child: AppButton(
           text: "Done",
           onPressed: () {
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MainTabScreen(initialIndex: 1),
+              ),
+              (route) => false,
+            );
           },
           backgroundColor: appColors.primary,
         ),

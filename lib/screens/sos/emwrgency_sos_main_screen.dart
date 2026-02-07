@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 
@@ -121,7 +122,13 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen>
                         children: [
                           MainHeaderAppBar(
                             onClose: () {
-                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      MainTabScreen(initialIndex: 3),
+                                ),
+                              );
                             },
                           ),
                           const SizedBox(height: 20),

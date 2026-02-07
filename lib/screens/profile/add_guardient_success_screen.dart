@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:remindus/generated/assets.dart';
+import 'package:remindus/screens/tab/main_tab_screen.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/widgets/custom_button.dart';
@@ -76,7 +77,13 @@ class AddGuardientSuccessScreen extends StatelessWidget {
             child: AppButton(
               text: "Done",
               onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MainTabScreen(initialIndex: 0),
+                  ),
+                  (route) => false,
+                );
               },
               backgroundColor: appColors.primary,
             ),

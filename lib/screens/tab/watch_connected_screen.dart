@@ -288,7 +288,9 @@ class _HealthCheckupScreenState extends State<HealthCheckupScreen> {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const BloodTypeScreen(),
+                    builder: (context) => BloodTypeScreen(
+                      initialBloodType: bloodGroup == 'N/A' ? null : bloodGroup,
+                    ),
                   ),
                 );
               },

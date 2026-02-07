@@ -4,6 +4,7 @@ import 'package:remindus/blocs/user/user_bloc.dart';
 import 'package:remindus/generated/assets.dart';
 import 'package:remindus/helpers/delete_dialog_helper.dart';
 import 'package:remindus/models/emergency_contact_model.dart';
+import 'package:remindus/screens/sos/emwrgency_sos_main_screen.dart';
 import 'package:remindus/services/emergency_contact_service.dart';
 import 'package:remindus/theme/app_colors.dart';
 import 'package:remindus/widgets/app_gradient_background.dart';
@@ -35,7 +36,7 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
   late final TextEditingController _emailController;
 
   final EmergencyContactService _service = EmergencyContactService();
-  bool _isLoading = false;
+  bool _isSaving = false;
   String? _selectedRelationship;
 
   final List<String> _relationships = [
@@ -70,7 +71,7 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
   Future<void> _onSavePressed(String activeFamilyId) async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    setState(() => _isSaving = true);
     try {
       final contactData = EmergencyContact(
         emergencyContactId: widget.contact?.emergencyContactId,
@@ -92,7 +93,7 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
     } catch (e) {
       debugPrint("Save Error: $e");
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -113,7 +114,11 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
           "The contact details has been successfully removed.",
       dismissButtonText: "  Back to SOS ",
       onDeleteSuccess: () {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const EmergencySOSScreen()),
+          (route) => false,
+        );
       },
     );
   }
@@ -268,7 +273,7 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           AppButton(
-            isLoading: _isLoading,
+            isLoading: _isSaving,
             text: widget.isEditFlow ? 'Update Contact' : 'Save Contact',
             onPressed: () => _onSavePressed(familyId),
             backgroundColor: appColors.primary,
@@ -276,7 +281,7 @@ class _AddEmergencyContactScreenState extends State<AddEmergencyContactScreen> {
           if (widget.isEditFlow) ...[
             const SizedBox(height: 12),
             AppButton(
-              isLoading: _isLoading,
+              isLoading: false,
               text: 'Remove Contact',
               onPressed: () => _onRemovePressed(familyId),
               backgroundColor: const Color(0xFFFFE0E1),
