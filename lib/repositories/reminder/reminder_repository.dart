@@ -4,6 +4,7 @@ import 'package:remindus/models/base_reminder_model.dart';
 import 'package:remindus/models/voice_notification_model.dart';
 import 'package:remindus/services/local_notification_service.dart';
 import 'package:remindus/services/notification_service.dart' as notif;
+import 'package:remindus/services/encryption_service.dart';
 import 'package:intl/intl.dart';
 
 import 'base_reminder.dart';
@@ -55,13 +56,65 @@ class ReminderRepository extends BaseReminderRepositories {
     }
   }
 
-  Stream<DocumentSnapshot> getHealthStatusStream(String familyId) {
+  Stream<Map<String, dynamic>> getHealthStatusStream(String familyId) {
     return _firestore
         .collection('users')
         .doc(familyId)
         .collection('health-condition')
         .doc('status')
-        .snapshots();
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists || snapshot.data() == null) {
+            return <String, dynamic>{};
+          }
+          final data = snapshot.data() as Map<String, dynamic>;
+          final encryptionService = EncryptionService();
+
+          try {
+            if (data.containsKey('heartRate')) {
+              data['heartRate'] = encryptionService.decryptData(
+                data['heartRate'] as String,
+              );
+            }
+            if (data.containsKey('bloodPressure')) {
+              data['bloodPressure'] = encryptionService.decryptData(
+                data['bloodPressure'] as String,
+              );
+            }
+            if (data.containsKey('bloodGroup')) {
+              data['bloodGroup'] = encryptionService.decryptData(
+                data['bloodGroup'] as String,
+              );
+            }
+            if (data.containsKey('allergies')) {
+              // Allergies is Map<String, List<dynamic>>.
+              // We need to handle this structure if we encrypt it.
+              // For now, the user asked for encryption of "allergies".
+              // Since it's a complex object, we arguably should encrypt the whole JSON string
+              // OR encrypt each item.
+              // Given the current structure `data['allergies'] = { "Food": ["a", "b"] }`,
+              // deep encryption is tricky.
+              // However, the prompt asked to encrypt: "Heart rate, bood pressure , blood type and allergies".
+              // Let's encrypt the values in the list.
+              final allergies = data['allergies'] as Map<String, dynamic>;
+              final decryptedAllergies = <String, dynamic>{};
+
+              allergies.forEach((key, value) {
+                if (value is List) {
+                  decryptedAllergies[key] = value.map((item) {
+                    return encryptionService.decryptData(item.toString());
+                  }).toList();
+                } else {
+                  decryptedAllergies[key] = value;
+                }
+              });
+              data['allergies'] = decryptedAllergies;
+            }
+          } catch (e) {
+            print("Error decrypting health data: $e");
+          }
+          return data;
+        });
   }
 
   Future<bool> updateFamilyHealthData({
@@ -73,16 +126,34 @@ class ReminderRepository extends BaseReminderRepositories {
   }) async {
     try {
       final Map<String, dynamic> dataToUpdate = {};
+      final encryptionService = EncryptionService();
+      await encryptionService.init(); // Ensure initialized before writing
+
       if (allergies != null) {
-        dataToUpdate['allergies'] = allergies.map(
-          (key, value) => MapEntry(key, value.toList()),
-        );
+        // Encrypt allergy items
+        final encryptedAllergies = <String, List<String>>{};
+        allergies.forEach((key, value) {
+          encryptedAllergies[key] = value
+              .map((item) => encryptionService.encryptData(item))
+              .toList();
+        });
+
+        dataToUpdate['allergies'] = encryptedAllergies;
       }
 
-      if (heartRate != null) dataToUpdate['heartRate'] = "$heartRate bpm";
-      if (bloodPressure != null)
-        dataToUpdate['bloodPressure'] = "$bloodPressure mmHg";
-      if (bloodGroup != null) dataToUpdate['bloodGroup'] = bloodGroup;
+      if (heartRate != null) {
+        dataToUpdate['heartRate'] = encryptionService.encryptData(
+          "$heartRate bpm",
+        );
+      }
+      if (bloodPressure != null) {
+        dataToUpdate['bloodPressure'] = encryptionService.encryptData(
+          "$bloodPressure mmHg",
+        );
+      }
+      if (bloodGroup != null) {
+        dataToUpdate['bloodGroup'] = encryptionService.encryptData(bloodGroup);
+      }
 
       dataToUpdate['updatedAt'] = FieldValue.serverTimestamp();
 

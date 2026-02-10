@@ -72,11 +72,10 @@ class _ManageAllergiesScreenState extends State<ManageAllergiesScreen> {
 
     if (activeFamilyId != null) {
       try {
-        final snapshot = await _reminderRepository
+        final data = await _reminderRepository
             .getHealthStatusStream(activeFamilyId)
             .first;
-        if (snapshot.exists && snapshot.data() != null) {
-          final data = snapshot.data() as Map<String, dynamic>;
+        if (data.isNotEmpty) {
           if (data.containsKey('allergies')) {
             final allergiesData = data['allergies'] as Map<String, dynamic>;
             setState(() {

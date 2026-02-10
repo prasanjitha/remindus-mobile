@@ -221,7 +221,7 @@ class _HealthCheckupScreenState extends State<HealthCheckupScreen> {
   }
 
   Widget _buildVitalGrid(String familyId) {
-    return StreamBuilder<DocumentSnapshot>(
+    return StreamBuilder<Map<String, dynamic>>(
       stream: _reminderRepository.getHealthStatusStream(familyId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -232,7 +232,7 @@ class _HealthCheckupScreenState extends State<HealthCheckupScreen> {
         }
 
         // Data natham default values pennanna
-        var data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+        var data = snapshot.data ?? {};
 
         String heartRate = data['heartRate'] ?? 'N/A';
         String bp = data['bloodPressure'] ?? 'N/A';

@@ -75,13 +75,12 @@ class _WatchConnceNowScreenState extends State<WatchConnceNowScreen> {
                 BlocBuilder<UserBloc, UserState>(
                   builder: (context, state) {
                     if (state is UserLoadedState) {
-                      return StreamBuilder<DocumentSnapshot>(
+                      return StreamBuilder<Map<String, dynamic>>(
                         stream: ReminderRepository().getHealthStatusStream(
                           state.activeFamilyId,
                         ),
                         builder: (context, snapshot) {
-                          final healthData =
-                              snapshot.data?.data() as Map<String, dynamic>?;
+                          final healthData = snapshot.data;
                           return _buildVitalGrid(context, healthData);
                         },
                       );

@@ -122,11 +122,10 @@ class _BloodPressureScreenState extends State<BloodPressureScreen> {
 
       // Fetch health status for current reading
       _reminderRepository.getHealthStatusStream(activeFamilyId).first.then((
-        snapshot,
+        data,
       ) {
-        if (snapshot.exists) {
-          final data = snapshot.data() as Map<String, dynamic>?;
-          final bloodPressure = data?['bloodPressure'] as String?;
+        if (data.isNotEmpty) {
+          final bloodPressure = data['bloodPressure'] as String?;
           if (bloodPressure != null && bloodPressure.isNotEmpty) {
             setState(() {
               _bloodPressureController.text = bloodPressure.replaceAll(

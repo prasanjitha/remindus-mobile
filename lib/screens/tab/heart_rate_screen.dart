@@ -121,11 +121,10 @@ class _HeartRateAddSceenState extends State<HeartRateAddSceen> {
 
       // Fetch health status for current reading
       _reminderRepository.getHealthStatusStream(activeFamilyId).first.then((
-        snapshot,
+        data,
       ) {
-        if (snapshot.exists) {
-          final data = snapshot.data() as Map<String, dynamic>?;
-          final heartRate = data?['heartRate'] as String?;
+        if (data.isNotEmpty) {
+          final heartRate = data['heartRate'] as String?;
           if (heartRate != null && heartRate.isNotEmpty) {
             setState(() {
               _heartRateController.text = heartRate.replaceAll(' bpm', '');

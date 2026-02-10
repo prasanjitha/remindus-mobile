@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -21,6 +24,12 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    val keystoreProperties = Properties()
+    val keyPropertiesFile = rootProject.file("key.properties")
+    if (keyPropertiesFile.exists()) {
+        keystoreProperties.load(FileInputStream(keyPropertiesFile))
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.viralmove.remindus"
@@ -37,7 +46,15 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // signingConfig = signingConfigs.getByName("debug")
+            if (keyPropertiesFile.exists()) {
+                 signingConfig = signingConfigs.create("release") {
+                     storeFile = file(keystoreProperties["storeFile"] as String)
+                     storePassword = keystoreProperties["storePassword"] as String
+                     keyAlias = keystoreProperties["keyAlias"] as String
+                     keyPassword = keystoreProperties["keyPassword"] as String
+                 }
+            }
         }
     }
 }
